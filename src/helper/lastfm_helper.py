@@ -1,13 +1,14 @@
 import requests
+import logging
 
-from src.models.song import Song
 import json
-import settings
+from .. import settings
 
 API_KEY = '3238395ba98fc958e6e371d9c453eb7a'
 CLIENT_SECRET = '898ab4eaac6dd541ea73f61813efd3e0'
 USER_AGENT = 'https://github.com/thrs79136/bachelor-thesis'
 
+logger = logging.getLogger(__name__)
 
 class LastFmHelper:
 
@@ -26,18 +27,18 @@ class LastFmHelper:
 
 
     @staticmethod
-    def get_track_tags(song: Song) -> list:
+    def get_track_tags(song_name: str, artist: str) -> list:
         response = LastFmHelper.lastfm_get({
             'method': 'track.getInfo',
-            'track': song.song_name,
-            'artist': song.artist,
+            'track': song_name,
+            'artist': artist,
             'autocorrect': 1
         })
         if 'error' in response.json():
-            settings.logger.warn(f'Song {song} could not be found on LastFM')
+            logger.warning(f'Song \'{artist} - {song_name}\' could not be found on LastFM')
             return None
 
-        LastFmHelper.jprint(response.json())
+        # LastFmHelper.jprint(response.json())
         tags = response.json()['track']['toptags']['tag']
         result = list(map(lambda tag: tag['name'].lower(), tags))
         return result

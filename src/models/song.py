@@ -1,19 +1,11 @@
-from typing import List
+from typing import List, Iterable
+import logging
+from .. import settings
+from src.helper.lastfm_helper import LastFmHelper
+from src.models.spotify_song_data import SpotifySongData
+from src.helper.spotify_api import get_song_data
 
-class SpotifySongData:
-    def __init__(self, audio_features_response):
-        dict = audio_features_response[0]
-        self.danceability = dict['danceability']
-        self.energy = dict['energy']
-        self.key = dict['key']
-        self.loudness = dict['loudness']
-        self.mode = dict['mode']
-        self.speechinesss = dict['speechiness']
-        self.acousticness = dict['acousticness']
-        self.instrumentalness = dict['instrumentalness']
-        self.liveness = dict['liveness']
-        self.valence = dict['valence']
-        self.tempo = dict['tempo']
+logger = logging.getLogger(__name__)
 
 
 class McGilBillboardSongData:
@@ -22,12 +14,52 @@ class McGilBillboardSongData:
 
 
 class Song:
-    def __init__(self, artist, song_name):
+    def __init__(self,
+                 mcgill_billboard_id: str,
+                 artist: str,
+                 song_name: str,
+                 genres: List[str] = [],
+                 spotify_song_data: SpotifySongData = None,
+                 mcgill_billboard_song_data: McGilBillboardSongData = None,
+                 ):
+
+        self.mcgill_billboard_id = mcgill_billboard_id
         self.artist = artist
         self.song_name = song_name
-        self.spotify_song_data = None
-        self.mcgill_billboard_song_data = None
-        self.genres = None
+        self.genres = genres
+        self.spotify_song_data = spotify_song_data
+        self.mcgill_billboard_song_data = mcgill_billboard_song_data
+        self.add_song_data()
+
+# TODO create second class method if song is not from csv
+    @classmethod
+    def from_csv_row(cls, csv_row: Iterable):
+        id = csv_row['mcgill_billboard_id']
+        artist = csv_row['artist']
+        song_name = csv_row['song_name']
+        genres = csv_row['genres']
+        spotify_data = SpotifySongData(csv_row['spotify_song_data'])
+        return cls(id, artist, song_name, genres, spotify_data)
+
+    def add_song_data(self):
+        # spotify
+        spotify_song_data = get_song_data(self.song_name, self.artist)
+        self.set_spotify_song_data(spotify_song_data)
+        # lastfm for genres
+        tags = LastFmHelper.get_track_tags(self.song_name, self.artist)
+
+        if tags is not None:
+            song_genres = []
+            for tag in tags:
+                if tag in settings.all_genres:
+                    song_genres.append(tag)
+
+            if len(song_genres) == 0:
+                logger.warning(f'{self}: Could not found any genres')
+                tags_str = ', '.join(list(map(lambda tag_name: f'\'{tag_name}\'', tags)))
+                logger.warning(f'Tags: {tags_str}')
+
+            self.set_genres(song_genres)
 
     def set_spotify_song_data(self, spotify_song_data: SpotifySongData):
         self.spotify_song_data = spotify_song_data
@@ -38,8 +70,12 @@ class Song:
     def set_genres(self, genres: List[str]):
         self.genres = genres
 
+    def get_csv_row(self) -> Iterable:
+        song_data = [self.mcgill_billboard_id, self.artist, f'{self.song_name}', self.genres, repr(self.spotify_song_data)]
+        return song_data
+
     def __str__(self):
-        return self.artist + ' - ' + self.song_name
+        return f'{self.mcgill_billboard_id} {self.artist} - {self.song_name}'
 
     def __repr__(self):
-        return self.artist + " - " + self.song_name
+        return f'{self.mcgill_billboard_id} {self.artist} - {self.song_name}'
