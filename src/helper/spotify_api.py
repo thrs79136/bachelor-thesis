@@ -25,11 +25,11 @@ def get_song_data(song_name: str, artist: str) -> SpotifySongData:
 
     if id is None:
         return None
-    audio_features = __get_audio_features(id)
+    audio_features = get_audio_features(id)
     return SpotifySongData.from_spotify_api_response(audio_features)
 
 
-def __get_audio_features(song_id: string):
+def get_audio_features(song_id: string):
     global spotify_client
     return spotify_client.audio_features([song_id])
 
@@ -51,6 +51,3 @@ def __get_spotify_song_id(song_name: str, artist: str) -> string:
     return allTracks[0]['id']
 
 
-def __get_release_year(spotify_track_id: int) -> int:
-
-    return 1992

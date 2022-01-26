@@ -7,10 +7,6 @@ from src.models.song import Song
 def get_mcgill_song_ids() -> List[str]:
     directories = [dir[0] for dir in os.walk('./data/songs/mcgill-billboard')]
     return [dir.split('\\')[1] for dir in directories[1::]]
-    # test = directories[1::]
-    #subdirectories = [x[0].split('\\')[1] for x in dirs]
-
-    # split('\\')[1]
 
 
 def get_song_by_mcgill_id(id: str) -> Song:

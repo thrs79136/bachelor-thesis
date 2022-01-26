@@ -1,2 +1,0 @@
-mcgill_billboard_id, artist, song_name, genres, spotify_song_data0003,James Brown,I Don't mind,['soul'\, 'funk'\, 'rock'\, 'blues'],{'danceability': 0.547\, 'energy': 0.109\, 'key': 0\, 'loudness': -17.0\, 'mode': 1\, 'speechiness': 0.0412\, 'acousticness': 0.594\, 'instrumentalness': 0.00748\, 'liveness': 0.304\, 'valence': 0.381\, 'tempo': 108.099}
-0004,Roberta Flack and Donny Hathaway,You've got a Friend,['soul'],None

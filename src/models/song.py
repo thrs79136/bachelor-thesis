@@ -3,7 +3,7 @@ import logging
 from .. import settings
 from src.helper.lastfm_helper import LastFmHelper
 from src.models.spotify_song_data import SpotifySongData
-from src.helper.spotify_api import get_song_data
+from src.helper.spotify_api import get_song_data, get_audio_features
 
 logger = logging.getLogger(__name__)
 
@@ -18,18 +18,24 @@ class Song:
                  mcgill_billboard_id: str,
                  artist: str,
                  song_name: str,
+                 chart_year: int,
+                 peak_chart_position: int,
                  genres: List[str] = [],
-                 spotify_song_data: SpotifySongData = None,
+                 spotify_song_data=None,
                  mcgill_billboard_song_data: McGilBillboardSongData = None,
+                 load_song_data: bool = True
                  ):
 
         self.mcgill_billboard_id = mcgill_billboard_id
         self.artist = artist
         self.song_name = song_name
+        self.chart_year = chart_year
+        self.peak_chart_position = peak_chart_position
         self.genres = genres
         self.spotify_song_data = spotify_song_data
         self.mcgill_billboard_song_data = mcgill_billboard_song_data
-        self.add_song_data()
+        if load_song_data:
+            self.add_song_data()
 
 # TODO create second class method if song is not from csv
     @classmethod
@@ -37,9 +43,22 @@ class Song:
         id = csv_row['mcgill_billboard_id']
         artist = csv_row['artist']
         song_name = csv_row['song_name']
+        chart_year = int(csv_row['chart_year'])
+        peak_chart_position = int(csv_row['peak_chart_position'])
         genres = csv_row['genres']
-        spotify_data = SpotifySongData(csv_row['spotify_song_data'])
-        return cls(id, artist, song_name, genres, spotify_data)
+        spotify_song_data = SpotifySongData(csv_row['spotify_song_data'])
+        return cls(id, artist, song_name, chart_year, peak_chart_position, genres, spotify_song_data, load_song_data=False)
+
+    @classmethod
+    def from_mcgill_csv_row(cls, csv_row: Iterable):
+        artist = csv_row['artist']
+        if artist == '':
+            return None
+        id = csv_row['id']
+        title = csv_row['title']
+        chart_year = int(csv_row['chart_date'][0:4])
+        peak_rank = int(csv_row['peak_rank'])
+        return cls(id, artist, title, chart_year, peak_rank)
 
     def add_song_data(self):
         # spotify
@@ -71,7 +90,8 @@ class Song:
         self.genres = genres
 
     def get_csv_row(self) -> Iterable:
-        song_data = [self.mcgill_billboard_id, self.artist, f'{self.song_name}', self.genres, repr(self.spotify_song_data)]
+        song_data = [self.mcgill_billboard_id, self.artist, f'{self.song_name}', self.chart_year,
+                     self.peak_chart_position, self.genres, repr(self.spotify_song_data)]
         return song_data
 
     def __str__(self):
