@@ -1,6 +1,8 @@
 import csv
 from io import StringIO
 import re
+from typing import List
+
 import settings
 from src.helper import spotify_api
 from src.helper.mcgill_billboard_helper import get_mcgill_song_ids, get_song_by_mcgill_id
@@ -36,9 +38,7 @@ def merge_datasets():
 
 
 
-
 def manually_add_spotify_ids():
-    global count
     song_list = []
     with open(old_songs_path, 'r') as csvfile:
         csvreader = csv.DictReader(csvfile, delimiter=',', escapechar='\\', quoting=csv.QUOTE_NONE)
@@ -59,28 +59,28 @@ def manually_add_spotify_ids():
 
     save_songs(songs_path, song_list)
 
-    # write songs back to file
 
+def remove_duplicates():
+    songs : List[Song] = []
+    with open(old_songs_path, 'r') as csvfile:
+        csvreader = csv.DictReader(csvfile, delimiter=',', escapechar='\\', quoting=csv.QUOTE_NONE)
+        for row in csvreader:
+            song = Song.from_csv_row(row)
+            for saved_song in songs:
+                if song.artist != saved_song.artist or song.song_name != saved_song.song_name:
+                    songs.append(song)
+
+    print(len(songs))
 
 settings.init_logger()
 spotify_api.init()
 
-manually_add_spotify_ids()
+merge_datasets()
+
+# songs = get_songs(songs_path)
+# songs_without_duplicates = list(set(songs))
+
 
 
 # Read all data from the csv file.
-
-
-#
-# # 0% progress
-# for i, item in enumerate(mcgill_ids):
-#     # Do stuff...
-#     song = get_song_by_mcgill_id(item)
-#     save_song('songs.csv', song)
-#     # Update Progress Bar
-#     settings.printProgressBar(i + 1, len, prefix = 'Progress:', suffix = 'Complete', length = 50)
-#
-
-
-# songs = get_songs('songs.csv')
 

@@ -37,6 +37,7 @@ all_genres = [
     'detroit-techno',
     'disco',
     'disney',
+    'doo wop',
     'drum-and-bass',
     'dub',
     'dubstep',
