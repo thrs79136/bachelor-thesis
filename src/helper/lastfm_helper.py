@@ -2,7 +2,6 @@ import requests
 import logging
 
 import json
-from .. import settings
 
 API_KEY = '3238395ba98fc958e6e371d9c453eb7a'
 CLIENT_SECRET = '898ab4eaac6dd541ea73f61813efd3e0'

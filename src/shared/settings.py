@@ -7,6 +7,9 @@ import os
 import spotipy
 from spotipy import SpotifyClientCredentials
 
+global songs_file
+songs_file = '../data/songs-finished.csv'
+
 global all_genres
 all_genres = [
     'acoustic',

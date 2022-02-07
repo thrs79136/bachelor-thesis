@@ -1,18 +1,13 @@
 import csv
-from io import StringIO
-import re
 from typing import List
 
-import settings
 from src.helper import spotify_api
-from src.helper.mcgill_billboard_helper import get_mcgill_song_ids, get_song_by_mcgill_id
-from src.helper.csv_helper import save_song, get_songs, write_header, get_next_song_from_mcgill_index, get_csv_reader, \
-    row_count, save_songs
+from src.helper.csv_helper import save_song, write_header, row_count, save_songs
 from src.helper.spotify_api import get_audio_features
 from src.models.song import Song
-import time
 
 from src.models.spotify_song_data import SpotifySongData
+from src.shared import settings
 
 old_songs_path = './data/songs.csv'
 songs_path = './data/songs-finished.csv'
@@ -61,26 +56,25 @@ def manually_add_spotify_ids():
 
 
 def remove_duplicates():
-    songs : List[Song] = []
-    with open(old_songs_path, 'r') as csvfile:
+    songs: List[Song] = []
+    with open(songs_path, 'r') as csvfile:
         csvreader = csv.DictReader(csvfile, delimiter=',', escapechar='\\', quoting=csv.QUOTE_NONE)
         for row in csvreader:
             song = Song.from_csv_row(row)
+            is_duplicate = False
             for saved_song in songs:
-                if song.artist != saved_song.artist or song.song_name != saved_song.song_name:
-                    songs.append(song)
+                if song.artist == saved_song.artist and song.song_name == saved_song.song_name:
+                    is_duplicate = True
+
+            if not is_duplicate:
+                songs.append(song)
 
     print(len(songs))
+
+    save_songs(songs_path, songs)
+
 
 settings.init_logger()
 spotify_api.init()
 
-merge_datasets()
-
-# songs = get_songs(songs_path)
-# songs_without_duplicates = list(set(songs))
-
-
-
-# Read all data from the csv file.
-
+remove_duplicates()

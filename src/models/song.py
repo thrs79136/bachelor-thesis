@@ -1,9 +1,11 @@
+import json
 from typing import List, Iterable
 import logging
-from .. import settings
 from src.helper.lastfm_helper import LastFmHelper
 from src.models.spotify_song_data import SpotifySongData
-from src.helper.spotify_api import get_song_data, get_audio_features
+from src.helper.spotify_api import get_song_data
+from src.shared import settings
+import ast
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +23,7 @@ class Song:
                  chart_year: int,
                  peak_chart_position: int,
                  genres: List[str] = [],
-                 spotify_song_data=None,
+                 spotify_song_data: SpotifySongData = None,
                  mcgill_billboard_song_data: McGilBillboardSongData = None,
                  load_song_data: bool = True
                  ):
@@ -45,8 +47,8 @@ class Song:
         song_name = csv_row['song_name']
         chart_year = int(csv_row['chart_year'])
         peak_chart_position = int(csv_row['peak_chart_position'])
-        genres = csv_row['genres']
-        spotify_song_data = SpotifySongData(csv_row['spotify_song_data'])
+        genres = ast.literal_eval(csv_row['genres'])
+        spotify_song_data = SpotifySongData.from_csv(csv_row['spotify_song_data'])
         return cls(id, artist, song_name, chart_year, peak_chart_position, genres, spotify_song_data, load_song_data=False)
 
     @classmethod

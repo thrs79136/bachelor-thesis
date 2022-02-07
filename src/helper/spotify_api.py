@@ -2,7 +2,6 @@ import string
 import os
 import spotipy
 import logging
-from .. import settings
 from spotipy.oauth2 import SpotifyClientCredentials
 
 from src.models.spotify_song_data import SpotifySongData

@@ -1,3 +1,5 @@
+import ast
+import string
 
 
 class SpotifySongData:
@@ -11,6 +13,10 @@ class SpotifySongData:
     def from_spotify_api_response(cls, audio_features_response):
         audio_features_dictionary = {key: audio_features_response[0][key] for key in SpotifySongData.audio_feature_keys}
         return cls(audio_features_dictionary)
+
+    @classmethod
+    def from_csv(cls, audio_features: string):
+        return cls(ast.literal_eval(audio_features))
 
     def get_csv_row(self):
         return [self.danceability, self.energy, self.key, self.loudness, self.mode, self.speechinesss,

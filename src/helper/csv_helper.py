@@ -1,11 +1,8 @@
 import csv
-import inspect
 from typing import List
 
 from src.models.song import Song
 
-
-# TODO make this a class
 
 def write_header(path: str):
     file = open(path, "w")
