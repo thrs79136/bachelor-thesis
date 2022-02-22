@@ -158,9 +158,9 @@ def get_logger(logfile_path: string) -> logging.Logger:
     return logfile
 
 
-def init_logger():
+def init_logger(file_name):
     global logger
-    logger = get_logger('./log/merge_data.log')
+    logger = get_logger(f'../log/{file_name}')
 
 
 # Print iterations progress

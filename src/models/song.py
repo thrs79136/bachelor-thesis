@@ -2,17 +2,13 @@ import json
 from typing import List, Iterable
 import logging
 from src.helper.lastfm_helper import LastFmHelper
+from src.models.mcgill_songdata import McGillSongData
 from src.models.spotify_song_data import SpotifySongData
 from src.helper.spotify_api import get_song_data
 from src.shared import settings
 import ast
 
 logger = logging.getLogger(__name__)
-
-
-class McGilBillboardSongData:
-    def __init__(self, id):
-        self.id = id
 
 
 class Song:
@@ -24,8 +20,8 @@ class Song:
                  peak_chart_position: int,
                  genres: List[str] = [],
                  spotify_song_data: SpotifySongData = None,
-                 mcgill_billboard_song_data: McGilBillboardSongData = None,
-                 load_song_data: bool = True
+                 mcgill_billboard_song_data: McGillSongData = None,
+                 load_api_song_data: bool = True
                  ):
 
         self.mcgill_billboard_id = mcgill_billboard_id
@@ -36,7 +32,9 @@ class Song:
         self.genres = genres
         self.spotify_song_data = spotify_song_data
         self.mcgill_billboard_song_data = mcgill_billboard_song_data
-        if load_song_data:
+        if self.mcgill_billboard_song_data is None:
+            self.mcgill_billboard_song_data = McGillSongData(mcgill_billboard_id)
+        if load_api_song_data:
             self.add_song_data()
 
 # TODO create second class method if song is not from csv
@@ -49,7 +47,7 @@ class Song:
         peak_chart_position = int(csv_row['peak_chart_position'])
         genres = ast.literal_eval(csv_row['genres'])
         spotify_song_data = SpotifySongData.from_csv(csv_row['spotify_song_data'])
-        return cls(id, artist, song_name, chart_year, peak_chart_position, genres, spotify_song_data, load_song_data=False)
+        return cls(id, artist, song_name, chart_year, peak_chart_position, genres, spotify_song_data, load_api_song_data=False)
 
     @classmethod
     def from_mcgill_csv_row(cls, csv_row: Iterable):
@@ -85,7 +83,7 @@ class Song:
     def set_spotify_song_data(self, spotify_song_data: SpotifySongData):
         self.spotify_song_data = spotify_song_data
 
-    def set_mcgill_billboard_song_data(self, mcgill_song_data: McGilBillboardSongData):
+    def set_mcgill_billboard_song_data(self, mcgill_song_data: McGillSongData):
         self.mcgill_billboard_song_data = mcgill_song_data
 
     def set_genres(self, genres: List[str]):
