@@ -2,15 +2,21 @@ from math import sqrt
 from typing import List
 import string
 import scipy.stats as scs
+import re
+from parker.notes import Note
+from parker.scales import Scale
 
 from src.helper.csv_helper import get_songs
 from src.models.song import Song
 from src.models.spotify_song_data import SpotifySongData
+from src.models.mgill_chord import McGillChord
 from src.shared import settings
 from src.shared.settings import songs_file
 import matplotlib.pyplot as plt
 import statistics
-from parker.chords import *
+from parker.chords import CHORD_MATCHER, Chord
+from parker.constants import *
+
 import re
 
 figure_number = 0
@@ -125,12 +131,22 @@ def create_audio_feature_bar_plot(songs: List[Song], audio_feature: string):
     sorted_chunks = list(split(songs_with_audio_features, 10))
     medians = [get_audio_feature_median(chunk, audio_feature) for chunk in sorted_chunks]
 
-
-
-
+fsharppower = Chord('F#5')
 
 settings.init_logger('analysis.log')
 songs = get_songs(songs_file)
+print(f'Unrecognized chords: {McGillChord.unrecognizednotedcounter}')
+
+# chord = McGillChord('C:sus(9)')
+# chord2 = McGillChord('Cmaj/5')
+#
+# chord_maj = Chord('CM')
+# chord_min = Chord('Cm')
+
+
+#
+# songs = get_songs(songs_file)
+# create_genre_scatter_plots(songs)
 
 
 # third_up = chord.major_third_down()

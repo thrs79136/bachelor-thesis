@@ -33,11 +33,11 @@ class Song:
         self.spotify_song_data = spotify_song_data
         self.mcgill_billboard_song_data = mcgill_billboard_song_data
         if self.mcgill_billboard_song_data is None:
+            logger.debug(f'[Song.__init__] Reading McGillSongData for "{repr(self)}"')
             self.mcgill_billboard_song_data = McGillSongData(mcgill_billboard_id)
         if load_api_song_data:
             self.add_song_data()
 
-# TODO create second class method if song is not from csv
     @classmethod
     def from_csv_row(cls, csv_row: Iterable):
         id = csv_row['mcgill_billboard_id']

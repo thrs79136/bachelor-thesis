@@ -153,7 +153,7 @@ def get_logger(logfile_path: string) -> logging.Logger:
     formatter = logging.Formatter(logging.BASIC_FORMAT)
     handler.setFormatter(formatter)
     logfile = logging.getLogger()
-    logfile.setLevel(os.environ.get("LOGLEVEL", "WARN"))
+    logfile.setLevel(os.environ.get("LOGLEVEL", "DEBUG"))
     logfile.addHandler(handler)
     return logfile
 
