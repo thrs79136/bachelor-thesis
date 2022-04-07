@@ -3,6 +3,8 @@ from typing import List
 import string
 import scipy.stats as scs
 import re
+
+from parker.mixins import Aug
 from parker.notes import Note
 from parker.scales import Scale
 
@@ -131,7 +133,8 @@ def create_audio_feature_bar_plot(songs: List[Song], audio_feature: string):
     sorted_chunks = list(split(songs_with_audio_features, 10))
     medians = [get_audio_feature_median(chunk, audio_feature) for chunk in sorted_chunks]
 
-fsharppower = Chord('F#5')
+
+c1 = Chord('Cdim7')
 
 settings.init_logger('analysis.log')
 songs = get_songs(songs_file)

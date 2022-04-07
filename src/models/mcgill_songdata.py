@@ -53,6 +53,16 @@ class Instrument:
             self.instrumentType = InstrumentType.SECTION
 
 
+class Repetition:
+    def __init__(self, count):
+        self.count = int(count)
+
+
+class Pause:
+    def __init__(self):
+        pass
+
+
 class McGillSongData:
     def __init__(self, id: string):
 
@@ -92,21 +102,47 @@ class McGillSongData:
         while True:
             tok = lexer.token()
             if not tok:
+                if self.id == '33':
+                    x = 1
                 break
+
+            # print(f'{tok.value} (type: {tok.type})')
+            # try:
+            #     logger.debug(f'{tok.value} (type: {tok.type})')
+            # except Exception:
+            #     if self.id == '22':
+            #         x =1
+            #     pass
+
+            # if self.id == '22':
+            #     print(f'{tok.value} (type: {tok.type})')
 
             if tok.type == 'SILENCE_END':
                 pass
             elif tok.type == 'SECTION_ID':
-                section_name = lexer.token().value
-                if current_section is not None:
-                    self.sections.append(current_section)
-                current_section = Section(tok.value, section_name)
+                try:
+                    section_name = lexer.token().value
+                    if current_section is not None:
+                        self.sections.append(current_section)
+                    current_section = Section(tok.value, section_name)
+                except Exception:
+                    x = 1
             elif tok.type == 'BAR_LINE':
                 if current_bar is not None and len(current_bar.chords) != 0:
                     current_section.content.append(current_bar)
                 current_bar = Bar()
             elif tok.type == 'INSTRUMENT':
-                current_section.content.append(Instrument(tok.value))
+                try:
+                    current_section.content.append(Instrument(tok.value))
+                except Exception :
+                    x = 1
             elif tok.type == 'CHORD':
                 current_bar.chords.append(tok.value)
-                # print('Chord')
+            elif tok.type == 'REPEAT':
+                current_section.content.append(Repetition(tok.value[1:]))
+            elif tok.type == 'PAUSE':
+                current_section.content.append(Pause())
+            # TODO DOT
+
+            if self.id == '22' and tok.value == '(voice':
+                pass

@@ -20,22 +20,32 @@ tokens = (
     'INSTRUMENT',
     'DOT',
     'COMMA',
+    'REPEAT',
+    'TONIC_CHANGE',
     'SILENCE_END',
     'ARROW',
     'NOTHING',
-    'METRE_CHANGE'
+    'METRE_CHANGE',
+    'PAUSE',
+    'ASTERIX'
 )
 
-t_SECTION_NAME = r"[a-z]+?[^,]*"
-t_SECTION_ID = r"[A-Z]'*?,"
+
+# t_SECTION_NAME = r"([a-z]|-)+[a-z][^(,|\n)]*" old
+# t_SECTION_NAME = r"[a-z]+[a-z-]+,?[^:]"
+# t_SECTION_ID = r"[A-Z]'*?,"
 t_BAR_LINE = r"\|"
-t_INSTRUMENT = r"((\([a-z]+\)?)|([a-z]+?\)))[^( |\n)]*"
+t_INSTRUMENT = r"((\([a-z ]+\)?)|([a-z ]+?\)))[^(\s|\n)]*"
 t_DOT = r"\."
 t_COMMA = r","
+t_REPEAT = r"x[0-9]+"
+t_TONIC_CHANGE = r"tonic:\s(A|B|C|D|E|F|G)b?\#?"
 t_SILENCE_END = r"(silence|end)"
 t_ARROW = r"->"
 t_NOTHING = r"N|Z"
-t_METRE_CHANGE = r"\([1-9]/[1-9]\)"
+t_METRE_CHANGE = r"\([1-9]/[1-9]\)|(metre: [1-9]/[1-9])"
+t_PAUSE = r"&pause"
+t_ASTERIX = r"\*"
 
 t_ignore = ' \n'
 
@@ -46,13 +56,19 @@ def t_CHORD(tok):
     tok.value = McGillChord(tok.value)
     return tok
 
-    # parker_chord_name = mcgill_to_parker_chord.get(t.value[2:], '')
-    # if parker_chord_name == '':
-    #     print(f'Could not find chord {t.value}')
-    #     logger.error(f'Could not find chord {t.value}')
-    # chord = Chord(t.value[0] + parker_chord_name)
-    # t.value = chord
-    # return t
+
+def t_SECTION_NAME(tok):
+    r"[a-z]+[a-z- ]+(,|\n)"
+
+    tok.value = tok.value[:-1]
+    return tok
+
+
+def t_SECTION_ID(tok):
+    r"[A-Z]'*?,"
+
+    tok.value = tok.value[:-1]
+    return tok
 
 
 def t_error(tok):
