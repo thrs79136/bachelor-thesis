@@ -1,3 +1,4 @@
+import json
 import logging
 import string
 from typing import List, TextIO
@@ -8,16 +9,17 @@ import parker.chords
 from parker.chords import Chord
 
 from src.helper.mcgill_lexer import lexer
+from src.models.mgill_chord import RomNumNotation, McGillChord
 
 logger = logging.getLogger(__name__)
 
 
 class Bar:
     def __init__(self):
-        self.chords = []
+        self.content = []
 
     def __str__(self):
-        return ', '.join([f'{chord.root.base_name}{chord.extension}' for chord in self.chords])
+        return ', '.join([f'{chord.root.base_name}{chord.extension}' for chord in self.content])
 
 
 # contains bars
@@ -26,6 +28,23 @@ class Section:
         self.id = id
         self.name = name
         self.content = []
+        self.chord_progression : List[RomNumNotation] = []
+
+    def add_chord_progression(self):
+        for bar in self.content:
+            if isinstance(bar, Bar):
+                for chord in bar.content:
+                    if isinstance(chord, McGillChord):
+                        roman_num = chord.roman_numeral_notation
+                        if len(self.chord_progression) != 0:
+                            if self.chord_progression[-1] != roman_num:
+                                self.chord_progression.append(roman_num)
+                        else:
+                            self.chord_progression.append(roman_num)
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__,
+                          sort_keys=True, indent=4)
 
     def __str__(self):
         return self.name
@@ -72,13 +91,25 @@ class McGillSongData:
         self.sections: List[Section] = None
         self.readfile()
 
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__,
+                          sort_keys=True, indent=4)
+
     def readfile(self):
         filepath = f'../data/songs/mcgill-billboard/{self.id.zfill(4)}/salami_chords.txt'
         f = open(filepath, 'r')
         f.readline(); f.readline()
 
-        self.metre = f.readline()[9:-1]
-        self.tonic = f.readline()[9:-1]
+        # read metre and tonic
+        line1 = f.readline()
+        line2 = f.readline()[9:-1]
+        if line1.startswith('# metre'):
+            self.metre = line1[9:-1]
+            self.tonic = line2
+        else:
+            self.tonic = line1[9:-1]
+            self.metre = line2
+
         self.sections = []
         self.parse_chords(f)
 
@@ -117,32 +148,36 @@ class McGillSongData:
             # if self.id == '22':
             #     print(f'{tok.value} (type: {tok.type})')
 
+            # TODO tonic changes
+
             if tok.type == 'SILENCE_END':
                 pass
             elif tok.type == 'SECTION_ID':
-                try:
-                    section_name = lexer.token().value
-                    if current_section is not None:
-                        self.sections.append(current_section)
-                    current_section = Section(tok.value, section_name)
-                except Exception:
-                    x = 1
+                section_name = lexer.token().value
+                if current_section is not None:
+                    self.sections.append(current_section)
+                    # add progression before creating new section
+                    current_section.add_chord_progression()
+
+                current_section = Section(tok.value, section_name)
             elif tok.type == 'BAR_LINE':
-                if current_bar is not None and len(current_bar.chords) != 0:
+                if current_section is not None and current_bar is not None and len(current_bar.content) != 0:
                     current_section.content.append(current_bar)
                 current_bar = Bar()
             elif tok.type == 'INSTRUMENT':
-                try:
-                    current_section.content.append(Instrument(tok.value))
-                except Exception :
-                    x = 1
+                current_section.content.append(Instrument(tok.value))
             elif tok.type == 'CHORD':
-                current_bar.chords.append(tok.value)
+                chord = tok.value
+                chord.add_roman_numeral_notation(self.tonic)
+                current_bar.content.append(chord)
             elif tok.type == 'REPEAT':
                 current_section.content.append(Repetition(tok.value[1:]))
             elif tok.type == 'PAUSE':
-                current_section.content.append(Pause())
-            # TODO DOT
+                current_bar.content.append(Pause())
+            elif tok.type == 'DOT':
+                current_bar.content.append(current_bar.content[-1])
+            elif tok.type == 'TONIC_CHANGE':
+                # TODO
+                self.tonic = tok.value.split(' ')[1]
 
-            if self.id == '22' and tok.value == '(voice':
-                pass
+

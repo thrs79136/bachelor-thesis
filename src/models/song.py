@@ -99,3 +99,4 @@ class Song:
 
     def __repr__(self):
         return f'{self.mcgill_billboard_id} {self.artist} - {self.song_name}'
+

@@ -1,17 +1,16 @@
+import json
 from math import sqrt
 from typing import List
 import string
 import scipy.stats as scs
+import time
+import pickle
 import re
 
-from parker.mixins import Aug
-from parker.notes import Note
-from parker.scales import Scale
-
-from src.helper.csv_helper import get_songs
+from src.helper.file_helper import get_songs, get_songs_from_binary_file
 from src.models.song import Song
 from src.models.spotify_song_data import SpotifySongData
-from src.models.mgill_chord import McGillChord
+from src.models.mgill_chord import McGillChord, RomNumNotations
 from src.shared import settings
 from src.shared.settings import songs_file
 import matplotlib.pyplot as plt
@@ -134,30 +133,20 @@ def create_audio_feature_bar_plot(songs: List[Song], audio_feature: string):
     medians = [get_audio_feature_median(chunk, audio_feature) for chunk in sorted_chunks]
 
 
-c1 = Chord('Cdim7')
+
 
 settings.init_logger('analysis.log')
-songs = get_songs(songs_file)
-print(f'Unrecognized chords: {McGillChord.unrecognizednotedcounter}')
 
-# chord = McGillChord('C:sus(9)')
-# chord2 = McGillChord('Cmaj/5')
-#
-# chord_maj = Chord('CM')
-# chord_min = Chord('Cm')
+songs = get_songs('../data/songs-finished.csv')
 
+x = 2
 
-#
-# songs = get_songs(songs_file)
-# create_genre_scatter_plots(songs)
+# bin_file = '../data/parsed-songs'
+# songs = get_songs_from_binary_file(bin_file)
 
 
-# third_up = chord.major_third_down()
-# chord = Chord('Cmin/b3')
-# notes = chord.get_notes()
-# create_bar_plot([1,2,3], 'asdf')
-# create_genre_scatter_plots(songs)
+# save binary
+# with open(f'test.pickle', 'wb') as file:
+#     pickle.dump(songs, file)
 
 
-
-# five most common genres: 1. rock 2. pop 3. soul, 4. country, 5. blues

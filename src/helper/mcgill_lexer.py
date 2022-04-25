@@ -42,9 +42,9 @@ t_REPEAT = r"x[0-9]+"
 t_TONIC_CHANGE = r"tonic:\s(A|B|C|D|E|F|G)b?\#?"
 t_SILENCE_END = r"(silence|end)"
 t_ARROW = r"->"
-t_NOTHING = r"N|Z"
+t_NOTHING = r"Z"
 t_METRE_CHANGE = r"\([1-9]/[1-9]\)|(metre: [1-9]/[1-9])"
-t_PAUSE = r"&pause"
+t_PAUSE = r"(&pause)|N"
 t_ASTERIX = r"\*"
 
 t_ignore = ' \n'
