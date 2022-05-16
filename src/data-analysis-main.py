@@ -15,7 +15,6 @@ from src.shared import settings
 import matplotlib.pyplot as plt
 
 
-
 settings.init_logger('analysis.log')
 
 # songs = get_songs('../data/songs-finished.csv')
