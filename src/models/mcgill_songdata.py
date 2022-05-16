@@ -28,7 +28,7 @@ class Section:
         self.id = id
         self.name = name
         self.content = []
-        self.chord_progression : List[RomNumNotation] = []
+        self.chord_progression: List[RomNumNotation] = []
 
     def add_chord_progression(self):
         for bar in self.content:
@@ -133,8 +133,8 @@ class McGillSongData:
         while True:
             tok = lexer.token()
             if not tok:
-                if self.id == '33':
-                    x = 1
+                # finished lexing, add last section
+                self.sections.append(current_section)
                 break
 
             # print(f'{tok.value} (type: {tok.type})')
@@ -158,6 +158,7 @@ class McGillSongData:
                     self.sections.append(current_section)
                     # add progression before creating new section
                     current_section.add_chord_progression()
+                    # print(current_section.chord_progression)
 
                 current_section = Section(tok.value, section_name)
             elif tok.type == 'BAR_LINE':

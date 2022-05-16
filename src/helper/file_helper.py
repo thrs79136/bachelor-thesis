@@ -4,6 +4,7 @@ from typing import List
 
 from src.helper.cadences import identify_cadences
 from src.models.mcgill_songdata import Bar
+from src.models.mgill_chord import McGillChord
 from src.models.song import Song
 
 
@@ -35,15 +36,16 @@ def print_sections(song: Song):
         for bar in section.content:
             if isinstance(bar, Bar):
                 for chord in bar.content:
-                    roman_num = repr(chord.roman_numeral_notation)
-                    try:
-                        if len(bars_roman_num) != 0:
-                            if bars_roman_num[-1] != roman_num:
+                    if isinstance(chord, McGillChord):
+                        roman_num = repr(chord.roman_numeral_notation)
+                        try:
+                            if len(bars_roman_num) != 0:
+                                if bars_roman_num[-1] != roman_num:
+                                    bars_roman_num.append(roman_num)
+                            else:
                                 bars_roman_num.append(roman_num)
-                        else:
-                            bars_roman_num.append(roman_num)
-                    except:
-                        pass
+                        except:
+                            pass
 
 
         print(' '.join(bars_roman_num))
@@ -54,9 +56,9 @@ def get_songs(file_path: str) -> List[Song]:
         csvreader = csv.DictReader(csvfile, delimiter=',', escapechar='\\', quoting=csv.QUOTE_NONE)
         for row in csvreader:
             song = Song.from_csv_row(row)
-            print_sections(song)
-            identify_cadences(song)
-            print(repr(song))
+            # print_sections(song)
+            # identify_cadences(song)
+            # print(repr(song))
             songs.append(song)
 
     return songs

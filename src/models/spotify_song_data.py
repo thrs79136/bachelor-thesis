@@ -23,4 +23,4 @@ class SpotifySongData:
                 self.acousticness, self.instrumentalness, self.liveness, self.valence, self.tempo]
 
     def __repr__(self):
-        return f'{self.audio_features_dictionary}'
+        return self.audio_features_dictionary

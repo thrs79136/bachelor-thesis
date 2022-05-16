@@ -37,7 +37,6 @@ def __get_spotify_song_id(song_name: str, artist: str) -> string:
     global spotify_client
 
     try:
-        # print(spotify)
         searchResult = spotify_client.search(q=f'artist:{artist} track:{song_name}', type='track')
     except:
         logger.error('Failed to execute search query')

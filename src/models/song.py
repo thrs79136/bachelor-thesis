@@ -1,6 +1,7 @@
 import json
 from typing import List, Iterable
 import logging
+
 from src.helper.lastfm_helper import LastFmHelper
 from src.models.mcgill_songdata import McGillSongData
 from src.models.spotify_song_data import SpotifySongData
@@ -37,6 +38,7 @@ class Song:
             self.mcgill_billboard_song_data = McGillSongData(mcgill_billboard_id)
         if load_api_song_data:
             self.add_song_data()
+        self.cadences = None
 
     @classmethod
     def from_csv_row(cls, csv_row: Iterable):

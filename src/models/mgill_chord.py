@@ -45,6 +45,7 @@ note_to_interval = {
     'D#':   3,
     'Eb':   3,
     'E':    4,
+    'Fb':   4,
     'F':    5,
     'F#':   6,
     'Gb':   6,
@@ -54,11 +55,12 @@ note_to_interval = {
     'A':    9,
     'A#':   10,
     'Bb':   10,
-    'B':    11
+    'B':    11,
+    'Cb':   11,
 }
 
 
-class ChordType(Enum):
+class MajOrMin(Enum):
     Major = 0
     Minor = 1
     Neither = 2
@@ -78,51 +80,86 @@ class RomNumNotations(Enum):
     bVII = 10
     VII = 11
 
-    Im = 12
-    bIIm = 13
-    IIm = 14
-    bIIIm = 15
-    IIIm = 16
-    IVm = 17
-    bVm = 18
-    Vm = 19
-    bVIm = 20
-    VIm = 21
-    bVIIm = 22
-    VIIm = 23
-
-    In = 24
-    bIIn = 25
-    IIn = 26
-    bIIIn = 27
-    IIIn = 28
-    IVn = 29
-    bVn = 30
-    Vn = 31
-    bVIn = 32
-    VIn = 33
-    bVIIn = 34
-    VIIn = 35
+    # Im = 12
+    # bIIm = 13
+    # IIm = 14
+    # bIIIm = 15
+    # IIIm = 16
+    # IVm = 17
+    # bVm = 18
+    # Vm = 19
+    # bVIm = 20
+    # VIm = 21
+    # bVIIm = 22
+    # VIIm = 23
+    #
+    # In = 24
+    # bIIn = 25
+    # IIn = 26
+    # bIIIn = 27
+    # IIIn = 28
+    # IVn = 29
+    # bVn = 30
+    # Vn = 31
+    # bVIn = 32
+    # VIn = 33
+    # bVIIn = 34
+    # VIIn = 35
 
 
 
 
 class RomNumNotation:
-    def __init__(self, number):
-        self.rom_num_notation = RomNumNotations(number)
-        self.roman_number = RomNumNotations(number % 12)
-        self.type = ChordType(int(number/12))
+
+    def __init__(self, rom_num_notation: RomNumNotations, rom_num: str, maj_or_min: MajOrMin, chord_type: str = None):
+        self.rom_num_notation = rom_num_notation
+        self.roman_number = rom_num
+        self.maj_or_min = maj_or_min
+
+    @classmethod
+    def from_number_and_type(cls, rom_num: str, chord_type: MajOrMin):
+        # roman number without information about chordtype
+        # if chord_type == MajOrMin.Minor:
+        #     rom_num += 'm'
+        # elif chord_type == MajOrMin.Neither:
+        #     rom_num += 'n'
+
+        rom_num_notation = RomNumNotations[rom_num]
+
+        return cls(rom_num_notation, rom_num, chord_type)
+
+    # @classmethod
+    # def from_notation_id(cls, id: int):
+    #     roman_number_notation = RomNumNotations(id)
+    #     roman_number = RomNumNotations(roman_number_notation.value % 12).name
+    #     type = MajOrMin(int(id / 12))
+    #     return cls(roman_number_notation, roman_number, type)
+
+    @classmethod
+    def from_string(cls, notation: str):
+        rom_num_notation = RomNumNotations[notation]
+        roman_num = RomNumNotations(rom_num_notation.value % 12).name
+        type = MajOrMin(int(rom_num_notation.value / 12))
+        return cls(rom_num_notation, roman_num, type)
 
     def __eq__(self, other):
         if isinstance(other, RomNumNotations):
             return self.rom_num_notation.value == other.value
         elif isinstance(other, RomNumNotation):
-            return self.rom_num_notation == other.rom_num_notation
+            return self.roman_number == other.roman_number and self.maj_or_min == other.maj_or_min
         else:
             return False
 
     def __repr__(self):
-        return self.rom_num_notation.name
+        try:
+            chord_type = ''
+            if self.maj_or_min == MajOrMin.Minor:
+                chord_type += 'm'
+            elif self.maj_or_min == MajOrMin.Neither:
+                chord_type += 'n'
+            return self.rom_num_notation.name + chord_type
+        except:
+            pass
 
     # def __init__(self, number: int, type: ChordType):
     #     self.number = RomNumNotations(number),
@@ -185,49 +222,60 @@ class McGillChord(Chord):
     #     self.notes[3] = self.notes[3].diminish()
 
     def add_roman_numeral_notation(self, tonic: string):
-        test1 = note_to_interval[tonic]
-        test2 = note_to_interval[self.root.base_name + self.root.accidentals.name]
-        roman_number_id = abs(note_to_interval[tonic] - note_to_interval[self.root.base_name + self.root.accidentals.name])
-        # print(self.intervals)
-        chord_type = ChordType.Neither
-        for interval in self.mcgill_intervals:
-            if interval == 4:
-                chord_type = ChordType.Major
-                break
-            elif interval == 3:
-                chord_type = ChordType.Minor
-                roman_number_id += 12
-                break
+        interval1 = note_to_interval[tonic]
+        test_name = self.root.base_name + self.root.accidentals.name
+        interval2 = note_to_interval[self.root.base_name + self.root.accidentals.name]
+        # roman_number_id = abs(note_to_interval[tonic] - note_to_interval[self.root.base_name + self.root.accidentals.name])
 
-        if chord_type == ChordType.Neither:
-            roman_number_id += 24
+        dist = abs(interval1 - interval2)
+        if interval1 <= interval2:
+            roman_number_id = dist
+        else:
+            roman_number_id = 12 - dist
+
+        # roman_number_id = min(12 - dist, dist)
+
+        # print(self.intervals)
+        # classify as minor or major
+        chord_type = MajOrMin.Neither
+        if 7 in self.mcgill_intervals:
+            if 3 in self.mcgill_intervals:
+                chord_type = MajOrMin.Minor
+                # roman_number_id += 12
+            elif 4 in self.mcgill_intervals:
+                chord_type = MajOrMin.Major
+
+
+
+        # if chord_type == MajOrMin.Neither:
+            # roman_number_id += 24
 
         # chord_type =
-        self.roman_numeral_notation = RomNumNotation(roman_number_id)
 
-    def add_roman_numeral_notation_old(self, tonic: string):
-        roman_number = RomNumNotations(abs(note_to_interval[tonic] - note_to_interval[self.root.base_name]))
-        # print(self.intervals)
-        chord_type = ChordType.Neither
-        for interval in self.mcgill_intervals:
-            if interval == 4:
-                chord_type = ChordType.Major
-                break
-            elif interval == 3:
-                chord_type = ChordType.Minor
-                break
+        rom_num_not = RomNumNotations(roman_number_id)
+        self.roman_numeral_notation = RomNumNotation(rom_num_not, rom_num_not.name, chord_type, self.extension)
 
-        # chord_type =
-        self.roman_numeral_notation = RomNumNotation(roman_number, chord_type)
+    # def add_roman_numeral_notation_old(self, tonic: string):
+    #     roman_number = RomNumNotations(abs(note_to_interval[tonic] - note_to_interval[self.root.base_name]))
+    #     # print(self.intervals)
+    #     chord_type = ChordType.Neither
+    #     for interval in self.mcgill_intervals:
+    #         if interval == 4:
+    #             chord_type = ChordType.Major
+    #             break
+    #         elif interval == 3:
+    #             chord_type = ChordType.Minor
+    #             break
+    #
+    #     # chord_type =
+    #     self.roman_numeral_notation = RomNumNotation(roman_number, chord_type)
 
     def single_note(self, root_note):
         super().__init__(f'{root_note}5')
+        self.mcgill_intervals = self.intervals.copy()
         # logger.debug(f'Creating powerchord with root note {root_note}')
         self.mcgill_intervals = self.mcgill_intervals[:-1]
         self.notes = self.notes[:-1]
-        print(self.mcgill_intervals)
-        print('single_note')
-        print(self.mcgill_intervals)
 
     def maj11(self, root_note):
         super().__init__(f'{root_note}11')
@@ -236,10 +284,6 @@ class McGillChord(Chord):
         self.mcgill_intervals[2] = 11
         self.notes[2] = self.notes[2].augment()
 
-        print(self.mcgill_intervals)
-        print('maj11')
-        print(self.mcgill_intervals)
-
     # octaves are not correct but they won't be taken into account
     def invert(self, inversion: string):
 
@@ -247,11 +291,6 @@ class McGillChord(Chord):
 
         self.notes = self.notes[index:] + self.notes[:index]
         self.mcgill_intervals = self.mcgill_intervals[index:] + self.mcgill_intervals[:index]
-
-        print(self.mcgill_intervals)
-        print('invert')
-        print(self.mcgill_intervals)
-
 
 
     # TODO check for dim7
@@ -317,9 +356,9 @@ mcgill_to_parker_chord = {
     'maj9': 'M9',
     'min9': 'm9',
     '11': '11',
+    'min11': 'm11',
     'maj11': McGillChord.maj11,
     '13': '13',
-    'min11': 'm11',
     'maj13': 'M13',
     'min13': 'm13',
     'sus2': 'sus2',
