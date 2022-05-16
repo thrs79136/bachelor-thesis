@@ -3,3 +3,4 @@ data/songs/*
 log/*
 src/__pycache__
 .idea/*
+**/__pycache__/
