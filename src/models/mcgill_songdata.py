@@ -41,6 +41,15 @@ class Section:
                                 self.chord_progression.append(roman_num)
                         else:
                             self.chord_progression.append(roman_num)
+            elif isinstance(bar, Repetition):
+                # repetition -> add progression from last bar
+                if len(self.chord_progression) == 0:
+                    continue
+
+                if self.chord_progression[0] == self.chord_progression[-1]:
+                    self.chord_progression.extend(self.chord_progression[1:]*bar.count)
+                else:
+                    self.chord_progression.extend(self.chord_progression*bar.count)
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__,
@@ -178,7 +187,6 @@ class McGillSongData:
             elif tok.type == 'DOT':
                 current_bar.content.append(current_bar.content[-1])
             elif tok.type == 'TONIC_CHANGE':
-                # TODO
                 self.tonic = tok.value.split(' ')[1]
 
 

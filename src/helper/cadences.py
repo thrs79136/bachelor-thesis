@@ -18,8 +18,6 @@ class Cadence:
         self.chords = []
         #self.chords = chords
         for chord_notation in chords:
-            print(self.name)
-            print(chord_notation)
             self.chords.append(RomNumNotation.from_number_and_type(chord_notation[0], chord_notation[1]))
 
 
@@ -165,8 +163,6 @@ def analyze_cadences(songs: List[Song]):
         cadence_percentages = [song.cadences[cadence.name] for song in songs]
         # negative value -> increased popularity
         rho = get_rank_correlation_coefficient_from_value_lists(peak_chart_pos_list, cadence_percentages)
-        print(cadence.name)
-        print(f'ρ = {rho}')
 
         chart_pos_list_cadence_used = []
         chart_pos_list_cadence_not_used = []

@@ -102,3 +102,7 @@ class Song:
     def __repr__(self):
         return f'{self.mcgill_billboard_id} {self.artist} - {self.song_name}'
 
+    # compare songs by peak chart position
+    def __lt__(self, other):
+        return self.peak_chart_position < other.peak_chart_position
+

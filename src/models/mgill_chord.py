@@ -36,7 +36,6 @@ degree_to_interval = {
     '13': 21
 }
 
-#TDOO find better name
 note_to_interval = {
     'C':    0,
     'C#':   1,
