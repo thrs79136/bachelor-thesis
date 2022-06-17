@@ -9,6 +9,8 @@ from typing import List
 from matplotlib import pyplot as plt
 from src.models.song import Song
 from src.models.spotify_song_data import SpotifySongData
+from scipy.stats import chi2
+
 
 figure_number = 0
 most_common_genres = ['rock', 'pop', 'soul', 'country', 'blues']
@@ -80,12 +82,20 @@ def get_rank_correlation_coefficient(rank_x: List[int], rank_y: List[int]) -> fl
     return dividend/divisor
 
 
+# non parametric alternatives
+
+class TTestResult:
+    def __init__(self, significance: bool, t_value):
+        self.significance = significance
+        self.t_value = t_value
+
+
 # returns true if correlation is statistically significant
 def t_test(rho, n):
     t_value = rho * sqrt((n - 2) / (1 - rho * rho))
-    p_value = scipy.stats.t.sf(abs(t_value), n-2)
-    print(p_value)
-    return p_value < 0.05
+    P = scipy.stats.t.sf(abs(t_value), n-2)
+    print(P)
+    return TTestResult(P < 0.05, t_value)
 
 
 def get_rank_correlation_coefficient_from_value_lists(value_x: List[int], value_y: List[int]) -> float:
@@ -121,7 +131,6 @@ def create_genre_scatter_plots(songs: List[Song]):
 
 def get_median_chart_positions(songs: List[Song], audio_feature: str):
     dict = {}
-    #dict = defaultdict({'median': [],  'len': -1})
 
     grouped_songs = defaultdict(list)
     medians = {}
@@ -139,6 +148,7 @@ def get_median_chart_positions(songs: List[Song], audio_feature: str):
         dict[key] = {}
         dict[key]['median'] = median
         dict[key]['len'] = len(value)
+        dict[key]['chart_pos_values'] = value
     return dict
 
 
@@ -197,6 +207,12 @@ def create_key_table(songs: List[Song], filename: str, genre: str = None):
     plt.figure(figsize=(8, 3))
 
     result = get_median_chart_positions(songs, 'key')
+    # kruskal test
+    values = result.values()
+    grouped_values = [value['chart_pos_values'] for value in values]
+    kruskal_result = scs.kruskal(*grouped_values)
+    kruskal_res_str = f'Kruskal-Wallis test; H={kruskal_result.statistic:.3f}; p={kruskal_result.pvalue:.3f}'
+
     sorted_result = {k: v for k, v in sorted(result.items(), key=lambda item: item[1]['median'])}
 
     keys = ['C', 'C#/Db', 'D', 'D#/Eb', 'E', 'F', 'F#/Gb', 'G', 'G#/Ab', 'A', 'A#/Bb', 'B']
@@ -207,7 +223,7 @@ def create_key_table(songs: List[Song], filename: str, genre: str = None):
 
     fig, ax = plt.subplots()
     ax.set_axis_off()
-    table = plt.table(
+    plt.table(
         cellText=data,
         rowLabels=['Chartposition', 'Tonart', 'n'],
         cellLoc='center',
@@ -215,7 +231,8 @@ def create_key_table(songs: List[Song], filename: str, genre: str = None):
 
     genre_str = '' if genre is None else f'({genre.capitalize()})'
     plt.title(f'Höchste Chartposition (Median) nach Tonart {genre_str}',
-                 fontweight="bold")
+                 fontweight="bold", y=1.05)
+    plt.suptitle(kruskal_res_str, fontsize=10, y=0.91)
 
     plt.savefig('../data/img/tables/' + filename, bbox_inches="tight")
     plt.show()
@@ -225,6 +242,10 @@ def create_mode_table(songs: List[Song], filename: str, genre: str = None):
     plt.figure(figsize=(6, 1))
 
     result = get_median_chart_positions(songs, 'mode')
+
+    test_result = scs.mannwhitneyu(['TODO'], ['TODO'], method="exact")
+
+
     val1 = ['Moll', 'Dur']
     val3 = [[res['median'] for res in result.values()],
             [val1[res] for res in result.keys()],
@@ -232,7 +253,7 @@ def create_mode_table(songs: List[Song], filename: str, genre: str = None):
 
     fig, ax = plt.subplots()
     ax.set_axis_off()
-    table = plt.table(
+    plt.table(
         cellText=val3,
         rowLabels=['Chartposition', 'Tongeschlecht', 'n'],
         colWidths=[0.3, 0.3, 0.3],

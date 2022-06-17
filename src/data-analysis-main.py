@@ -1,5 +1,6 @@
 
 import pickle
+import statistics
 from collections import defaultdict
 from typing import List
 
@@ -14,16 +15,34 @@ from src.models.mgill_chord import note_to_interval
 from src.models.song import Song
 from src.shared import settings
 
-import matplotlib.pyplot as plt
-
 
 def test_correlation_significance(songs):
     t_test_parameters = create_genre_scatter_plots(songs)
-    significance = {}
-    for key, value in t_test_parameters.items():
-        significance[key] = t_test(value['r'], value['n'])
 
-    return significance
+    true_str = ''
+    false_str = ''
+
+    with open('../data/notes/t_tests.txt', 'w') as f:
+        for key, value in t_test_parameters.items():
+            result = t_test(value['r'], value['n'])
+            file_line = f"{key}: statistically significant: {str(result.significance)}, rho={value['r']}, t={str(result.t_value)}, df={value['n']-2}\n"
+
+            if result.significance:
+                true_str += file_line
+            else:
+                false_str += file_line
+
+        f.write(true_str)
+        f.write(false_str)
+
+
+def create_key_tables(songs):
+    create_key_table(songs, 'key_all.png')
+
+    genre_dict = get_genres_dictionary(songs)
+    for genre in most_common_genres:
+
+        create_key_table(genre_dict[genre], f'key_{genre}', genre)
 
 
 settings.init_logger('analysis.log')
@@ -37,13 +56,14 @@ bin_file = '../data/songs.pickle'
 
 
 songs: List[Song] = get_songs_from_binary_file(bin_file)
+songs_with_audio_features = [song for song in songs if song.spotify_song_data.audio_features_dictionary is not None]
 
-res = find_linear_contributions(songs)
-x = {k: v for k, v in sorted(res.items(), key=lambda item: item[1], reverse=True)}
-v = 42
-print(x)
+create_key_tables(songs_with_audio_features)
+
 #res = get_quartile_surprises(songs)
 
+# test_correlation_significance(songs)
+# res = find_linear_contributions(songs)
 
 
 

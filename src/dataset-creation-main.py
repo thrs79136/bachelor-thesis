@@ -77,4 +77,6 @@ def remove_duplicates():
 settings.init_logger()
 spotify_api.init()
 
+
+
 remove_duplicates()

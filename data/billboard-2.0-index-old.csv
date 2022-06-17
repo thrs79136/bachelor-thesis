@@ -1058,7 +1058,7 @@ id;chart_date;target_rank;actual_rank;title;artist;peak_rank;weeks_on_chart
 1057;1963-01-26;96;;;;;
 1058;1971-08-21;24;23;Ain't No Sunshine;Bill Withers;3;16
 1059;1962-10-20;86;86;I've Been Everywhere;Hank Snow;68;8
-1060;1960-07-25;44;;;;;
+1060;1960-07-25;44;;;;;f
 1061;1975-02-22;4;2;Best Of My Love;Eagles;1;19
 1062;1986-06-28;14;15;Tuff Enuff;The Fabulous Thunderbirds;10;19
 1063;1963-06-08;40;39;This Little Girl;Dion;21;8
@@ -1264,7 +1264,7 @@ id;chart_date;target_rank;actual_rank;title;artist;peak_rank;weeks_on_chart
 1263;1960-04-04;79;80;Baby What You Want Me To Do;Jimmy Reed;37;14
 1264;1973-11-03;8;;;;;
 1265;1966-10-01;51;51;If I Were A Carpenter;Bobby Darin;8;11
-1266;1969-10-04;7;6;Honky Tonk Women;The Rolling Stones;1;15
+1266;1969-10-04;7;6;Honky Tonk Women;The Rolling Stones;1;F15
 1267;1974-02-23;43;42;"Rock And Roll; Hoochie Koo";Rick Derringer;23;14
 1268;1973-03-17;96;97;Frankenstein;Edgar Winter;1;20
 1269;1984-11-17;36;35;Who Wears These Shoes?;Elton John;16;14

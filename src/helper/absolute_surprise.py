@@ -78,7 +78,7 @@ def get_quartile_surprises(songs: List[Song]):
     global prog_count_dict_by_song
     global total_progressions_by_song
 
-    init()
+    init(songs)
 
     split_songs = split_by_quartiles(songs)
 

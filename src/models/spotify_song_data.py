@@ -4,7 +4,7 @@ import string
 
 class SpotifySongData:
 
-    audio_feature_keys = ['danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo']
+    audio_feature_keys = ['danceability', 'duration_ms', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo']
 
     def __init__(self, audio_features_dictionary):
         self.audio_features_dictionary = audio_features_dictionary
