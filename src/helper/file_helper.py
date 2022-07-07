@@ -1,4 +1,5 @@
 import csv
+import os
 import pickle
 from typing import List
 
@@ -8,9 +9,15 @@ from src.models.mgill_chord import McGillChord
 from src.models.song import Song
 
 
+def write_text_file(path: str, content: str):
+    file = open(path, "w")
+    file.write(content)
+
+
 def write_header(path: str):
     file = open(path, "w")
-    file.write('mcgill_billboard_id,artist,song_name,chart_year,peak_chart_position,genres,spotify_song_data\n')
+    file.write('mcgill_billboard_id,artist,song_name,chart_year,peak_chart_position,genres,spotify_song_data,'
+               'spotify_id\n')
 
 
 def save_songs(path: str, songs: List[Song]):

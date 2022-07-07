@@ -1,0 +1,26 @@
+PCA1
+energy                   -0.518888
+valence                  -0.440365
+acousticness              0.427448
+loudness                 -0.411077
+danceability             -0.335526
+different_chords_count    0.212939
+speechiness              -0.123811
+tempo                    -0.102372
+duration_ms              -0.029721
+instrumentalness         -0.021456
+dtype: float64
+
+PCA2
+duration_ms               0.484594
+different_chords_count    0.420622
+danceability             -0.394947
+valence                  -0.337967
+liveness                  0.323939
+energy                    0.254123
+loudness                  0.225710
+acousticness             -0.221613
+tempo                     0.163919
+speechiness               0.132466
+dtype: float64
+

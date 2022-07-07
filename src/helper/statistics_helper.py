@@ -3,10 +3,12 @@ from collections import defaultdict
 from math import sqrt
 
 import scipy
-import scs as scs
-import scipy.stats as scs
+from scipy import stats
 from typing import List
 from matplotlib import pyplot as plt
+
+from src.helper.img.boxplot import create_boxplot
+from src.helper.img.scatterplot import create_scatter_plot
 from src.models.song import Song
 from src.models.spotify_song_data import SpotifySongData
 from scipy.stats import chi2
@@ -16,52 +18,124 @@ figure_number = 0
 most_common_genres = ['rock', 'pop', 'soul', 'country', 'blues']
 
 
+def analyze_song_feature_correlation_all_genres(songs: List[Song], get_feature_fn, feature_name, directory=''):
+    # all songs grouped together
+    analyze_song_feature_correlation(songs, get_feature_fn, feature_name, directory=directory)
+
+    genres_dict = get_genres_dictionary(songs)
+
+    # grouped by genre
+    for genre in most_common_genres:
+
+        analyze_song_feature_correlation(genres_dict[genre], get_feature_fn, feature_name, genre, directory)
+
+
+def analyze_song_groups(songs: List[Song], get_groups_fn, title, filename, groups_count = None, excluded_groups = None, group_order = None,
+                        box_plot_values_fn=None):
+    groups_songs_dict = defaultdict(list)
+
+    for song in songs:
+        one_or_multiple_groups = get_groups_fn(song)
+        if isinstance(one_or_multiple_groups, set) or isinstance(one_or_multiple_groups, list):
+            for group in one_or_multiple_groups:
+                groups_songs_dict[group].append(song)
+        else:
+            groups_songs_dict[one_or_multiple_groups].append(song)
+
+    groups_for_analysis = []
+
+
+    if group_order is None:
+        count = 0
+        groups_songs_sorted = sorted(groups_songs_dict.items(), key=lambda x: len(x[1]), reverse=True)
+
+        for group in groups_songs_sorted:
+            if excluded_groups is None or group[0] not in excluded_groups:
+                count += 1
+                groups_for_analysis.append(group)
+                if groups_count is not None and count == groups_count:
+                    break
+    else:
+        for group_id in group_order:
+            groups_for_analysis.append((group_id, groups_songs_dict[group_id]))
+
+    if box_plot_values_fn is None:
+        # default use chart positions
+        box_plot_values = [get_peak_chart_position_list(group[1]) for group in groups_for_analysis]
+    else:
+        box_plot_values = []
+        for group in groups_for_analysis:
+            feature_list = [box_plot_values_fn(song) for song in group[1]]
+            box_plot_values.append(feature_list)
+
+    labels = [f'{group[0]}' for group in groups_for_analysis]
+
+    # TODO use different test for two groups
+    kruskal_result = stats.kruskal(*box_plot_values)
+    kruskal_res_str = f'Kruskal-Wallis test; H={kruskal_result.statistic:.3f}; p={kruskal_result.pvalue:.3f}'
+    create_boxplot(box_plot_values, labels, title, kruskal_res_str, filename)
+
+
+def analyze_song_feature_correlation(songs: List[Song], get_feature_fn, feature_name, genre='all', directory='', feature_fn_parameters = None):
+    peak_chart_positions = [song.peak_chart_position for song in songs]
+    feature_expressions = []
+    for song in songs:
+        parameters = [song]
+        if feature_fn_parameters is not None:
+            parameters += feature_fn_parameters
+        fn_res = get_feature_fn(*parameters)
+        feature_expressions.append(get_feature_fn(*parameters))
+    # feature_expressions = [get_feature_fn(song) for song in songs]
+
+    spearman_result = stats.spearmanr(peak_chart_positions, feature_expressions)
+
+    filename = f"{feature_name.lower().replace(' ', '_')}_{genre}.png"
+    title = feature_name
+    if genre != 'all':
+        title += f' (Musikrichtung: {genre.capitalize()})'
+    else:
+        title += ' (Alle Musikrichtungen)'
+    create_scatter_plot(peak_chart_positions,
+                        feature_expressions,
+                        filename,
+                        title,
+                        f'n={len(songs)}; r={"{0:.3f}".format(spearman_result.correlation)}; p={"{0:.3f}".format(spearman_result.pvalue)}',
+                        'Höchste Chartplatzierung',
+                        feature_name,
+                        directory)
+
+
 def get_peak_chart_position_list(songs: List[Song]) -> List[int]:
     return [song.peak_chart_position for song in songs]
 
-
-def create_scatter_plot(x: List, y: List, filename: str, title: str = '', suptitle: str = '', xlabel: str = '', ylabel: str = ''):
-    global figure_number
-
-    plt.figure(figure_number)
-    figure_number += 1
-    plt.style.use('seaborn-whitegrid')
-    plt.plot(x, y, 'x', color='black')
-    plt.suptitle(title, fontsize=13, y=0.97)
-    plt.title(suptitle, fontsize=10)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    #plt.savefig('../data/plots/scatter_plots/' + filename)
-    plt.close()
 
 
 def get_audio_feature_ranks(songs: List[Song], audio_feature: str):
     audio_feature_values = [song.spotify_song_data.audio_features_dictionary[audio_feature] for song in
                             songs]
-    audio_feature_ranks = scs.rankdata(audio_feature_values)
+    audio_feature_ranks = stats.rankdata(audio_feature_values)
     return audio_feature_ranks
+
+
 
 
 def create_audio_feature_scatter_plot(songs: List[Song], audio_feature_name: str, filename: str, genre: str = 'All genres'):
 
-    peak_chart_positions = []
-    audio_feature_values = []
     songs_with_audio_features = [song for song in songs if song.spotify_song_data.audio_features_dictionary is not None]
-    for song in songs:
-        if song.spotify_song_data.audio_features_dictionary is None:
-            continue
 
-        peak_chart_positions.append(song.peak_chart_position)
-        audio_feature_values.append(song.spotify_song_data.audio_features_dictionary[audio_feature_name])
+    peak_chart_positions = [song.peak_chart_position for song in songs_with_audio_features]
+    audio_feature_values = [song.spotify_song_data.audio_features_dictionary[audio_feature_name] for song in songs_with_audio_features]
+    spearman_result = stats.spearmanr(peak_chart_positions, audio_feature_values)
 
-    audio_feature_ranks = get_audio_feature_ranks(songs_with_audio_features, audio_feature_name)
-    chart_ranks = scs.rankdata(peak_chart_positions)
+    if spearman_result.pvalue < 0.05:
+        print(f'{filename} statistically significant')
 
+    create_scatter_plot(peak_chart_positions, audio_feature_values, filename, f'{genre.capitalize()}', f'n={len(songs_with_audio_features)} r={spearman_result.correlation}, p={spearman_result.pvalue}', 'Peak chart position', audio_feature_name.capitalize())
 
-    corr_coeff = get_rank_correlation_coefficient(audio_feature_ranks, chart_ranks)
-
-    create_scatter_plot(peak_chart_positions, audio_feature_values, filename, f'{genre.capitalize()}', f'n={len(songs_with_audio_features)} ρ={corr_coeff}', 'Peak chart position', audio_feature_name.capitalize())
-    return corr_coeff
+def create_chord_count_scatter_plot(songs: List[Song]):
+    songs_with_audio_features = [song for song in songs if song.spotify_song_data.audio_features_dictionary is not None]
+    peak_chart_positions = [song.peak_chart_position for song in songs_with_audio_features]
+    different_chords_count = [song.get_different_chords_count() for song in songs]
 
 
 # spearman
@@ -99,21 +173,19 @@ def t_test(rho, n):
 
 
 def get_rank_correlation_coefficient_from_value_lists(value_x: List[int], value_y: List[int]) -> float:
-    rank_x = scs.rankdata(value_x)
-    rank_y = scs.rankdata(value_y)
+    rank_x = stats.rankdata(value_x)
+    rank_y = stats.rankdata(value_y)
 
     return get_rank_correlation_coefficient(rank_x, rank_y)
 
 
 def create_genre_scatter_plots(songs: List[Song]):
 
-    t_test_parameters = {}
     songs_with_audio_features = [song for song in songs if song.spotify_song_data.audio_features_dictionary is not None]
 
     for audio_feature in SpotifySongData.audio_feature_keys:
         if audio_feature != 'mode' and audio_feature != 'key':
-            rho = create_audio_feature_scatter_plot(songs_with_audio_features, audio_feature, f'all_{audio_feature}.png')
-            t_test_parameters[f'all_{audio_feature}'] = {'r': rho, 'n': len(songs_with_audio_features)}
+            create_audio_feature_scatter_plot(songs_with_audio_features, audio_feature, f'all_{audio_feature}.png')
 
     genres_dictionary = get_genres_dictionary(songs_with_audio_features)
 
@@ -123,11 +195,7 @@ def create_genre_scatter_plots(songs: List[Song]):
 
         for audio_feature in SpotifySongData.audio_feature_keys:
             if audio_feature != 'mode' and audio_feature != 'key':
-                rho = create_audio_feature_scatter_plot(genre_songs, audio_feature, f'{genre}_{audio_feature}.png', genre)
-                t_test_parameters[f'{genre}_{audio_feature}'] = {'r': rho, 'n': len(genre_songs)}
-
-    return t_test_parameters
-
+                create_audio_feature_scatter_plot(genre_songs, audio_feature, f'{genre}_{audio_feature}.png', genre)
 
 def get_median_chart_positions(songs: List[Song], audio_feature: str):
     dict = {}
@@ -210,7 +278,7 @@ def create_key_table(songs: List[Song], filename: str, genre: str = None):
     # kruskal test
     values = result.values()
     grouped_values = [value['chart_pos_values'] for value in values]
-    kruskal_result = scs.kruskal(*grouped_values)
+    kruskal_result = stats.kruskal(*grouped_values)
     kruskal_res_str = f'Kruskal-Wallis test; H={kruskal_result.statistic:.3f}; p={kruskal_result.pvalue:.3f}'
 
     sorted_result = {k: v for k, v in sorted(result.items(), key=lambda item: item[1]['median'])}
@@ -243,7 +311,7 @@ def create_mode_table(songs: List[Song], filename: str, genre: str = None):
 
     result = get_median_chart_positions(songs, 'mode')
 
-    test_result = scs.mannwhitneyu(['TODO'], ['TODO'], method="exact")
+    test_result = stats.mannwhitneyu(['TODO'], ['TODO'], method="exact")
 
 
     val1 = ['Moll', 'Dur']

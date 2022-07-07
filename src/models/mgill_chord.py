@@ -10,6 +10,39 @@ from parker.scales import *
 
 logger = logging.getLogger(__name__)
 
+
+note_to_interval = {
+    'B#':   0,
+    'C':    0,
+    'C#':   1,
+    'Db':   1,
+    'C##':  1,
+    'D':    2,
+    'D#':   3,
+    'Eb':   3,
+    'E':    4,
+    'Fb':   4,
+    'E#':   5,
+    'F':    5,
+    'Gbb':  5,
+    'F#':   6,
+    'Gb':   6,
+    'F##':  7,
+    'G':    7,
+    'Abb':  7,
+    'G#':   8,
+    'Ab':   8,
+    'G##':  9,
+    'A':    9,
+    'A#':   10,
+    'Bb':   10,
+    'Cbb':  10,
+    'A##':  11,
+    'B':    11,
+    'Cb':   11,
+}
+
+
 # values denote the number of half steps
 degree_to_interval = {
     '1': 0,
@@ -36,27 +69,7 @@ degree_to_interval = {
     '13': 21
 }
 
-note_to_interval = {
-    'C':    0,
-    'C#':   1,
-    'Db':   1,
-    'D':    2,
-    'D#':   3,
-    'Eb':   3,
-    'E':    4,
-    'Fb':   4,
-    'F':    5,
-    'F#':   6,
-    'Gb':   6,
-    'G':    7,
-    'G#':   8,
-    'Ab':   8,
-    'A':    9,
-    'A#':   10,
-    'Bb':   10,
-    'B':    11,
-    'Cb':   11,
-}
+
 
 
 class MajOrMin(Enum):
@@ -174,6 +187,8 @@ class RomNumNotation:
     #         self.number = RomNumNotations[repr]
 
 
+
+
 class McGillChord(Chord):
     unrecognizednotedcounter = 0
 
@@ -237,19 +252,13 @@ class McGillChord(Chord):
         # print(self.intervals)
         # classify as minor or major
         chord_type = MajOrMin.Neither
-        if 7 in self.mcgill_intervals:
-            if 3 in self.mcgill_intervals:
-                chord_type = MajOrMin.Minor
-                # roman_number_id += 12
-            elif 4 in self.mcgill_intervals:
-                chord_type = MajOrMin.Major
+        if 3 in self.mcgill_intervals:
+            chord_type = MajOrMin.Minor
+            # roman_number_id += 12
+        elif 4 in self.mcgill_intervals:
+            chord_type = MajOrMin.Major
 
-
-
-        # if chord_type == MajOrMin.Neither:
-            # roman_number_id += 24
-
-        # chord_type =
+        self.chord_type = chord_type
 
         rom_num_not = RomNumNotations(roman_number_id)
         self.roman_numeral_notation = RomNumNotation(rom_num_not, rom_num_not.name, chord_type, self.extension)

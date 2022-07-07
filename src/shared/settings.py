@@ -160,6 +160,7 @@ def get_logger(logfile_path: string) -> logging.Logger:
 
 def init_logger(file_name):
     global logger
+    cwd = os.getcwd()
     logger = get_logger(f'../log/{file_name}')
 
 

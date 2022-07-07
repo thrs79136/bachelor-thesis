@@ -1,6 +1,8 @@
 .cache
 data/songs/*
-log/*
+data/chartpos_1/*
+log
 src/__pycache__
 .idea/*
 **/__pycache__/
+scatter_plots_backup/

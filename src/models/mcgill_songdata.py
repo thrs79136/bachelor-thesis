@@ -29,6 +29,7 @@ class Section:
         self.name = name
         self.content = []
         self.chord_progression: List[RomNumNotation] = []
+        self.tonic_change = None
 
     def add_chord_progression(self):
         for bar in self.content:
@@ -51,6 +52,29 @@ class Section:
                 else:
                     self.chord_progression.extend(self.chord_progression*bar.count)
 
+    def get_chords(self):
+        chords = []
+        for bar in self.content:
+            if isinstance(bar, Bar):
+                for chord in bar.content:
+                    if isinstance(chord, McGillChord):
+                        chords.append(chord)
+        return chords
+
+    def get_progression_chords(self):
+        chords = []
+        for bar in self.content:
+            if isinstance(bar, Bar):
+                for chord in bar.content:
+                    if isinstance(chord, McGillChord):
+                        if len(chords) == 0 or chords[len(chords) - 1].mcgill_chord_name != chord.mcgill_chord_name:
+                            chords.append(chord)
+        return chords
+
+    def get_tonic_change_at_end(self):
+        return self.tonic_change
+
+
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__,
                           sort_keys=True, indent=4)
@@ -68,16 +92,22 @@ class InstrumentType(Enum):
 class Instrument:
     def __init__(self, name):
 
-        opening_brace = name[0] == '('
-        closing_brace = name[len(name)-1] == ')'
+
+        self.name = re.sub('[(),]', '', name)
+
+         #print(f'{name} -> {self.name}')
+
+
+        if self.name == 'flute)':
+            x = 2
+
+        opening_brace = '(' in name
+        closing_brace = ')' in name
         if opening_brace and not closing_brace:
-            self.name = name[1:]
             self.instrumentType = InstrumentType.BEGINNING
         elif not opening_brace and closing_brace:
-            self.name = name[:-1]
             self.instrumentType = InstrumentType.END
         else:
-            self.name = name[1:-1]
             self.instrumentType = InstrumentType.SECTION
 
 
@@ -86,19 +116,29 @@ class Repetition:
         self.count = int(count)
 
 
+class TonicChange:
+    def __init__(self, tonic):
+        self.tonic = tonic
+        print(self.tonic)
+
+
 class Pause:
     def __init__(self):
         pass
 
 
 class McGillSongData:
-    def __init__(self, id: string):
+    def __init__(self, id: string, parse_file = True):
 
         self.id: int = id
         self.metre: string = None
         self.tonic: string = None
         self.sections: List[Section] = None
-        self.readfile()
+        self.instruments = set()
+        self.tonic_changes = []
+        self.metre_changes = []
+        if parse_file:
+            self.readfile()
 
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__,
@@ -146,6 +186,8 @@ class McGillSongData:
                 self.sections.append(current_section)
                 break
 
+
+
             # print(f'{tok.value} (type: {tok.type})')
             # try:
             #     logger.debug(f'{tok.value} (type: {tok.type})')
@@ -156,8 +198,6 @@ class McGillSongData:
 
             # if self.id == '22':
             #     print(f'{tok.value} (type: {tok.type})')
-
-            # TODO tonic changes
 
             if tok.type == 'SILENCE_END':
                 pass
@@ -175,7 +215,9 @@ class McGillSongData:
                     current_section.content.append(current_bar)
                 current_bar = Bar()
             elif tok.type == 'INSTRUMENT':
-                current_section.content.append(Instrument(tok.value))
+                instrument = Instrument(tok.value)
+                current_section.content.append(instrument)
+                self.instruments.add(instrument.name)
             elif tok.type == 'CHORD':
                 chord = tok.value
                 chord.add_roman_numeral_notation(self.tonic)
@@ -187,6 +229,16 @@ class McGillSongData:
             elif tok.type == 'DOT':
                 current_bar.content.append(current_bar.content[-1])
             elif tok.type == 'TONIC_CHANGE':
-                self.tonic = tok.value.split(' ')[1]
+                #current_section.content.append(TonicChange(tok.value.split(' ')[1]))
+                self.tonic_changes.append(tok.value.split(' ')[1])
+                if current_section.tonic_change is not None:
+                    x = 42
+                current_section.tonic_change = tok.value.split(' ')[1]
+                print('tonic change', self.id)
+            elif tok.type == 'METRE_CHANGE':
+                value = tok.value
+                current_section.content.append(value)
+                self.metre_changes.append(value)
+
 
 
