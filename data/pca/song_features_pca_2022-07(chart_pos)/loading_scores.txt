@@ -1,0 +1,26 @@
+PCA1
+foreign_scale_notes       0.425347
+circle_of_fiths_dist      0.416908
+different_keys            0.416366
+tension_use               0.410070
+absolute_surprise         0.299791
+different_chords_count    0.296966
+minor_perc                0.249658
+non_triad_rate            0.161123
+pentatonic_notes          0.149401
+tonic_changes_count       0.095392
+dtype: float64
+
+PCA2
+circle_of_fiths_dist       -0.412862
+absolute_surprise           0.399207
+different_keys             -0.360690
+different_sections_count    0.335173
+different_chords_count      0.322710
+non_triad_rate              0.313951
+tension_use                -0.255840
+minor_perc                  0.221644
+metre_changes_count         0.199379
+foreign_scale_notes         0.148856
+dtype: float64
+

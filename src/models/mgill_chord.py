@@ -79,6 +79,7 @@ class MajOrMin(Enum):
 
 
 class RomNumNotations(Enum):
+    __order__ = 'I bII II bIII III IV bV V bVI VI bVII VII'
     I = 0
     bII = 1
     II = 2

@@ -82,9 +82,15 @@ def count_progression(prog: List[RomNumNotation], all_songs_dict, prog_by_song_d
 
 def find_progressions(songs: List[Song], prog_count_dict, prog_count_dict_by_song):
 
+
     for song in songs:
+        section_ids = set()
+
         prog_count_dict_by_song[song.mcgill_billboard_id] = {}
         for section in song.mcgill_billboard_song_data.sections:
+            if section.id in section_ids:
+                continue
+            section_ids.add(section.id)
             prog_length = len(section.chord_progression)
             for i in range(prog_length - 3):
                 sub_progression1 = section.chord_progression[i:i+3]

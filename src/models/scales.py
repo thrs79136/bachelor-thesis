@@ -22,8 +22,6 @@ class Scale:
     def __init__(self, tonic, circlePos):
         self.tonic_name = tonic
         self.tonic_number = note_to_interval[tonic]
-        # do i even need these?
-        # self.accidentals = [note_to_interval[accidental] for accidental in accidentals]
         self.circlePos = circlePos
         tonic_number = note_to_interval[tonic]
         self.major_notes = [(tonic_number + interval) % 12 for interval in major_intervals]
@@ -33,6 +31,10 @@ class Scale:
         note_ids = [note_to_interval[note] for note in note_names]
 
         return set(note_ids) <= set(self.major_notes)
+
+    def check_single_note(self, note_name):
+        note_id = note_to_interval[note_name]
+        return note_id in self.major_notes
 
     def get_notes(self):
         return [key_dict[note] for note in self.major_notes]
@@ -88,11 +90,11 @@ def get_corresponding_scale_distance_for_chord(chord: McGillChord, tonic, maj_or
     for i in range(1, 7):
         check_scale_key = (scale_key + i) % 12
         if circle_of_fifths[check_scale_key].check_if_notes_are_part_of_scale(note_names):
-            print(chord.mcgill_chord_name + ' key: ' + str(circle_of_fifths[check_scale_key].tonic_name))
+            # print(chord.mcgill_chord_name + ' key: ' + str(circle_of_fifths[check_scale_key].tonic_name))
             return i/6, check_scale_key, i
         check_scale_key = (scale_key - i) % 12
         if circle_of_fifths[check_scale_key].check_if_notes_are_part_of_scale(note_names):
-            print(chord.mcgill_chord_name + ' key: ' + str(circle_of_fifths[check_scale_key].tonic_name))
+            # print(chord.mcgill_chord_name + ' key: ' + str(circle_of_fifths[check_scale_key].tonic_name))
             return i/6, check_scale_key, -i
 
 
@@ -106,4 +108,43 @@ def get_corresponding_scale_distance_for_chord(chord: McGillChord, tonic, maj_or
     if res == -11:
         x = 42
     return abs(res)/6, chord_scale_key, res
+
+
+pentatonic_maj_intervals = [0, 2, 4, 7, 9]
+pentatonic_min_intervals = [0, 3, 5, 7, 10]
+
+
+
+def is_part_of_pentatonic_scale(chord: McGillChord, tonic):
+    global pentatonic_min_intervals
+
+    tonic_id = note_to_interval[tonic]
+
+    count = 0
+    for note in chord.notes:
+        name = note.base_name + note.accidentals.name
+        note_id = note_to_interval[name]
+
+        for interval in pentatonic_min_intervals:
+            if (tonic_id + interval) % 12 == note_id:
+                count += 1
+                continue
+
+    return count
+
+
+def part_of_scale(chord: McGillChord, tonic):
+    tonic_id = note_to_interval[tonic]
+    scale = circle_of_fifths[tonic_id]
+
+    count = 0
+
+    for note in chord.notes:
+        name = note.base_name + note.accidentals.name
+        if not scale.check_single_note(name):
+            count += 1
+
+    return count
+
+
 

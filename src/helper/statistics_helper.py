@@ -1,3 +1,4 @@
+import pickle
 import statistics
 from collections import defaultdict
 from math import sqrt
@@ -56,7 +57,7 @@ def analyze_song_groups(songs: List[Song], get_groups_fn, title, filename, group
                 if groups_count is not None and count == groups_count:
                     break
     else:
-        for group_id in group_order:
+        for group_id in group_order[0]:
             groups_for_analysis.append((group_id, groups_songs_dict[group_id]))
 
     if box_plot_values_fn is None:
@@ -76,14 +77,24 @@ def analyze_song_groups(songs: List[Song], get_groups_fn, title, filename, group
     create_boxplot(box_plot_values, labels, title, kruskal_res_str, filename)
 
 
+transitions = []
+
+class Transition:
+    def __init__(self, transition, corr, pvalue):
+        self.transition = transition
+        self.corr = corr
+        self.pvalue = pvalue
+
+
 def analyze_song_feature_correlation(songs: List[Song], get_feature_fn, feature_name, genre='all', directory='', feature_fn_parameters = None):
+    global transitions
+
     peak_chart_positions = [song.peak_chart_position for song in songs]
     feature_expressions = []
     for song in songs:
         parameters = [song]
         if feature_fn_parameters is not None:
             parameters += feature_fn_parameters
-        fn_res = get_feature_fn(*parameters)
         feature_expressions.append(get_feature_fn(*parameters))
     # feature_expressions = [get_feature_fn(song) for song in songs]
 

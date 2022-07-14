@@ -1,11 +1,13 @@
 import json
 from typing import List, Iterable
+import re
 import logging
 
 from src.helper.lastfm_helper import LastFmHelper
 from src.models.mcgill_songdata import McGillSongData, Section, Bar
 from src.models.mgill_chord import MajOrMin, note_to_interval, McGillChord
-from src.models.scales import circle_of_fifths, get_corresponding_scale_distance_for_chord
+from src.models.scales import circle_of_fifths, get_corresponding_scale_distance_for_chord, is_part_of_pentatonic_scale, \
+    part_of_scale
 from src.models.spotify_song_data import SpotifySongData
 from src.helper.spotify_api import get_song_data_by_spotify_id, get_spotify_song_id
 from src.shared import settings
@@ -158,6 +160,23 @@ class Song:
                      self.peak_chart_position, self.genres, repr(self.spotify_song_data), self.spotify_id]
         return song_data
 
+    def get_peak_chart_position(self):
+        return self.peak_chart_position
+
+    def get_decade(self):
+        year = int(self.chart_year)
+        return year - (year % 10)
+
+    def get_spotify_feature(self, key):
+        return self.spotify_song_data.audio_features_dictionary[key]
+
+    def get_different_sections_count(self):
+        section_ids = set()
+        for section in self.mcgill_billboard_song_data.sections:
+            section_ids.add(section.id)
+
+        return len(section_ids)
+
     def get_different_chords_count(self):
         different_chords_dict = {}
 
@@ -173,6 +192,7 @@ class Song:
     def get_metre_changes_count(self):
         return len(self.mcgill_billboard_song_data.metre_changes)
 
+
     def get_non_triad_rate(self):
         analyzed_chords_count = 0
         non_triad_chords = 0
@@ -182,8 +202,10 @@ class Song:
             chords = section.get_progression_chords()
             analyzed_chords_count += len(chords)
             for chord in chords:
-                if chord.mcgill_intervals != [0, 3, 7] and chord.mcgill_intervals != [0, 4, 7]:
+                if 7 not in chord.mcgill_intervals or (3 not in chord.mcgill_intervals and 4 not in chord.mcgill_intervals):
                     non_triad_chords += 1
+                # if chord.mcgill_intervals != [0, 3, 7] and chord.mcgill_intervals != [0, 4, 7]:
+                #     non_triad_chords += 1
 
         return non_triad_chords / analyzed_chords_count
 
@@ -213,6 +235,162 @@ class Song:
                     neither_chords += 1
 
         return minor_chords / chords_count
+
+
+    def get_tension_use(self):
+        tension_numbers = ['7', '9', '11', '13']
+
+        count = 0
+        total_count = 0
+
+        for section in self.mcgill_billboard_song_data.sections:
+            chords = section.get_progression_chords()
+            total_count += len(chords)
+            for chord in chords:
+                chord.mcgill_chord_name
+                added_notes = re.findall(r'\d+', chord.mcgill_chord_name)
+
+                for num in tension_numbers:
+                    if num in added_notes:
+                        count += 1
+                        break
+
+        return count / total_count
+
+
+    def get_foreign_scale_notes(self):
+        total_notes_count = 0
+        foreign_notes = 0
+
+        for section in self.mcgill_billboard_song_data.sections:
+            chords = section.get_progression_chords()
+
+            for chord in chords:
+                total_notes_count += len(chord.notes)
+                foreign_notes += part_of_scale(chord, self.mcgill_billboard_song_data.tonic)
+
+        return foreign_notes / total_notes_count
+
+    def get_section_repetitions_count(self):
+        section_repetitions = {}
+        for section in self.mcgill_billboard_song_data.sections:
+            if section_repetitions.get(section.id, -1) == -1:
+                section_repetitions[section.id] = 0
+            else:
+                section_repetitions[section.id] += 1
+
+        return sum(section_repetitions.values())
+
+    def bars_per_section(self):
+        multiple_of_eight = 0
+        for section in self.mcgill_billboard_song_data.sections:
+            bar_count = 0
+            for elem in section.content:
+                if isinstance(elem, Bar):
+                    bar_count += 1
+            if bar_count % 8 == 0:
+                multiple_of_eight += 1
+
+        return multiple_of_eight / len(self.mcgill_billboard_song_data.sections)
+
+
+    def another_test(self, transition_test):
+        count = 0
+        total_transitions_count = 0
+
+        last_chord = None
+
+        for section in self.mcgill_billboard_song_data.sections:
+            chords = section.get_progression_chords()
+            total_transitions_count += len(chords)
+            for chord in chords:
+                # first chord
+                if last_chord is None:
+                    last_chord = chord.roman_numeral_notation.roman_number
+                    continue
+
+                rom_num = chord.roman_numeral_notation.roman_number
+
+
+                if last_chord == rom_num:
+                    continue
+                transition = (last_chord, rom_num)
+                count += transition_test[transition]
+
+                last_chord = rom_num
+
+        total_transitions_count -= 1
+
+        return count / total_transitions_count
+
+    def chord_transition_test(self, transition: tuple):
+        count = 0
+        total_transitions_count = 0
+
+        last_chord = None
+
+        for section in self.mcgill_billboard_song_data.sections:
+            chords = section.get_progression_chords()
+            total_transitions_count += len(chords)
+            for chord in chords:
+                # first chord
+                if last_chord is None:
+                    last_chord = chord.roman_numeral_notation.roman_number
+                    continue
+
+                rom_num = chord.roman_numeral_notation.roman_number
+
+                if transition[0] == last_chord and transition[1] == rom_num:
+                    count += 1
+
+                last_chord = rom_num
+
+        total_transitions_count -= 1
+
+        return count / total_transitions_count
+
+
+    def chord_frequency2(self, rom_num_check):
+        count = 0
+        total_chords_count = 0
+        for section in self.mcgill_billboard_song_data.sections:
+            chords = section.get_progression_chords()
+            total_chords_count += len(chords)
+            for chord in chords:
+                # type = chord.roman_numeral_notation.maj_or_min
+                # if type == MajOrMin.Major or type == MajOrMin.Minor:
+                rom_num = str(chord.roman_numeral_notation)
+                if rom_num == rom_num_check:
+                    count += 1
+
+        return count / total_chords_count
+
+    def chord_frequency(self, rom_num_check):
+        count = 0
+        total_chords_count = 0
+        for section in self.mcgill_billboard_song_data.sections:
+            chords = section.get_progression_chords()
+            total_chords_count += len(chords)
+            for chord in chords:
+                rom_num = chord.roman_numeral_notation.roman_number
+                if rom_num == rom_num_check:
+                    count += 1
+
+        return count / total_chords_count
+
+    def pentatonic_notes(self):
+        count = 0
+        total_chords_count = 0
+
+        pentatonic_count = 0
+        total_notes_count = 0
+        for section in self.mcgill_billboard_song_data.sections:
+            chords = section.get_progression_chords()
+            total_chords_count += len(chords)
+            for chord in chords:
+                total_notes_count += len(chord.notes)
+                pentatonic_count += is_part_of_pentatonic_scale(chord, self.mcgill_billboard_song_data.tonic)
+        return pentatonic_count / total_notes_count
 
 
     #TODO make this the only fn
@@ -393,7 +571,7 @@ class Song:
         for chord in different_chords_dict.values():
             min_or_maj = MajOrMin.Major if self.spotify_song_data.audio_features_dictionary[
                                                'mode'] == 1 else MajOrMin.Minor
-            dist = get_corresponding_scale_distance_for_chord(chord, tonic, min_or_maj)
+            dist, prev_harm, test = get_corresponding_scale_distance_for_chord(chord, tonic, min_or_maj)
             sum += dist
 
         return sum / len(different_chords_dict)

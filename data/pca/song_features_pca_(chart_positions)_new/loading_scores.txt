@@ -1,0 +1,26 @@
+PCA1
+absolute_surprise           0.510548
+different_chords_count      0.468269
+duration_ms                 0.377249
+non_triad_rate              0.325197
+different_sections_count    0.324771
+minor_perc                  0.323313
+acousticness               -0.226443
+loudness                    0.084336
+tempo                      -0.059192
+instrumentalness            0.009445
+dtype: float64
+
+PCA2
+acousticness                0.585959
+loudness                   -0.504381
+different_chords_count      0.294433
+tempo                      -0.280165
+absolute_surprise           0.258513
+different_sections_count   -0.232038
+duration_ms                -0.201048
+minor_perc                  0.199297
+circle_of_fiths_dist        0.175404
+non_triad_rate             -0.073937
+dtype: float64
+

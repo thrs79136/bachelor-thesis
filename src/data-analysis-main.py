@@ -12,12 +12,16 @@ from src.helper.cadences import analyze_cadences
 from src.helper.chord_progressions import identify_chord_progressions, find_progressions, find_song_progressions
 from src.helper.file_helper import get_songs, get_songs_from_binary_file
 from src.helper.img.boxplot import create_boxplot
+from src.helper.img.lineplot import lineplot
+from src.helper.img.parallel_coordinates import create_parallel_coordinates_plot, create_parallel_coordinates_plot_years
 from src.helper.img.pca import pca, pca_test2, pca_test_backup, get_genres_to_color, chart_pos_to_color
+from src.helper.statistics.artists import group_by_artist
 from src.helper.statistics_helper import get_median_chart_positions, create_bar_plot, get_genres_dictionary, \
     most_common_genres, create_key_table, create_mode_table, create_genre_scatter_plots, t_test, \
     create_audio_feature_scatter_plot, create_scatter_plot, \
-    analyze_song_feature_correlation_all_genres, analyze_song_groups, analyze_song_feature_correlation
-from src.models.mgill_chord import note_to_interval, McGillChord, MajOrMin
+    analyze_song_feature_correlation_all_genres, analyze_song_groups, analyze_song_feature_correlation, Transition
+from src.helper.years import draw_feature_line_plot
+from src.models.mgill_chord import note_to_interval, McGillChord, MajOrMin, RomNumNotations
 from src.models.scales import circle_of_fifths
 from src.models.song import Song, key_dict
 from src.shared import settings
@@ -124,22 +128,75 @@ settings.init_logger('analysis.log')
 
 bin_file = '../data/songs.pickle'
 
+
+
 # songs = get_songs('../data/songs-finished.csv')
 # #
 # #save binary
 # with open(bin_file, 'wb') as file:
 #     pickle.dump(songs, file)
 
-
 songs: List[Song] = get_songs_from_binary_file(bin_file)
-
 songs_with_audio_features = [song for song in songs if song.spotify_song_data.audio_features_dictionary is not None]
+
+res = group_by_artist(songs_with_audio_features)
+
+init(songs_with_audio_features)
+
+#pca_test2(songs_with_audio_features, 'Song features PCA 2022-07-13 (chart pos)', chart_pos_to_color)
+#pca_test2(songs_with_audio_features, 'Song features PCA 2022-07-13', get_genres_to_color)
+
+# create_parallel_coordinates_plot_years(songs_with_audio_features)
+
+draw_feature_line_plot(songs_with_audio_features, Song.get_different_sections_count, 'Different Sections', 'different_sections.png')
+exit()
+
+draw_feature_line_plot(songs_with_audio_features, Song.get_spotify_feature, 'Tempo', 'tempo.png', fn_parameters=['tempo'])
+draw_feature_line_plot(songs_with_audio_features, Song.get_spotify_feature, 'Valence', 'valence.png', fn_parameters=['valence'])
+draw_feature_line_plot(songs_with_audio_features, Song.get_spotify_feature, 'Danceability', 'danceability.png', fn_parameters=['danceability'])
+draw_feature_line_plot(songs_with_audio_features, Song.get_spotify_feature, 'Lieddauer', 'duration.png', fn_parameters=['duration_ms'])
+draw_feature_line_plot(songs_with_audio_features, Song.get_section_repetitions_count, 'Wiederholung von Sektionen', 'section_repetition.png', 'Wiederholung von Sektionen')
+draw_feature_line_plot(songs_with_audio_features, get_song_surprise, '"Überraschende" Akkordfolgen', 'absolute_surprise.png', '"Überraschende" Akkordfolgen')
+draw_feature_line_plot(songs_with_audio_features, Song.analyze_different_keys2, 'Verwendung tonartsfremder Akkorde', 'different_keys.png', 'Verwendung tonartsfremder Akkorde')
+draw_feature_line_plot(songs_with_audio_features, Song.get_tension_use, 'Verwendung von Tensions', 'tensions_use.png', 'Verwendung von Tensions')
+draw_feature_line_plot(songs_with_audio_features, Song.get_different_chords_count, 'Verschiedene Akkorde', 'different_chords.png', 'Verschiedene Akkorde')
+draw_feature_line_plot(songs_with_audio_features, Song.get_peak_chart_position, 'Höchste Chartposition', 'peak_chart_pos.png', 'Höchste Chartposiiton im Zeitverlauf')
+draw_feature_line_plot(songs_with_audio_features, Song.get_minor_count, 'Anteil von Mollakkorden', 'minor_chords.png', 'Anteil von Mollakkorden im Zeitverlauf')
+
+
+
+for rom_num1 in RomNumNotations:
+    for rom_num2 in RomNumNotations:
+        if rom_num1.name != rom_num2.name:
+            transition = (rom_num1.name, rom_num2.name)
+            analyze_song_feature_correlation(songs_with_audio_features, Song.chord_transition_test,
+                                             f'{rom_num1.name} zu {rom_num2.name} Relative Haeufigkeit', directory='transitions',
+                                             feature_fn_parameters=[transition])
+
+
+
+
+#for rom_num in RomNumNotations:
+    # # maj
+    # analyze_song_feature_correlation(songs_with_audio_features, Song.chords_test,
+    #                                 f'{rom_num.name} Relative Haeufigkeit', directory='chord_frequency2', feature_fn_parameters=[rom_num.name])
+    # # # min
+    # analyze_song_feature_correlation(songs_with_audio_features, Song.chords_test,
+    #                                  f'{rom_num.name}n Relative Haeufigkeit', directory='chord_frequency2',
+    #                                  feature_fn_parameters=[f'{rom_num.name}n'])
+
+
+
+analyze_absolute_surprises(songs_with_audio_features)
+
+pca_test2(songs_with_audio_features, 'Song features PCA (Chart positions) new', get_genres_to_color)
+x = 42
+
+
 #analyze_scales()
-
-
-
+#analyze_song_feature_correlation(songs_with_audio_features, Song.get_non_triad_rate, 'Akkorde ohne Dreiklang (%)')
 #analyze_song_feature_correlation(songs_with_audio_features, Song.get_minor_count, 'Mollakkorde %')
-analyze_song_feature_correlation(songs_with_audio_features, Song.get_tonic_changes_count, 'Anzahl Tonartänderungen')
+#analyze_song_feature_correlation(songs_with_audio_features, Song.get_tonic_changes_count, 'Anzahl Tonartänderungen')
 
 
 # song1 = Song.from_code(['A:min', 'C:maj', 'F:maj', 'D:min'])
@@ -154,8 +211,6 @@ analyze_song_feature_correlation(songs_with_audio_features, Song.get_tonic_chang
 # for song in songs_with_audio_features:
 #     Song.analyze_different_keys(song)
 
-#pca_test2(songs_with_audio_features, 'Song features PCA (Chart positions)', chart_pos_to_color)
-#pca_test2(songs_with_audio_features, 'Song features PCA', get_genres_to_color)
 
 
 analyze_absolute_surprises(songs_with_audio_features)
