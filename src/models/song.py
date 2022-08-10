@@ -1,4 +1,5 @@
 import json
+from collections import defaultdict
 from typing import List, Iterable
 import re
 import logging
@@ -9,11 +10,13 @@ from src.models.mgill_chord import MajOrMin, note_to_interval, McGillChord
 from src.models.scales import circle_of_fifths, get_corresponding_scale_distance_for_chord, is_part_of_pentatonic_scale, \
     part_of_scale
 from src.models.spotify_song_data import SpotifySongData
-from src.helper.spotify_api import get_song_data_by_spotify_id, get_spotify_song_id
+from src.helper.spotify_api import get_song_data_by_spotify_id, get_spotify_song_id, get_popularity
 from src.shared import settings
 import ast
 
 logger = logging.getLogger(__name__)
+
+most_common_genres = ['rock', 'pop', 'soul', 'country', 'blues']
 
 global key_dict
 key_dict = {0: 'C',
@@ -43,6 +46,12 @@ key_dict2 = {0: 'C',
             11: 'B'
              }
 
+
+def distance(idx_1, idx_2):
+    i = (idx_1 - idx_2) % 12
+    j = (idx_2 - idx_1) % 12
+    return min(i, j)
+
 class Song:
     def __init__(self,
                  mcgill_billboard_id: str,
@@ -53,7 +62,10 @@ class Song:
                  genres: List[str] = [],
                  spotify_song_data: SpotifySongData = None,
                  mcgill_billboard_song_data: McGillSongData = None,
-                 load_api_song_data: bool = True
+                 load_api_song_data: bool = False,
+                 read_mcgill_data: bool = True,
+                 spotify_id = None,
+                 features = None
                  ):
 
         self.spotify_id = None
@@ -65,12 +77,14 @@ class Song:
         self.genres = genres
         self.spotify_song_data = spotify_song_data
         self.mcgill_billboard_song_data = mcgill_billboard_song_data
-        if self.mcgill_billboard_song_data is None:
+        if self.mcgill_billboard_song_data is None and read_mcgill_data:
             logger.debug(f'[Song.__init__] Reading McGillSongData for "{repr(self)}"')
             self.mcgill_billboard_song_data = McGillSongData(mcgill_billboard_id)
         if load_api_song_data:
             self.add_song_data()
+        self.spotify_id = spotify_id
         self.cadences = None
+        self.features = features
 
     @classmethod
     def from_csv_row(cls, csv_row: Iterable):
@@ -81,7 +95,19 @@ class Song:
         peak_chart_position = int(csv_row['peak_chart_position'])
         genres = ast.literal_eval(csv_row['genres'])
         spotify_song_data = SpotifySongData.from_csv(csv_row['spotify_song_data'])
-        return cls(id, artist, song_name, chart_year, peak_chart_position, genres, spotify_song_data, load_api_song_data=False)
+        spotify_id = csv_row['spotify_id']
+        return cls(id, artist, song_name, chart_year, peak_chart_position, genres, spotify_song_data, spotify_id=spotify_id, load_api_song_data=False)
+
+    @classmethod
+    def from_feature_csv_row(cls, csv_row):
+        artist = csv_row['artist']
+        if artist == '':
+            return None
+        id = csv_row['id']
+        title = csv_row['title']
+        chart_year = int(csv_row['chart_date'][0:4])
+        peak_rank = int(csv_row['peak_rank'])
+        return cls(artist, id, title, chart_year, peak_rank, read_mcgill_data=False, features=csv_row)
 
     @classmethod
     def from_mcgill_csv_row(cls, csv_row: Iterable):
@@ -149,6 +175,10 @@ class Song:
     def set_spotify_song_data(self, spotify_song_data: SpotifySongData):
         self.spotify_song_data = spotify_song_data
 
+    def add_spotify_popularity(self) -> object:
+        if self.spotify_id:
+            self.spotify_song_data.popularity = get_popularity(self.spotify_id)
+
     def set_mcgill_billboard_song_data(self, mcgill_song_data: McGillSongData):
         self.mcgill_billboard_song_data = mcgill_song_data
 
@@ -160,8 +190,17 @@ class Song:
                      self.peak_chart_position, self.genres, repr(self.spotify_song_data), self.spotify_id]
         return song_data
 
+    def get_artist(self):
+        return self.artist.replace(',', ';')
+
     def get_peak_chart_position(self):
         return self.peak_chart_position
+
+    def get_spotify_popularity(self):
+        return self.spotify_song_data.popularity
+
+    def get_chart_year(self):
+        return int(self.chart_year)
 
     def get_decade(self):
         year = int(self.chart_year)
@@ -169,6 +208,69 @@ class Song:
 
     def get_spotify_feature(self, key):
         return self.spotify_song_data.audio_features_dictionary[key]
+
+    def get_chord_distances(self):
+        total_chords_count = 0
+        previous_chord_id = None
+        distance_sum = 0
+
+        for section in self.mcgill_billboard_song_data.sections:
+            chords = section.get_progression_chords()
+            for chord in chords:
+                chord_id = chord.roman_numeral_notation.rom_num_notation.value
+                if previous_chord_id is not None and chord_id != previous_chord_id:
+                    distance_sum += distance(chord_id, previous_chord_id)
+                previous_chord_id = chord_id
+            total_chords_count += len(chords)
+
+        return distance_sum / total_chords_count
+
+    def get_similar_chords(self):
+        total_chords_count = 0
+        previous_chord_notes = None
+        score = 0
+
+        for section in self.mcgill_billboard_song_data.sections:
+            chords = section.get_progression_chords()
+            total_chords_count += len(chords)
+            for chord in chords:
+                current_chord_notes = set()
+
+                for note in chord.notes:
+                    note_name = note.base_name + note.accidentals.name
+                    note_id = note_to_interval[note_name]
+                    current_chord_notes.add(note_id)
+
+                # first chord do not check
+                if previous_chord_notes is None:
+                    previous_chord_notes = current_chord_notes
+                    continue
+
+                intersection = set.intersection(previous_chord_notes, current_chord_notes)
+                same_notes_count = len(set.intersection(previous_chord_notes, current_chord_notes))/len(current_chord_notes)
+                score += same_notes_count
+
+                # for note in chord.notes:
+                #     note_name = note.base_name + note.accidentals.name
+                #     note_id = note_to_interval[note_name]
+
+                previous_chord_notes = current_chord_notes
+
+        return score / (total_chords_count-1)
+
+
+    def get_different_notes_count(self):
+        notes_dict = defaultdict(bool)
+        for section in self.mcgill_billboard_song_data.sections:
+            chords = section.get_progression_chords()
+            for chord in chords:
+                for note in chord.notes:
+                    note_name = note.base_name + note.accidentals.name
+                    note_id = note_to_interval[note_name]
+                    notes_dict[note_id] = True
+
+        return len(notes_dict.keys())/12
+
 
     def get_different_sections_count(self):
         section_ids = set()
@@ -209,8 +311,24 @@ class Song:
 
         return non_triad_chords / analyzed_chords_count
 
+
     def get_tonic_changes_count(self):
         return len(self.mcgill_billboard_song_data.tonic_changes)
+
+    def get_inverted_chords_count(self):
+        inv_chords = 0
+        chords_count = 0
+
+        sections = self.mcgill_billboard_song_data.sections
+        for section in sections:
+            chords = section.get_progression_chords()
+            chords_count += len(chords)
+            for chord in chords:
+                if '/3' in chord.mcgill_chord_name or '/5' in chord.mcgill_chord_name:
+                    inv_chords += 1
+
+        return inv_chords / chords_count
+
 
     def get_minor_count(self):
         major_chords = 0
@@ -236,6 +354,114 @@ class Song:
 
         return minor_chords / chords_count
 
+    def get_major_count(self):
+        major_chords = 0
+        minor_chords = 0
+        neither_chords = 0
+        chords_count = 0
+
+        sections = self.mcgill_billboard_song_data.sections
+        for section in sections:
+            chords = section.get_progression_chords()
+            chords_count += len(chords)
+            for chord in chords:
+                chord_type = MajOrMin.Neither
+                if 3 in chord.mcgill_intervals:
+                    chord_type = MajOrMin.Minor
+                    minor_chords += 1
+                elif 4 in chord.mcgill_intervals:
+                    chord_type = MajOrMin.Major
+                    major_chords += 1
+
+                else:
+                    neither_chords += 1
+
+        return major_chords / chords_count
+
+    def get_neither_count(self):
+        major_chords = 0
+        minor_chords = 0
+        neither_chords = 0
+        chords_count = 0
+
+        sections = self.mcgill_billboard_song_data.sections
+        for section in sections:
+            chords = section.get_progression_chords()
+            chords_count += len(chords)
+            for chord in chords:
+                chord_type = MajOrMin.Neither
+                if 3 in chord.mcgill_intervals:
+                    chord_type = MajOrMin.Minor
+                    minor_chords += 1
+                elif 4 in chord.mcgill_intervals:
+                    chord_type = MajOrMin.Major
+                    major_chords += 1
+
+                else:
+                    neither_chords += 1
+
+        return neither_chords / chords_count
+
+
+    global power_chords
+    power_chords = 0
+
+    def get_power_chord_use(self):
+        global power_chords
+
+
+        count = 0
+        total_count = 0
+
+        for section in self.mcgill_billboard_song_data.sections:
+            chords = section.get_progression_chords()
+            total_count += len(chords)
+            for chord in chords:
+                chord.mcgill_chord_name
+
+                if ':5' in chord.mcgill_chord_name:
+                    count += 1
+                    break
+
+        if count > 0:
+            power_chords += 1
+
+        return count / total_count
+
+    def get_added_sixth_use(self):
+        count = 0
+        total_count = 0
+
+        for section in self.mcgill_billboard_song_data.sections:
+            chords = section.get_progression_chords()
+            total_count += len(chords)
+            for chord in chords:
+                chord.mcgill_chord_name
+                added_notes = re.findall(r'\d+', chord.mcgill_chord_name)
+
+                if '6' in added_notes:
+                    count += 1
+                    break
+
+        return count / total_count
+
+
+    def get_added_seventh_use(self):
+        count = 0
+        total_count = 0
+
+        for section in self.mcgill_billboard_song_data.sections:
+            chords = section.get_progression_chords()
+            total_count += len(chords)
+            for chord in chords:
+                chord.mcgill_chord_name
+                added_notes = re.findall(r'\d+', chord.mcgill_chord_name)
+
+                if '7' in added_notes:
+                    count += 1
+                    break
+
+        return count / total_count
 
     def get_tension_use(self):
         tension_numbers = ['7', '9', '11', '13']
@@ -279,7 +505,7 @@ class Song:
             else:
                 section_repetitions[section.id] += 1
 
-        return sum(section_repetitions.values())
+        return sum(section_repetitions.values())/self.get_spotify_feature('duration_ms')
 
     def bars_per_section(self):
         multiple_of_eight = 0
@@ -393,6 +619,14 @@ class Song:
         return pentatonic_count / total_notes_count
 
 
+    def get_foreign_scale_chords_count(self):
+        def process_result(result, dist, scale_id):
+            if dist > 0:
+                result += 1
+            return result
+
+        return self.analyze_different_keys_general(process_result, lambda res, chord_count: res/chord_count)
+
     #TODO make this the only fn
     def analyze_different_keys_general(self, process_result_fn, process_final_result_fn, different_chords_once=False, use_previous_harmony=False):
         result = 0
@@ -430,8 +664,8 @@ class Song:
 
         if different_chords_once:
             for chord in different_chords_dict.values():
-                dist, previous_harmony = get_corresponding_scale_distance_for_chord(chord, tonic, min_or_maj)
-                result = process_result_fn(result, dist)
+                dist, previous_harmony, scale_id = get_corresponding_scale_distance_for_chord(chord, tonic, min_or_maj)
+                result = process_result_fn(result, dist, scale_id)
 
         result = process_final_result_fn(result, analyzed_chords_count)
         return result
@@ -541,7 +775,7 @@ class Song:
             for chord in chords:
                 if different_chords_dict.get(chord.mcgill_chord_name, -1) == -1:
                     different_chords_dict[chord.mcgill_chord_name] = chord
-                    dist, previous_harmony = get_corresponding_scale_distance_for_chord(chord, tonic, min_or_maj)
+                    dist, previous_harmony, scale_id = get_corresponding_scale_distance_for_chord(chord, tonic, min_or_maj)
                     max_distance = max(max_distance, dist)
 
             if tonic_change is not None:
@@ -576,30 +810,30 @@ class Song:
 
         return sum / len(different_chords_dict)
 
-    def analyze_different_keys_old(self):
-        sum = 0
-
-        tonic = key_dict2[self.spotify_song_data.audio_features_dictionary['key']]
-        analyzed_chords_count = 0
-
-        sections = self.mcgill_billboard_song_data.sections
-        for section in sections:
-            chords = section.get_progression_chords()
-            analyzed_chords_count += len(chords)
-            for chord in chords:
-                min_or_maj = MajOrMin.Major if self.spotify_song_data.audio_features_dictionary['mode'] == 1 else MajOrMin.Minor
-                dist = get_corresponding_scale_distance_for_chord(chord, tonic, min_or_maj)
-
-                if dist == 7:
-                    bp = self.song_name + ' - ' + self.artist
-                    v = 1
-
-                sum += dist
-
-        return sum/analyzed_chords_count
 
     def get_genres(self):
         return self.genres
+
+    def get_genres_id(self):
+        genres = self.genres
+        genres_for_id = []
+
+        for genre in genres:
+            if genre in most_common_genres:
+                genres_for_id.append(genre)
+
+        if len(genres_for_id) == 0:
+            return 'other'
+        elif len(genres_for_id) == 1:
+            return genres_for_id[0]
+        else:
+            required_comb = []
+            for genre in genres_for_id:
+                if genre in most_common_genres:
+                    required_comb.append(genre)
+            sor = sorted(required_comb)
+            return '.'.join(sor)
+
 
     def get_used_instruments(self):
         return self.mcgill_billboard_song_data.instruments

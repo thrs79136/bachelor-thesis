@@ -1,8 +1,10 @@
 import math
+from collections import defaultdict
+
 import numpy as np
 from typing import List
 
-from src.helper.chord_progressions import find_song_progressions, find_progressions
+from src.helper.chord_progressions import find_progressions
 from src.helper.statistics_helper import analyze_song_groups, analyze_song_feature_correlation
 from src.models.song import Song
 
@@ -12,6 +14,9 @@ prog_count_dict_by_song = {}
 total_progressions_by_song = {}
 
 song_to_group = {}
+progression_by_song_count = defaultdict(int)
+
+inited_prog_dict = False
 
 
 # splitting
@@ -23,9 +28,44 @@ index_to_group_name = {
     3: '4th quarter'
 }
 
+# 'I,IV,I',
+# 'V,I,IV',
+# 'IV,I,IV',
+# 'IV,I,V',
+# 'IV,V,I',
+# 'I,V,I',
+# 'I,IV,V',
+# 'I,IV,I,IV',
+# 'IV,I,IV,I',
+# 'V,I,V',
+# 'I,IV,I,V',
+# 'V,IV,I', '
+# I,V,IV',
+# 'IIm,V,I',
+# 'IV,V,I,IV',
+# 'I,IV,V,I',
+# 'V,I,IV,V',
+# 'IV,V,IV',
+# 'V,IV,V',
+# 'V,I,IV,I', 'I,VIm,IV', 'VIm,IV,V', 'IV,I,V,I', 'I,V,I,IV', 'V,I,VIm', 'IV,I,V,IV', 'I,V,IV,I', 'I,V,I,V', 'IV,I,IV,V', 'V,I,V,I', 'bVII,IV,I', 'I,VIm,IV,V', 'IV,V,IV,V', 'I,IIm,I', 'VIm,IV,V,I', 'IV,I,IIm', 'I,V,VIm', 'IV,I,bVII', 'IV,V,I,V', 'I,bVII,IV', 'V,IV,I,IV', 'I,IIm,V', 'II,V,I', 'VIm,V,IV', 'I,IV,V,IV', 'IV,I,VIm', 'V,IV,I,V', 'IIm,V,I,IV', 'VIm,IV,I', 'IV,IIIm,IIm', 'IV,V,I,VIm', 'IV,V,IV,I', 'V,IV,V,IV', 'V,IIm,V', 'V,I,IIm', 'V,IV,V,I', 'VIm,IIm,V', 'I,IV,IIm', 'IV,bVII,IV', 'I,bVII,IV,I', 'V,I,VIm,IV', 'I,bVII,I', 'I,VIm,I', 'I,IV,bVII', 'IIIm,IV,V'
+
+
+def uses_doo_wop_progression(song: Song):
+    song_dict = prog_count_dict_by_song[song.mcgill_billboard_id]
+    return 'IV,I,bVII' in song_dict.keys()
+
+
+def get_different_progressions_feature(song: Song):
+    song_dict = prog_count_dict_by_song[song.mcgill_billboard_id]
+    items_num = len(song_dict.keys())
+    total_prog_count = total_progressions_by_song[song.mcgill_billboard_id]
+    if total_prog_count == 0:
+        return 0
+    return items_num/total_prog_count
+
 
 def analyze_absolute_surprises(songs: List[Song]):
-    init(songs)
+    init_progressions_dict(songs)
     analyze_song_groups(songs, get_quarter_group, 'Absolute surprise of chord progressions',
                        'absolute_surprise.png', group_order=[index_to_group_name.values()], box_plot_values_fn=get_song_surprise)
 
@@ -74,8 +114,10 @@ def surprise_of_finding(prog):
     return -math.log2(prog_prob(prog))
 
 
+# set 100 as upper limit or the scatter plot gets too ugly
 def get_song_surprise(song: Song):
-    return get_song_average_surprise(song.mcgill_billboard_id)
+    surprise = get_song_average_surprise(song.mcgill_billboard_id)
+    return min(100, surprise)/100
 
 def get_song_average_surprise(song_id):
     global prog_count_dict_by_song
@@ -87,7 +129,7 @@ def get_song_average_surprise(song_id):
     for prog, count in song_dict.items():
         surprise = surprise_of_finding(prog)
         prog_song_prob = get_song_prog_prob(song_id, prog)
-        surprise_sum += prog_song_prob * surprise
+        surprise_sum += prog_song_prob * surprise * count
 
     return surprise_sum
 
@@ -103,13 +145,16 @@ def quartile_get_surprise_mean(quartile_songs: List[Song]):
     return surprises_sum / len(quartile_songs)
 
 
-def init(songs: List[Song]):
+def init_progressions_dict(songs: List[Song]):
     global prog_count_dict
     global total_progressions
     global prog_count_dict_by_song
     global total_progressions_by_song
+    global inited_prog_dict
 
-    init_group_dict(songs)
+    if not inited_prog_dict:
+        init_group_dict(songs)
+    inited_prog_dict = True
 
     find_progressions(songs, prog_count_dict, prog_count_dict_by_song)
     common = {k: v for k, v in sorted(prog_count_dict.items(), key=lambda item: item[1], reverse=True)}
@@ -120,10 +165,19 @@ def init(songs: List[Song]):
         total_count = sum(prog_dict.values())
         total_progressions_by_song[song_id] = total_count
 
+        for prog in prog_dict.keys():
+            progression_by_song_count[prog] += 1
+
+    common = {k: v for k, v in sorted(progression_by_song_count.items(), key=lambda item: item[1], reverse=True)}
+    keys = common.keys()
+    x = 42
+
+
+
 
 # TODO use this
 def get_quartile_surprises(songs: List[Song]):
-    init(songs)
+    init_progressions_dict(songs)
 
     split_songs = split_by_quartiles(songs)
 
@@ -140,7 +194,7 @@ def get_quartile_surprises_mean(songs: List[Song]):
     global prog_count_dict_by_song
     global total_progressions_by_song
 
-    init(songs)
+    init_progressions_dict(songs)
 
     split_songs = split_by_quartiles(songs)
 
@@ -155,7 +209,7 @@ def find_linear_contributions(songs: List[Song]):
     global prog_count_dict
     global prog_count_dict_by_song
 
-    init(songs)
+    init_progressions_dict(songs)
 
     linear_contribution_dict = {}
     split_songs = split_by_quartiles(songs)

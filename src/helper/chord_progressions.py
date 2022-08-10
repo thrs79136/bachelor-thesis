@@ -68,7 +68,13 @@ def section_contains_progressions(section: Section) -> dict:
 
 
 def count_progression(prog: List[RomNumNotation], all_songs_dict, prog_by_song_dict):
+    # don't differentiate between minor and major
+    # roman_numerals = [chord.roman_number for chord in prog]
+    # prog_str = ','.join(roman_numerals)
+
+    # differentiate between minor and major
     prog_str = ','.join([repr(chord) for chord in prog])
+
     if all_songs_dict.get(prog_str, -1) == -1:
         all_songs_dict[prog_str] = 1
     else:
@@ -95,8 +101,6 @@ def find_progressions(songs: List[Song], prog_count_dict, prog_count_dict_by_son
             for i in range(prog_length - 3):
                 sub_progression1 = section.chord_progression[i:i+3]
                 sub_progression2 = section.chord_progression[i:i+4]
-                if sub_progression2 == [] or sub_progression1 == []:
-                    x = 42
                 count_progression(sub_progression1, prog_count_dict, prog_count_dict_by_song[song.mcgill_billboard_id])
                 count_progression(sub_progression2, prog_count_dict, prog_count_dict_by_song[song.mcgill_billboard_id])
 
@@ -104,24 +108,23 @@ def find_progressions(songs: List[Song], prog_count_dict, prog_count_dict_by_son
                 sub_progression = section.chord_progression[-3:]
                 count_progression(sub_progression, prog_count_dict, prog_count_dict_by_song[song.mcgill_billboard_id])
 
-    # sorted_progressions = {k: v for k, v in sorted(prog_count_dict.items(), key=lambda item: item[1], reverse=True)}
 
-
-def find_song_progressions(song: Song):
-    song_progressions_dict = {}
-    for section in song.mcgill_billboard_song_data.sections:
-        prog_length = len(section.chord_progression)
-        if prog_length >= 3:
-            for i in range(prog_length - 3):
-                sub_progression1 = section.chord_progression[i:i+3]
-                sub_progression2 = section.chord_progression[i:i + 4]
-                count_progression(sub_progression1, song_progressions_dict, {})
-                count_progression(sub_progression2, song_progressions_dict, {})
-
-            sub_progression = section.chord_progression[-3:]
-            count_progression(sub_progression, song_progressions_dict, {})
-
-    return song_progressions_dict
+#
+# def find_song_progressions(song: Song):
+#     song_progressions_dict = {}
+#     for section in song.mcgill_billboard_song_data.sections:
+#         prog_length = len(section.chord_progression)
+#         if prog_length >= 3:
+#             for i in range(prog_length - 3):
+#                 sub_progression1 = section.chord_progression[i:i+3]
+#                 sub_progression2 = section.chord_progression[i:i + 4]
+#                 count_progression(sub_progression1, song_progressions_dict, {})
+#                 count_progression(sub_progression2, song_progressions_dict, {})
+#
+#             sub_progression = section.chord_progression[-3:]
+#             count_progression(sub_progression, song_progressions_dict, {})
+#
+#     return song_progressions_dict
 
 
 def identify_chord_progressions(songs: List[Song]):

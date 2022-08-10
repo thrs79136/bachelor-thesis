@@ -18,7 +18,7 @@ def create_boxplot(data_values, labels, title, suptitle, filename):
     ax.boxplot(data_values)
     plt.xticks(np.arange(len(labels)) + 1, labels, fontsize=8)
 
-    fig.savefig('../data/img/plots/box_plots/' + filename)
+    fig.savefig('../data/img/plots/box_plots/spotify/' + filename)
 
     plt.show()
 

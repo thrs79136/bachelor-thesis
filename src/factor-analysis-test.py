@@ -1,58 +1,33 @@
+import numpy as np
 import pandas as pd
+import seaborn as seaborn
 from pandas import Index
+from sklearn import preprocessing
 from sklearn.datasets import load_iris
 from factor_analyzer import FactorAnalyzer
 import matplotlib.pyplot as plt
 from factor_analyzer.factor_analyzer import calculate_bartlett_sphericity
 from factor_analyzer.factor_analyzer import calculate_kmo
+from sklearn.preprocessing import StandardScaler
 
-df= pd.read_csv("bfi.csv")
-df.columns
-Index(['A1', 'A2', 'A3', 'A4', 'A5', 'C1', 'C2', 'C3', 'C4', 'C5', 'E1', 'E2',
-       'E3', 'E4', 'E5', 'N1', 'N2', 'N3', 'N4', 'N5', 'O1', 'O2', 'O3', 'O4',
-       'O5', 'gender', 'education', 'age'],
-      dtype='object')
 
-# Dropping unnecessary columns
-df.drop(['gender', 'education', 'age'],axis=1,inplace=True)
+data = pd.read_csv('../data/csv/song_features.csv')
 
-# Dropping missing values rows
-df.dropna(inplace=True)
+print(data.columns)
 
-df.info()
+data.drop(['decade'], axis=1, inplace=True)
+data.dropna(inplace=True)
 
-df.head()
+df = preprocessing.scale(X = data)
 
-# Bartlett’s test
+# adequacy test
+
+# Bartlett’s Test
 chi_square_value,p_value=calculate_bartlett_sphericity(df)
-chi_square_value, p_value
+print(chi_square_value, p_value)
 
-
+# Kaiser-Meyer-Olkin (KMO) Test, Value of KMO less than 0.6 is considered inadequate
 kmo_all,kmo_model=calculate_kmo(df)
-kmo_model
-# < 0.6: inadequate
+print(kmo_model)
 
-# Choosing the Number of Factors (if eigenvalues > 1)
-fa = FactorAnalyzer()
-fa.fit(df)
-# Check Eigenvalues
-ev, v = fa.get_eigenvalues()
-print('Eigenvalues')
-print(ev)
-
-
-# Create scree plot using matplotlib
-plt.scatter(range(1,df.shape[1]+1),ev)
-plt.plot(range(1,df.shape[1]+1),ev)
-plt.title('Scree Plot')
-plt.xlabel('Factors')
-plt.ylabel('Eigenvalue')
-plt.grid()
-plt.show()
-
-fa = FactorAnalyzer()
-fa.fit(df)
-fa.loadings_
-
-# Get variance of each factors
-fa.get_factor_variance()
+x = 2

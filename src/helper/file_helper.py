@@ -3,11 +3,24 @@ import os
 import pickle
 from typing import List
 
+import numpy as np
+
 from src.helper.cadences import identify_cadences
+from src.helper.statistics_helper import group_by_year
 from src.models.mcgill_songdata import Bar
 from src.models.mgill_chord import McGillChord
 from src.models.song import Song
+from src.shared import dictionaries
 
+global feature_file_path
+feature_file_path = '../data/csv/song_features.csv'
+
+global year_feature_file_path
+year_feature_file_path = '../data/csv/year_features.csv'
+
+song_csv_header = ['mcgill_billboard_id', 'artist', 'song_name', 'chart_year', 'peak_chart_position', 'genres',
+                   'spotify_song_data',
+                   'spotify_id']
 
 def write_text_file(path: str, content: str):
     file = open(path, "w")
@@ -114,3 +127,52 @@ def modify_billboard_index(oldpath: str, newpath: str):
     writing_file = open(newpath, "w")
     writing_file.write(new_file_content)
     writing_file.close()
+
+
+
+def save_feature_csv(songs: List[Song], feature_names):
+    with open(feature_file_path, "w", newline='') as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=',', escapechar='\\', quoting=csv.QUOTE_NONE)
+        csvwriter.writerow(feature_names)
+
+        features = [dictionaries.song_features_dict[feature_name] for feature_name in feature_names]
+        for song in songs:
+            csv_row = []
+            for feature in features:
+                parameters = [song] + feature.parameters
+                csv_row.append(feature.feature_fn(*parameters))
+
+            csvwriter.writerow(csv_row)
+
+
+def save_median_feature_csv(songs: List[Song], feature_names):
+
+    with open(year_feature_file_path, "w", newline='') as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=',', escapechar='\\', quoting=csv.QUOTE_NONE)
+        csvwriter.writerow(feature_names)
+
+        features = [dictionaries.song_features_dict[feature_name] for feature_name in feature_names]
+        grouped_songs = group_by_year(songs)
+
+        for year, year_songs in grouped_songs.items():
+            year_medians = []
+            for feature in features:
+                feature_expr = []
+                for song in year_songs:
+                    parameters = [song] + feature.parameters
+                    feature_expr.append(feature.feature_fn(*parameters))
+                median = np.median(feature_expr)
+                year_medians.append(median)
+
+            csvwriter.writerow(year_medians)
+
+
+def get_songs_from_feature_csv():
+    songs = []
+    with open(feature_file_path, newline='') as csvfile:
+        csvreader = csv.DictReader(csvfile, delimiter=',', escapechar='\\', quoting=csv.QUOTE_NONE)
+        for row in csvreader:
+            song = Song.from_feature_csv_row(row)
+            songs.append(song)
+
+    return songs

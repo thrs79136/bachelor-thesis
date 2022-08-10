@@ -1,27 +1,16 @@
 import os
 from collections import defaultdict
 from typing import List
-
-import pandas as pd
 import numpy as np
-import random as rd
-
+import seaborn as sns
 from matplotlib.patches import Ellipse
 from sklearn.decomposition import PCA
 from sklearn import preprocessing
-import plotly.express as px
-from sklearn import datasets
-
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import scale  # Data scaling
-from sklearn import decomposition  # PCA
-import pandas as pd  # pandas
-from sklearn.datasets import load_digits
-
-from src.helper.absolute_surprise import get_song_surprise
+import pandas as pd
 from src.helper.file_helper import write_text_file
+from src.models.pca_config import PCAConfig
 from src.models.song import Song
-from src.models.spotify_song_data import audio_feature_keys
 
 genres_to_color = {
     'rock': 'red',
@@ -71,18 +60,22 @@ def eigsorted(cov):
 
 
 def get_ellipse(x, y, color):
-    nstd = 1
-    cov = np.cov(x, y)
-    vals, vecs = eigsorted(cov)
-    theta = np.degrees(np.arctan2(*vecs[:, 0][::-1]))
-    w, h = 2 * nstd * np.sqrt(vals)
-    ellipse = Ellipse(xy=(np.mean(x), np.mean(y)),
-                  width=w, height=h,
-                  angle=theta, color=color,
-                   linewidth=1)
-    ellipse.set_facecolor('none')
-    ellipse.set
-    return ellipse
+    try:
+        nstd = 1
+        cov = np.cov(x, y)
+        vals, vecs = eigsorted(cov)
+        theta = np.degrees(np.arctan2(*vecs[:, 0][::-1]))
+        w, h = 2 * nstd * np.sqrt(vals)
+        ellipse = Ellipse(xy=(np.mean(x), np.mean(y)),
+                      width=w, height=h,
+                      angle=theta, color=color,
+                       linewidth=1)
+        ellipse.set_facecolor('none')
+        ellipse.set
+        return ellipse
+    except Exception:
+        x = 32
+        return None
 
 
 def get_common_genres(song: Song):
@@ -132,6 +125,7 @@ def get_genres_to_color(song: Song):
 
     return color
 
+
 def chart_pos_to_color(song):
     pos = song.peak_chart_position
     if pos < 4:
@@ -143,6 +137,28 @@ def chart_pos_to_color(song):
     return 'red'
 
 
+def popularity_to_color(song):
+    popularity = song.get_spotify_popularity()
+    if popularity < 38:
+        return 'green'
+    if popularity < 50:
+        return 'blue'
+    if popularity < 62:
+        return 'purple'
+    return 'red'
+
+
+def decade_to_color(song):
+    decade = song.get_decade
+
+    return {
+        1960: 'orange',
+        1970: 'red',
+        1980: 'blue',
+        1990: 'green'
+            }[decade]
+
+
 def get_circle_of_fiths_dist(song: Song):
     def process_result(result, dist, scale_id):
         result += dist
@@ -152,146 +168,52 @@ def get_circle_of_fiths_dist(song: Song):
     return song.analyze_different_keys_general(process_result, lambda res, chord_count: res/chord_count, False)
 
 
-def pca(songs: List[Song]):
-    # features = audio_feature_keys
-
-    features = ['duration_ms', 'energy', 'loudness', 'speechiness',
-                          'acousticness',
-                          'instrumentalness', 'tempo']
-
-    # feature_names = features_dict.keys()
-
-
-    song_ids = [song.mcgill_billboard_id for song in songs]
-    # audio_feature_keys
-
-
-    songs_df = pd.DataFrame(columns=song_ids, index=audio_feature_keys)
-
-    # for i in range(len(songs)):
-    #     for audio_feature in audio_feature_keys:
-    #         audio_feature_value = songs[i].spotify_song_data.audio_features_dictionary[audio_feature]
-    #         songs_df.loc[audio_feature, songs[i].mcgill_billboard_id] = audio_feature_value
-
-
-    first_id = songs[0].mcgill_billboard_id
-    last_id = songs[-1].mcgill_billboard_id
-    # 2nd try
-    for key in audio_feature_keys:
-        feature_value_list = [song.spotify_song_data.audio_features_dictionary[key] for song in songs]
-        songs_df.loc[key, first_id:last_id] = feature_value_list
-
-
-
-    # data = pd.DataFrame(columns=[*wt, *ko], index=genes)
-    #
-    # for i, gene in enumerate(data.index):
-    #     data.loc[gene, 'wt1':'wt5'] = [97, 91, 99, 98, 91]
-    #     data.loc[gene, 'ko1':'ko5'] = [9, 4, 8, 3, 8]
+feature_list1  = [
+    # 'decade',
+    # 'year',
+    'minor_percentage',
+    # 'major_percentage',
+    # 'absolute_surprise',
+    'circle_of_fifths_dist',
+    # 'circle_of_fifths_dist_largest_dist',
+    # 'danceability',
+    # 'energy',
+    'tonic_percentage',
+    # 'supertonic_percentage',
+    'dominant_percentage',
+    #'non_triad_chords_percentage',
+    # 'different_sections_count',
+    'get_added_seventh_use',
+    # 'get_added_sixth_use',
+    # 'power_chords',
+    # 'neither_chords',
+    # 'section_repetitions',
+    # 'i_to_v',
+    # 'v_to_i',
+    # 'chart_pos',
+    # 'spotify_popularity',
+    # 'genre',
+    # 'mode',
+    'tempo',
+    # 'valence',
+    'duration',
+    'chord_distances',
+    'different_chords',
+    'different_progressions',
+    # 'chord_surprise'
+]
 
 
-    print(songs_df.head())
-    print(songs_df.shape)
 
-    scaled_data = preprocessing.scale(songs_df.T)
+def pca_test2(songs: List[Song], title, pca_config: PCAConfig):
 
-    pca = PCA()
-    pca.fit(scaled_data)
-    pca_data = pca.transform(scaled_data)
+    color_palette = sns.color_palette('magma')
 
-    per_var = np.round(pca.explained_variance_ratio_ * 100, decimals=1)
-    labels = ['PC' + str(x) for x in range(1, len(per_var) + 1)]
-
-    plt.bar(x=range(1, len(per_var) + 1), height=per_var, tick_label=labels)
-    plt.ylabel('Percentage of Explained Variance')
-    plt.xlabel('Principal component')
-    plt.title('Scree Plot')
-    plt.show()
-
-    pca_df = pd.DataFrame(pca_data, index=song_ids, columns=audio_feature_keys)
-
-    #test = pca_df.index.map(color_map)
-    # c=pca_df.index.map(color_map)
-
-    plt.scatter(pca_df.PC1.values, pca_df.PC2.values)
-    plt.title('My PCA Graph')
-    plt.xlabel('PC1 - {0}%'.format(per_var[0]))
-    plt.ylabel('PC2 - {0}%'.format(per_var[1]))
-
-    # for sample in pca_df.index:
-    # plt.annotate(sample, (pca_df.PC1.loc[sample], pca_df.PC2.loc[sample]))
-
-    plt.show()
-
-    for i in range(2):
-        loading_scores = pd.Series(pca.components_[i], index=genes)
-        sorted_loading_scores = loading_scores.abs().sort_values(ascending=False)
-
-        top_10_genes = sorted_loading_scores[0:10].index.values
-
-        print(loading_scores[top_10_genes])
-
-
-def pca_test():
-    population = np.random.rand(100)
-    Area = np.random.randint(100, 600, 100)
-    continent = ['North America', 'Europe', 'Asia', 'Australia'] * 25
-
-    df = pd.DataFrame(dict(population=population, Area=Area, continent=continent))
-
-    fig, ax = plt.subplots()
-
-    colors = {'North America': 'red', 'Europe': 'green', 'Asia': 'blue', 'Australia': 'yellow'}
-
-    ax.scatter(df['population'], df['Area'], c=df['continent'].map(colors))
-
-    plt.show()
-
-
-def pca_test2(songs: List[Song], title, color_fn):
     dir = '../data/pca/' + title.lower().replace(' ', '_')
     if not os.path.exists(dir):
         os.mkdir(dir)
 
-
-    # feature_names = features_dict.keys()
-
-    # genes = ['danceability', 'duration_ms', 'energy', 'loudness', 'speechiness', 'acousticness',
-    #     'instrumentalness', 'liveness', 'valence', 'tempo']
-    # genes = ['duration_ms', 'loudness', 'acousticness',
-    #                       'instrumentalness', 'tempo']
     genes = []
-    additional_features = ['minor_perc',
-                           'absolute_surprise',
-                           'circle_of_fiths_dist',
-                           'different_chords_count',
-                           'non_triad_rate',
-                           'different_sections_count',
-                           'peak_chart_pos',
-                           'section_repetitions_count',
-                           'pentatonic_notes',
-                           'metre_changes_count',
-                           'tonic_changes_count',
-                           'tension_use',
-                           'foreign_scale_notes',
-                           'different_keys']
-    feature_fn = [Song.get_minor_count,
-                  get_song_surprise,
-                  get_circle_of_fiths_dist,
-                  Song.get_different_chords_count,
-                  Song.get_non_triad_rate,
-                  Song.get_different_sections_count,
-                  Song.get_peak_chart_position,
-                  Song.get_section_repetitions_count,
-                  Song.pentatonic_notes,
-                  Song.get_metre_changes_count,
-                  Song.get_tonic_changes_count,
-                  Song.get_tension_use,
-                  Song.get_foreign_scale_notes,
-                  Song.analyze_different_keys2,
-                  ]
-
-
 
     wt = ['song' + str(song.mcgill_billboard_id) for song in songs]
     firstkey = wt[0]
@@ -299,20 +221,69 @@ def pca_test2(songs: List[Song], title, color_fn):
 
     data = pd.DataFrame(columns=[*wt], index=genes)
 
+    for feature in pca_config.features:
+    #for i, key in enumerate(feature_names):
+        #feature = dictionaries.song_features_dict[key]
+        feature_fn = feature.feature_fn
 
-    # for i, audio_feature in enumerate(data.index):
-    #     data.loc[audio_feature, firstkey:lastkey] = \
-    #         [song.spotify_song_data.audio_features_dictionary[audio_feature] for song in songs]
-    for i, key in enumerate(additional_features):
-        feature_value_list = [feature_fn[i](song) for song in songs]
-        data.loc[key, firstkey:lastkey] = feature_value_list
-        genes.append(key)
+        feature_value_list = []
+        for song in songs:
+            parameters = [song] + feature.parameters
+            feature_value_list.append(feature_fn(*parameters))
 
+        data.loc[feature.feature_id, firstkey:lastkey] = feature_value_list
+        genes.append(feature.feature_id)
+
+
+    # create dataframe
+
+    data = pd.read_csv('./../data/csv/song_features.csv')
 
     print(data.head())
     print(data.shape)
+    dropped_columns = [
+        # 'decade',
+        # 'year',
+        'minor_percentage',
+        # 'major_percentage',
+        # 'absolute_surprise',
+        'circle_of_fifths_dist',
+        # 'circle_of_fifths_dist_largest_dist',
+        # 'danceability',
+        # 'energy',
+        'tonic_percentage',
+        # 'supertonic_percentage',
+        'dominant_percentage',
+        # 'non_triad_chords_percentage',
+        # 'different_sections_count',
+        'get_added_seventh_use',
+        # 'get_added_sixth_use',
+        # 'power_chords',
+        # 'neither_chords',
+        # 'section_repetitions',
+        # 'i_to_v',
+        # 'v_to_i',
+        # 'chart_pos',
+        # 'spotify_popularity',
+        # 'genre',
+        # 'mode',
+        'tempo',
+        # 'valence',
+        'duration',
+        'chord_distances',
+        'different_chords',
+        'different_progressions',
+        # 'chord_surprise'
+    ]
 
-    scaled_data = preprocessing.scale(data.T)
+    # decade
+    #data_dropped = data.drop(dropped_columns, axis=1)
+
+    data_dropped = data[
+        feature_list1
+    ].values
+
+    scaled_data = preprocessing.scale(data_dropped)
 
     pca = PCA()
     pca.fit(scaled_data)
@@ -332,44 +303,50 @@ def pca_test2(songs: List[Song], title, color_fn):
 
     # c=pca_df.index.map(color_map)
 
+    decade_color_map = {1950: 0, 1960: 1, 1970: 2, 1980: 3, 1990: 4}
+    color_list = data['decade'].map(decade_color_map)
+
     colors = []
     color_list_indices = defaultdict(list)
     for index, song in enumerate(songs):
         # create color list
-        color = color_fn(song)
-        colors.append(color_fn(song))
+        color = pca_config.color_fn(song)
+        colors.append(pca_config.color_fn(song))
         color_list_indices[color].append(index)
 
-    # colors = [color_fn(song) for song in songs]
-    # colors = [chart_pos_to_color(song) for song in songs]
 
     fig, ax = plt.subplots()
-    plt.scatter(pca_df.PC1.values, pca_df.PC2.values, c=colors, s=7)
+    plt.scatter(pca_df.PC1.values, pca_df.PC2.values,
+                #c=colors,
+                s = 20,
+                marker='o',
+                c=[color_palette[x] for x in
+                   data.decade.map({1950: 0, 1960: 1, 1970: 2, 1980: 3, 1990: 4})],
+                edgecolors='white',
+                )
 
-    for genre in ['rock', 'pop', 'blues', 'soul', 'country']:
-    #for genre_color in ['green', 'blue', 'red', 'purple']:
+    # for genre in ['rock', 'pop', 'blues', 'soul', 'country']:
+    # DRAW ellipses
+    for k, decade_color in decade_color_map.items():
         pca1_values = []
         pca2_values = []
-
-        genre_color = genres_to_color[genre]
-        for index, color in enumerate(colors):
-            if color == genre_color:
+        for index, color in enumerate(color_list):
+            if color == decade_color:
                 pca1_values.append(pca_df.PC1.values[index])
                 pca2_values.append(pca_df.PC2.values[index])
 
-        ellipse = get_ellipse(pca1_values, pca2_values, genre_color)
+        ellipse = get_ellipse(pca1_values, pca2_values, color_palette[decade_color])
         ax.add_artist(ellipse)
+    # DRAW ellipses end
 
-    # e = Ellipse(xy=(0,0), width=5, height=2,
-    #                angle=np.degrees(-2.7))
 
     size = len(songs)
-    lp = lambda genre, color: plt.plot([], color=color, ms=7, mec="none",
-                            label=genre.capitalize(), ls="", marker="o")[0]
+    lp = lambda genre, color: plt.plot([], color=color_palette[color], ms=7, mec="none",
+                            label=str(genre), ls="", marker="o")[0]
 
     genre_items = [i for i in genres_to_color.items() if isinstance(i[0], str)]
     # handles = [lp(k, v) for k, v in genre_items] + [lp('None', 'grey')]
-    handles = [lp(k, v) for k, v in [('1st quarter', 'green'), ('2nd quarter', 'blue'), ('3rd quarter', 'purple'), ('4th quarter', 'red')]]
+    handles = [lp(k, v) for k, v in decade_color_map.items()]
     plt.legend(handles=handles)
 
     plt.title(title)
@@ -399,25 +376,36 @@ def pca_test2(songs: List[Song], title, color_fn):
         write_text_file(dir + '/loading_scores.txt', file_content)
 
 
-def pca_test_backup(songs: List[Song]):
-    # feature_names = features_dict.keys()
 
-    color_map = {
-        'ko1': 'red', 'ko2': 'red', 'ko3': 'red', 'ko4': 'red', 'ko5': 'red',
-        'wt1': 'blue', 'wt2': 'blue', 'wt3': 'blue', 'wt4': 'blue', 'wt5': 'blue'
 
-    }
+def pca_old(songs: List[Song], title, pca_config: PCAConfig):
+    dir = '../data/pca/' + title.lower().replace(' ', '_')
+    if not os.path.exists(dir):
+        os.mkdir(dir)
 
-    genes = ['gene' + str(i) for i in range(1, 101)]
+    genes = []
 
-    wt = ['wt' + str(i) for i in range(1, 6)]
-    ko = ['ko' + str(i) for i in range(1, 6)]
+    wt = ['song' + str(song.mcgill_billboard_id) for song in songs]
+    firstkey = wt[0]
+    lastkey = wt[-1]
 
-    data = pd.DataFrame(columns=[*wt, *ko], index=genes)
+    data = pd.DataFrame(columns=[*wt], index=genes)
 
-    for i, gene in enumerate(data.index):
-        data.loc[gene, 'wt1':'wt5'] = rd.choices(range(0, 10), k=5)
-        data.loc[gene, 'ko1':'ko5'] = rd.choices(range(0, 30), k=5)
+    for feature in pca_config.features:
+    #for i, key in enumerate(feature_names):
+        #feature = dictionaries.song_features_dict[key]
+        feature_fn = feature.feature_fn
+
+        feature_value_list = []
+        for song in songs:
+            parameters = [song] + feature.parameters
+            feature_value_list.append(feature_fn(*parameters))
+
+        data.loc[feature.feature_id, firstkey:lastkey] = feature_value_list
+        genes.append(feature.feature_id)
+
+
+
 
     print(data.head())
     print(data.shape)
@@ -435,28 +423,78 @@ def pca_test_backup(songs: List[Song]):
     plt.ylabel('Percentage of Explained Variance')
     plt.xlabel('Principal component')
     plt.title('Scree Plot')
+    plt.savefig(dir + '/scree_plot.png')
     plt.show()
 
-    pca_df = pd.DataFrame(pca_data, index=[*wt, *ko], columns=labels)
+    pca_df = pd.DataFrame(pca_data, index=[*wt], columns=labels)
 
-    test = pca_df.index.map(color_map)
-    c=pca_df.index.map(color_map)
+    # c=pca_df.index.map(color_map)
 
-    plt.scatter(pca_df.PC1.values, pca_df.PC2.values, c=['blue']*5 + ['red']*5)
-    plt.title('My PCA Graph')
+    colors = []
+    color_list_indices = defaultdict(list)
+    for index, song in enumerate(songs):
+        # create color list
+        color = pca_config.color_fn(song)
+        colors.append(pca_config.color_fn(song))
+        color_list_indices[color].append(index)
+
+
+    fig, ax = plt.subplots()
+    plt.scatter(pca_df.PC1.values, pca_df.PC2.values, c=colors, s=7)
+
+    # for genre in ['rock', 'pop', 'blues', 'soul', 'country']:
+    # DRAW ellipses
+    for possible_color in pca_config.all_colors:
+        pca1_values = []
+        pca2_values = []
+
+        #genre_color = genres_to_color[genre]
+        for index, color in enumerate(colors):
+            if color == possible_color:
+                pca1_values.append(pca_df.PC1.values[index])
+                pca2_values.append(pca_df.PC2.values[index])
+
+        ellipse = get_ellipse(pca1_values, pca2_values, possible_color)
+        ax.add_artist(ellipse)
+    # DRAW ellipses end
+
+
+    size = len(songs)
+    lp = lambda genre, color: plt.plot([], color=color, ms=7, mec="none",
+                            label=genre.capitalize(), ls="", marker="o")[0]
+
+    genre_items = [i for i in genres_to_color.items() if isinstance(i[0], str)]
+    # handles = [lp(k, v) for k, v in genre_items] + [lp('None', 'grey')]
+    handles = [lp(k, v) for k, v in pca_config.color_labels]
+    plt.legend(handles=handles)
+
+    plt.title(title)
     plt.xlabel('PC1 - {0}%'.format(per_var[0]))
     plt.ylabel('PC2 - {0}%'.format(per_var[1]))
+
+    plt.savefig(dir + '/scatter_plot.png')
+
+    plt.show()
+
+
 
     # for sample in pca_df.index:
     # plt.annotate(sample, (pca_df.PC1.loc[sample], pca_df.PC2.loc[sample]))
 
-    plt.show()
 
+
+    file_content = ''
     for i in range(2):
         loading_scores = pd.Series(pca.components_[i], index=genes)
         sorted_loading_scores = loading_scores.abs().sort_values(ascending=False)
 
         top_10_genes = sorted_loading_scores[0:10].index.values
 
-        print(loading_scores[top_10_genes])
+
+        file_content += f'PCA{str(i+1)}\n{str(loading_scores[top_10_genes])}\n\n'
+        write_text_file(dir + '/loading_scores.txt', file_content)
+
+
+
+
 

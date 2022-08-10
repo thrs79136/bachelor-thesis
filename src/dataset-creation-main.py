@@ -111,7 +111,7 @@ def remove_duplicates():
 
 
 settings.init_logger('add_spotify_ids.log')
-spotify_api.init()
+spotify_api.init_spotify()
 
 bin_file = '../data/songs.pickle'
 #

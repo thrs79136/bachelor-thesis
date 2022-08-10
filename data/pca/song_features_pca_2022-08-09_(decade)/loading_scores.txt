@@ -1,0 +1,26 @@
+PCA1
+tonic_percentage             0.619869
+Verschiedene Akkorde        -0.524897
+get_added_seventh_use        0.369201
+Verschiedene Akkordfolgen   -0.262810
+dominant_percentage         -0.191579
+Dauer in ms                 -0.191309
+minor_percentage            -0.174421
+Akkordabstände              -0.149893
+tempo                        0.088250
+circle_of_fifths_dist        0.029781
+dtype: float64
+
+PCA2
+Akkordabstände              -0.512185
+minor_percentage             0.437686
+dominant_percentage         -0.386507
+get_added_seventh_use        0.318833
+Verschiedene Akkorde         0.309099
+circle_of_fifths_dist        0.304648
+Dauer in ms                  0.272146
+tempo                       -0.115853
+Verschiedene Akkordfolgen    0.110107
+tonic_percentage             0.084221
+dtype: float64
+

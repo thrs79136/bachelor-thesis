@@ -10,7 +10,7 @@ global spotify_client
 logger = logging.getLogger(__name__)
 
 
-def init():
+def init_spotify():
     global spotify_client
     os.environ["SPOTIPY_CLIENT_ID"] = "f07521880b844d5395aa7dde0588a6bf"
     os.environ["SPOTIPY_CLIENT_SECRET"] = "ade1c1e5bb314845a334a7b890f1968a"
@@ -52,3 +52,8 @@ def get_audio_features(song_id: string):
     return spotify_client.audio_features([song_id])
 
 
+def get_popularity(song_id: string):
+    global spotify_client
+
+    res = spotify_client.track(song_id)
+    return res['popularity']

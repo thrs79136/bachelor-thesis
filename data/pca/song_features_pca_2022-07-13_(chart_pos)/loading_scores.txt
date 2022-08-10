@@ -1,0 +1,20 @@
+PCA1
+tension_use                  0.638930
+different_keys               0.570756
+absolute_surprise           -0.308339
+different_sections_count    -0.283608
+minor_perc                   0.243857
+non_triad_rate              -0.138213
+section_repetitions_count   -0.109225
+dtype: float64
+
+PCA2
+different_sections_count     0.543522
+absolute_surprise            0.501480
+section_repetitions_count   -0.453579
+minor_perc                   0.356359
+non_triad_rate               0.243545
+tension_use                  0.217297
+different_keys               0.117657
+dtype: float64
+

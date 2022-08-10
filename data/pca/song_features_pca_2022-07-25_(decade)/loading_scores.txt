@@ -1,0 +1,26 @@
+PCA1
+dominant_percentage                   0.531424
+v_to_i                                0.515879
+i_to_v                                0.504828
+major_percentage                      0.311642
+absolute_surprise                    -0.217675
+different_sections_count             -0.180146
+tonic_percentage                      0.105109
+get_added_seventh_use                 0.068191
+circle_of_fifths_dist_largest_dist   -0.048115
+section_repetitions                   0.040462
+dtype: float64
+
+PCA2
+tonic_percentage                      0.523690
+get_added_seventh_use                 0.502366
+absolute_surprise                    -0.377580
+different_sections_count             -0.346075
+dominant_percentage                  -0.319757
+section_repetitions                   0.272744
+v_to_i                               -0.155754
+major_percentage                      0.070750
+circle_of_fifths_dist_largest_dist    0.066593
+i_to_v                               -0.026621
+dtype: float64
+

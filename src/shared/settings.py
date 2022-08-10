@@ -4,8 +4,7 @@ import logging.handlers
 from logging import Logger
 import os
 
-import spotipy
-from spotipy import SpotifyClientCredentials
+
 
 global songs_file
 songs_file = '../data/songs-finished.csv'
@@ -140,7 +139,6 @@ all_genres = [
     'work-out',
     'world-music'
   ]
-
 
 
 def get_logger(logfile_path: string) -> logging.Logger:

@@ -124,10 +124,11 @@ class RomNumNotations(Enum):
 
 class RomNumNotation:
 
-    def __init__(self, rom_num_notation: RomNumNotations, rom_num: str, maj_or_min: MajOrMin, chord_type: str = None):
+    def __init__(self, rom_num_notation: RomNumNotations, rom_num: str, maj_or_min: MajOrMin, chord_name: str = None):
         self.rom_num_notation = rom_num_notation
         self.roman_number = rom_num
         self.maj_or_min = maj_or_min
+        self.chord_name = chord_name
 
     @classmethod
     def from_number_and_type(cls, rom_num: str, chord_type: MajOrMin):
@@ -262,7 +263,10 @@ class McGillChord(Chord):
         self.chord_type = chord_type
 
         rom_num_not = RomNumNotations(roman_number_id)
-        self.roman_numeral_notation = RomNumNotation(rom_num_not, rom_num_not.name, chord_type, self.extension)
+        split_chord = self.mcgill_chord_name.split(':')
+        if len(split_chord) == 0 or len(split_chord) > 2:
+            x = 42
+        self.roman_numeral_notation = RomNumNotation(rom_num_not, rom_num_not.name, chord_type, split_chord[1])
 
     # def add_roman_numeral_notation_old(self, tonic: string):
     #     roman_number = RomNumNotations(abs(note_to_interval[tonic] - note_to_interval[self.root.base_name]))

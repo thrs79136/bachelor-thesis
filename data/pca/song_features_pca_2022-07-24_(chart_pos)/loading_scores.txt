@@ -1,0 +1,18 @@
+PCA1
+circle_of_fifths_dist                 0.606759
+circle_of_fifths_dist_largest_dist    0.570977
+get_added_seventh_use                 0.426303
+absolute_surprise                    -0.307943
+tonic_percentage                      0.163925
+major_percentage                      0.048929
+dtype: float64
+
+PCA2
+tonic_percentage                      0.631369
+get_added_seventh_use                 0.413690
+circle_of_fifths_dist_largest_dist   -0.392789
+absolute_surprise                    -0.329515
+major_percentage                      0.295733
+circle_of_fifths_dist                -0.282688
+dtype: float64
+

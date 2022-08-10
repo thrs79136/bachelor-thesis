@@ -76,6 +76,10 @@ def get_corresponding_scale_distance_for_chord(chord: McGillChord, tonic, maj_or
     note_names = [f'{note.base_name}{note.accidentals.name}' for note in chord.notes]
 
     if previous_scale_key is None:
+
+        # TODO always use major test REMOVE
+        #scale_key = note_to_interval[tonic]
+
         if maj_or_min == MajOrMin.Major:
             scale_key = note_to_interval[tonic]
         else:
