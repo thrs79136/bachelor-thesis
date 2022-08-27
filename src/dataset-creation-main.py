@@ -4,7 +4,7 @@ from typing import List
 
 from src.helper import spotify_api
 from src.helper.file_helper import save_song, write_header, row_count, save_songs, get_songs_from_binary_file
-from src.helper.spotify_api import get_audio_features, get_spotify_song_id
+from src.helper.spotify_api import get_audio_features, get_spotify_song_id, get_playlist
 from src.models.song import Song
 
 from src.models.spotify_song_data import SpotifySongData
@@ -112,6 +112,7 @@ def remove_duplicates():
 
 settings.init_logger('add_spotify_ids.log')
 spotify_api.init_spotify()
+
 
 bin_file = '../data/songs.pickle'
 #

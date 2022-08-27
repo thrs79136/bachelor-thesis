@@ -2,6 +2,8 @@ import string
 import os
 import spotipy
 import logging
+
+from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
 
 from src.models.spotify_song_data import SpotifySongData
@@ -16,6 +18,29 @@ def init_spotify():
     os.environ["SPOTIPY_CLIENT_SECRET"] = "ade1c1e5bb314845a334a7b890f1968a"
     spotify_client = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
     print(spotify_client)
+
+
+playlist_ids = {
+    '1950s': '37i9dQZF1DWSV3Tk4GO2fq',
+    '1960s': '37i9dQZF1DXaKIA8E7WcJj',
+    '1970s': '37i9dQZF1DWTJ7xPn4vNaz',
+    '1980s': '37i9dQZF1DX4UtSsGT1Sbe',
+    '1990s': '37i9dQZF1DXbTxeAdrVG2l',
+    '2000s': '37i9dQZF1DX4o1oenSJRJd',
+    '2010s': '37i9dQZF1DX5Ejj0EkURtP',
+}
+
+def get_playlist_tracks(decade):
+    results = spotify_client.playlist_tracks(playlist_ids[decade])
+    tracks = results['items']
+    while results['next']:
+        results = spotify_client.next(results)
+        tracks.extend(results['items'])
+    return tracks
+
+# unused
+def get_track_analysis(song):
+    return spotify_client.audio_analysis(song.spotify_id)
 
 
 def get_spotify_song_id(song_name: str, artist: str) -> string:

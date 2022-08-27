@@ -3,11 +3,17 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from sklearn.datasets import load_iris
 from sklearn.manifold import TSNE
+from sklearn import preprocessing
 
-from src.dimension_reduction.common import add_labels_and_ellipses, color_palette, decade_color_map, feature_list, \
-    add_labels_and_ellipses_for_genres
 
-data = pd.read_csv('./../data/csv/song_features.csv')
+from src.dimension_reduction.common import create_scatterplot_with_ellipses, color_palette, decade_color_map, \
+    feature_list, \
+    add_labels_and_ellipses_for_genres, spotify_playlists_path
+
+dir = '../../data/img/plots/scatter_plots/dimension_reduction/t-SNE'
+
+#data = pd.read_csv('./../data/csv/song_features.csv')
+data = pd.read_csv(spotify_playlists_path)
 
 dropped_columns  = [
     'decade',
@@ -58,7 +64,10 @@ data_dropped = data[
 # 10 - 1000
 m = TSNE(learning_rate=100)
 
-tsne_features = m.fit_transform(data_dropped)
+scaled_data = preprocessing.scale(data_dropped)
+
+
+tsne_features = m.fit_transform(scaled_data)
 
 data['x'] = tsne_features[:,0]
 data['y'] = tsne_features[:,1]
@@ -84,19 +93,18 @@ def map_artist(input):
 
     x = 42
 
-fig, ax = plt.subplots()
-plt.scatter(
-    tsne_features[:,0],
-    tsne_features[:,1],
-    s=50,
-    marker='o',
-    c=[color_palette[x] for x in data.decade.map(decade_color_map)],
-    #c=[x for x in data.artist.map(map_artist)],
-    edgecolors='white',
-)
+# fig, ax = plt.subplots()
+# plt.scatter(
+#     tsne_features[:,0],
+#     tsne_features[:,1],
+#     s=50,
+#     marker='o',
+#     c=[color_palette[x] for x in data.decade.map(decade_color_map)],
+#     #c=[x for x in data.artist.map(map_artist)],
+#     edgecolors='white',
+# )
 
 #sns.scatterplot(x='x', y='y', hue='decade', data=data)
 
-add_labels_and_ellipses(ax, data, tsne_features[:,0], tsne_features[:,1])
+create_scatterplot_with_ellipses(data, tsne_features[:, 0], tsne_features[:, 1], dir, 't-SNE')
 
-plt.show()

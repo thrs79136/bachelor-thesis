@@ -11,12 +11,35 @@ from matplotlib import pyplot as plt
 from src.helper.img.boxplot import create_boxplot
 from src.helper.img.scatterplot import create_scatter_plot
 from src.models.song import Song
+from src.models.song_feature import SongFeature
 from src.models.spotify_song_data import SpotifySongData
 from scipy.stats import chi2
 
-
 figure_number = 0
 most_common_genres = ['rock', 'pop', 'soul', 'country', 'blues']
+
+
+def analyze_feature_correlation(x_values, y_values, x_label, y_label, title, filename, directory=None, use_pearson=True, draw_plot=True):
+
+    if use_pearson:
+        test_result = stats.pearsonr(x_values, y_values)
+        suptitle = f'n={len(x_values)} r={test_result[0]}, p={test_result[1]}'
+    else:
+        test_result = stats.spearmanr(x_values, y_values)
+        suptitle = f'n={len(x_values)} r={test_result.correlation}, p={test_result.pvalue}'
+
+    if draw_plot:
+        create_scatter_plot(x_values,
+                            y_values,
+                            filename,
+                            title,
+                            suptitle,
+                            x_label,
+                            y_label,
+                            directory)
+
+    return test_result
+
 
 
 def analyze_song_feature_correlation_all_genres(songs: List[Song], get_feature_fn, feature_name, directory=''):
@@ -27,11 +50,53 @@ def analyze_song_feature_correlation_all_genres(songs: List[Song], get_feature_f
 
     # grouped by genre
     for genre in most_common_genres:
-
         analyze_song_feature_correlation(genres_dict[genre], get_feature_fn, feature_name, genre, directory)
 
 
-def analyze_song_groups(songs: List[Song], get_groups_fn, title, filename, groups_count = None, excluded_groups = None, group_order = None,
+# creates box plots
+def compare_feature_among_genres(songs: List[Song], feature: SongFeature):
+    genres_dict = get_common_genres_dictionary(songs)
+    box_plot_values = []
+
+    feature_fn = feature.feature_fn
+    parameters = feature.parameters
+
+    for song_list in genres_dict.values():
+        feature_expr = []
+        for song in song_list:
+            parameter_list = [song] + parameters
+            feature_expr.append(feature_fn(*parameter_list))
+
+        box_plot_values.append(feature_expr)
+
+    title = feature.feature_display_name
+    filename = f'{feature.feature_id}.jpg'
+
+    oneway_result = stats.f_oneway(*box_plot_values)
+    test_result_str = f'One-Way ANOVA test; F={oneway_result.statistic:.3f}; p={oneway_result.pvalue:.3f}'
+
+    stat, pvalue, med, tbl = stats.median_test(*box_plot_values)
+    median_test_result_str = f'Mood\'s median test; χ2={stat:.3f}; p={pvalue:.3f}'
+
+    test_result_str += f'\n{median_test_result_str}'
+
+    labels = [key.capitalize() for key in genres_dict.keys()]
+
+    pairwise_result = {}
+    if oneway_result.pvalue < 0.05:
+        for i, genre in enumerate(most_common_genres):
+            for j in range(i + 1, len(most_common_genres)):
+                other_genre = most_common_genres[j]
+                scores1 = box_plot_values[i]
+                scores2 = box_plot_values[i + 1]
+                stat, pvalue = stats.mood(scores1, scores2)
+                pairwise_result[f'{genre}-{other_genre}'] = pvalue
+
+    create_boxplot(box_plot_values, labels, title, test_result_str, filename, 'genres')
+
+
+def analyze_song_groups(songs: List[Song], get_groups_fn, title, filename, groups_count=None, excluded_groups=None,
+                        group_order=None,
                         box_plot_values_fn=None, use_spotify_popularity=True):
     groups_songs_dict = defaultdict(list)
 
@@ -44,7 +109,6 @@ def analyze_song_groups(songs: List[Song], get_groups_fn, title, filename, group
             groups_songs_dict[one_or_multiple_groups].append(song)
 
     groups_for_analysis = []
-
 
     if group_order is None:
         count = 0
@@ -86,6 +150,7 @@ def analyze_song_groups(songs: List[Song], get_groups_fn, title, filename, group
 
 transitions = []
 
+
 class Transition:
     def __init__(self, transition, corr, pvalue):
         self.transition = transition
@@ -93,7 +158,8 @@ class Transition:
         self.pvalue = pvalue
 
 
-def analyze_song_feature_correlation(songs: List[Song], get_feature_fn, feature_name, genre='all', directory='', feature_fn_parameters = None, use_spotify_popularity=True):
+def analyze_song_feature_correlation(songs: List[Song], get_feature_fn, feature_name, genre='all', directory='',
+                                     feature_fn_parameters=None, use_spotify_popularity=True):
     global transitions
 
     if not use_spotify_popularity:
@@ -121,7 +187,6 @@ def analyze_song_feature_correlation(songs: List[Song], get_feature_fn, feature_
         title += f' (Musikrichtung: {genre.capitalize()})'
     else:
         title += ' (Alle Musikrichtungen)'
-
 
     # if spearman_result.pvalue >= 0.02:
     #     return
@@ -151,20 +216,22 @@ def get_audio_feature_ranks(songs: List[Song], audio_feature: str):
     return audio_feature_ranks
 
 
-
-
-def create_audio_feature_scatter_plot(songs: List[Song], audio_feature_name: str, filename: str, genre: str = 'All genres'):
-
+def create_audio_feature_scatter_plot(songs: List[Song], audio_feature_name: str, filename: str,
+                                      genre: str = 'All genres'):
     songs_with_audio_features = [song for song in songs if song.spotify_song_data.audio_features_dictionary is not None]
 
     peak_chart_positions = [song.peak_chart_position for song in songs_with_audio_features]
-    audio_feature_values = [song.spotify_song_data.audio_features_dictionary[audio_feature_name] for song in songs_with_audio_features]
+    audio_feature_values = [song.spotify_song_data.audio_features_dictionary[audio_feature_name] for song in
+                            songs_with_audio_features]
     spearman_result = stats.spearmanr(peak_chart_positions, audio_feature_values)
 
     if spearman_result.pvalue < 0.05:
         print(f'{filename} statistically significant')
 
-    create_scatter_plot(peak_chart_positions, audio_feature_values, filename, f'{genre.capitalize()}', f'n={len(songs_with_audio_features)} r={spearman_result.correlation}, p={spearman_result.pvalue}', 'Peak chart position', audio_feature_name.capitalize())
+    create_scatter_plot(peak_chart_positions, audio_feature_values, filename, f'{genre.capitalize()}',
+                        f'n={len(songs_with_audio_features)} r={spearman_result.correlation}, p={spearman_result.pvalue}',
+                        'Peak chart position', audio_feature_name.capitalize())
+
 
 def create_chord_count_scatter_plot(songs: List[Song]):
     songs_with_audio_features = [song for song in songs if song.spotify_song_data.audio_features_dictionary is not None]
@@ -174,20 +241,20 @@ def create_chord_count_scatter_plot(songs: List[Song]):
 
 # spearman
 def get_rank_correlation_coefficient(rank_x: List[int], rank_y: List[int]) -> float:
-    rg_line_x = (len(rank_x) + 1)/2
-    rg_line_y = (len(rank_y) + 1)/2
+    rg_line_x = (len(rank_x) + 1) / 2
+    rg_line_y = (len(rank_y) + 1) / 2
     dividend = 0
     for i in range(len(rank_x)):
-        dividend += (rank_x[i] - rg_line_x)*(rank_y[i]-rg_line_y)
+        dividend += (rank_x[i] - rg_line_x) * (rank_y[i] - rg_line_y)
 
     divisor_sum_x = 0
     divisor_sum_y = 0
     for i in range(len(rank_x)):
-        divisor_sum_x += (rank_x[i] - rg_line_x)**2
-        divisor_sum_y += (rank_y[i] - rg_line_y)**2
-    divisor = sqrt(divisor_sum_x)*sqrt(divisor_sum_y)
+        divisor_sum_x += (rank_x[i] - rg_line_x) ** 2
+        divisor_sum_y += (rank_y[i] - rg_line_y) ** 2
+    divisor = sqrt(divisor_sum_x) * sqrt(divisor_sum_y)
 
-    return dividend/divisor
+    return dividend / divisor
 
 
 # non parametric alternatives
@@ -201,7 +268,7 @@ class TTestResult:
 # returns true if correlation is statistically significant
 def t_test(rho, n):
     t_value = rho * sqrt((n - 2) / (1 - rho * rho))
-    P = scipy.stats.t.sf(abs(t_value), n-2)
+    P = scipy.stats.t.sf(abs(t_value), n - 2)
     print(P)
     return TTestResult(P < 0.05, t_value)
 
@@ -214,7 +281,6 @@ def get_rank_correlation_coefficient_from_value_lists(value_x: List[int], value_
 
 
 def create_genre_scatter_plots(songs: List[Song]):
-
     songs_with_audio_features = [song for song in songs if song.spotify_song_data.audio_features_dictionary is not None]
 
     for audio_feature in SpotifySongData.audio_feature_keys:
@@ -231,6 +297,7 @@ def create_genre_scatter_plots(songs: List[Song]):
             if audio_feature != 'mode' and audio_feature != 'key':
                 create_audio_feature_scatter_plot(genre_songs, audio_feature, f'{genre}_{audio_feature}.png', genre)
 
+
 def get_median_chart_positions(songs: List[Song], audio_feature: str):
     dict = {}
 
@@ -241,7 +308,6 @@ def get_median_chart_positions(songs: List[Song], audio_feature: str):
         if song.spotify_song_data.audio_features_dictionary is not None:
             audio_feature_value = song.spotify_song_data.audio_features_dictionary[audio_feature]
             grouped_songs[audio_feature_value].append(song.peak_chart_position)
-
 
     for key, value in grouped_songs.items():
         median = statistics.median(value)
@@ -254,11 +320,21 @@ def get_median_chart_positions(songs: List[Song], audio_feature: str):
     return dict
 
 
-def get_genres_dictionary(songs: List[Song], exclude_songs_without_spotify_data = False):
+def get_genres_dictionary(songs: List[Song]):
     genres_dictionary = defaultdict(list)
     for song in songs:
         for genre in song.genres:
             genres_dictionary[genre].append(song)
+
+    return genres_dictionary
+
+
+def get_common_genres_dictionary(songs: List[Song]):
+    genres_dictionary = defaultdict(list)
+    for song in songs:
+        for genre in song.genres:
+            if genre in most_common_genres:
+                genres_dictionary[genre].append(song)
 
     return genres_dictionary
 
@@ -273,10 +349,11 @@ def get_decades_dictionary(songs: List[Song]):
         len_dict[k] = len(v)
     return decades_dict
 
+
 # BAR PLOTS
 def split(a, n):
     k, m = divmod(len(a), n)
-    return (a[i*k+min(i, m):(i+1)*k+min(i+1, m)] for i in range(n))
+    return (a[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n))
 
 
 def get_audio_feature_median(songs: List[Song], audio_feature: str):
@@ -293,8 +370,8 @@ def create_bar_plot(values, filename: str):
     ax = fig.add_axes([0, 0, 1, 1])
     ax.bar([i for i in range(len(values))], values)
     plt.show()
-    #plt.savefig('../data/plots/bar_plots/' + filename)
-    #plt.close()
+    # plt.savefig('../data/plots/bar_plots/' + filename)
+    # plt.close()
 
 
 def create_audio_feature_bar_plot(songs: List[Song], audio_feature: str):
@@ -302,6 +379,7 @@ def create_audio_feature_bar_plot(songs: List[Song], audio_feature: str):
     songs_with_audio_features.sort(key=lambda song: song.peak_chart_position)
     sorted_chunks = list(split(songs_with_audio_features, 10))
     medians = [get_audio_feature_median(chunk, audio_feature) for chunk in sorted_chunks]
+
 
 # TABLES
 
@@ -333,7 +411,7 @@ def create_key_table(songs: List[Song], filename: str, genre: str = None):
 
     genre_str = '' if genre is None else f'({genre.capitalize()})'
     plt.title(f'Höchste Chartposition (Median) nach Tonart {genre_str}',
-                 fontweight="bold", y=1.05)
+              fontweight="bold", y=1.05)
     plt.suptitle(kruskal_res_str, fontsize=10, y=0.91)
 
     plt.savefig('../data/img/tables/' + filename, bbox_inches="tight")
@@ -346,7 +424,6 @@ def create_mode_table(songs: List[Song], filename: str, genre: str = None):
     result = get_median_chart_positions(songs, 'mode')
 
     test_result = stats.mannwhitneyu(['TODO'], ['TODO'], method="exact")
-
 
     val1 = ['Moll', 'Dur']
     val3 = [[res['median'] for res in result.values()],
@@ -365,8 +442,7 @@ def create_mode_table(songs: List[Song], filename: str, genre: str = None):
     genre_str = '' if genre is None else f'({genre.capitalize()})'
 
     plt.title(f'Höchste Chartposition (Median) nach Tongeschlecht {genre_str}',
-                 fontweight="bold")
-
+              fontweight="bold")
 
     plt.axis('off')
     plt.grid('off')
@@ -380,4 +456,3 @@ def group_by_year(songs: List[Song]):
         years_dict[song.chart_year].append(song)
 
     return years_dict
-

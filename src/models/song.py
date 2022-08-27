@@ -1,5 +1,7 @@
 import json
+import os
 from collections import defaultdict
+from os.path import exists
 from typing import List, Iterable
 import re
 import logging
@@ -85,6 +87,10 @@ class Song:
         self.spotify_id = spotify_id
         self.cadences = None
         self.features = features
+        # classified as positive or negative
+        self.sentiments = None
+        # love, surprise, anger, sadness
+        self.emotions = None
 
     @classmethod
     def from_csv_row(cls, csv_row: Iterable):
@@ -209,6 +215,82 @@ class Song:
     def get_spotify_feature(self, key):
         return self.spotify_song_data.audio_features_dictionary[key]
 
+    def get_lyrics(self):
+        artist = ''.join(e for e in self.artist if e.isalnum())
+        song_name = ''.join(e for e in self.song_name if e.isalnum())
+        filename = f'{self.mcgill_billboard_id}-{artist}-{song_name}-lyrics.txt'
+        path = f'../data/songs/lyrics/{filename}'
+
+        file = open(path, "r", encoding='utf-8')
+        file_len = sum(1 for line in open(path, "r", encoding='utf-8'))
+        content = ''
+        for i, line in enumerate(file):
+            if i == 0:
+                split_string = line.split('Lyrics')
+                if len(split_string) > 1:
+                    content += split_string[1]
+                    continue
+            # last line
+            if i == file_len - 1:
+                line = re.sub(r'(\d+)?Embed', '', line)
+            content += line
+
+        content = re.sub(r'\[[^)]*\]', '', content)
+        return content
+
+    def get_sentiment(self, sentiment):
+        for el in self.emotions:
+            if el['label'] == sentiment:
+                return el['score']
+        return None
+
+    def get_sentiment_pos_neg(self, sentiment):
+        if sentiment == 'POSITIVE' or sentiment == 'NEGATIVE':
+            for el in self.sentiments:
+                if el['label'] == sentiment:
+                    return el['score']
+
+        return None
+
+    # FEATURES
+
+    def get_chorus_repetitions(self):
+        chorus_count = 0
+        for section in self.mcgill_billboard_song_data.sections:
+            if section.name == 'chorus':
+                chorus_count += 1
+
+        return chorus_count
+
+    def standard_chord_perc(self):
+        standard_chord_count = 0
+        total_chord_count = 0
+        for section in self.mcgill_billboard_song_data.sections:
+            chords = section.get_progression_chords()
+            total_chord_count += len(chords)
+            for chord in chords:
+                chord_name = chord.mcgill_chord_name.split(':')[1]
+                if chord_name == 'min' or chord_name == 'maj':
+                    standard_chord_count += 1
+
+        return standard_chord_count/total_chord_count
+
+
+    # different chords per bar average
+    def get_average_chords_per_bar(self):
+        total_chord_count = 0
+        total_bar_count = 0
+        for section in self.mcgill_billboard_song_data.sections:
+            for element in section.content:
+                if isinstance(element, Bar):
+                    total_bar_count += 1
+                    for bar_element in element.content:
+                        if isinstance(bar_element, McGillChord):
+                            total_chord_count += 1
+
+        return total_chord_count/total_bar_count
+
+
     def get_chord_distances(self):
         total_chords_count = 0
         previous_chord_id = None
@@ -218,6 +300,23 @@ class Song:
             chords = section.get_progression_chords()
             for chord in chords:
                 chord_id = chord.roman_numeral_notation.rom_num_notation.value
+                if previous_chord_id is not None and chord_id != previous_chord_id:
+                    distance_sum += distance(chord_id, previous_chord_id)
+                previous_chord_id = chord_id
+            total_chords_count += len(chords)
+
+        return distance_sum / total_chords_count
+
+
+    def get_chord_distances2(self):
+        total_chords_count = 0
+        previous_chord_id = None
+        distance_sum = 0
+
+        for section in self.mcgill_billboard_song_data.sections:
+            chords = section.get_progression_chords()
+            for chord in chords:
+                chord_id = (chord.roman_numeral_notation.rom_num_notation.value + chord.mcgill_intervals[0]) % 12
                 if previous_chord_id is not None and chord_id != previous_chord_id:
                     distance_sum += distance(chord_id, previous_chord_id)
                 previous_chord_id = chord_id
@@ -422,9 +521,6 @@ class Song:
                 if ':5' in chord.mcgill_chord_name:
                     count += 1
                     break
-
-        if count > 0:
-            power_chords += 1
 
         return count / total_count
 
@@ -861,4 +957,39 @@ class Song:
     # compare songs by peak chart position
     def __lt__(self, other):
         return self.peak_chart_position < other.peak_chart_position
+
+    def has_lyrics(self):
+        exi = False
+        # old version
+        filename = f'{self.mcgill_billboard_id}-{self.artist}-{self.song_name}-lyrics.txt'
+        path_to_file = f'../data/songs/lyrics/{filename}'
+        exi  = exists(path_to_file)
+        if exi:
+            return True
+
+        # omit special characters
+        artist = ''.join(e for e in self.artist if e.isalnum())
+        song_name = ''.join(e for e in self.song_name if e.isalnum())
+
+        filename = f'{self.mcgill_billboard_id}-{artist}-{song_name}-lyrics.txt'
+        path_to_file = f'../data/songs/lyrics/{filename}'
+        return exists(path_to_file)
+
+    def rename_lyrics_file(self):
+
+        filename_old = f'{self.mcgill_billboard_id}-{self.artist}-{self.song_name}-lyrics.txt'
+        artist = ''.join(e for e in self.artist if e.isalnum())
+        song_name = ''.join(e for e in self.song_name if e.isalnum())
+        filename_new = f'{self.mcgill_billboard_id}-{artist}-{song_name}-lyrics.txt'
+
+
+        path_old = f'../data/songs/lyrics/{filename_old}'
+        path_new = f'../data/songs/lyrics/{filename_new}'
+
+        if exists(path_old) and not exists(path_new):
+            os.rename(path_old, path_new)
+
+
+
+
 

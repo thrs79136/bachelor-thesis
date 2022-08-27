@@ -1,15 +1,21 @@
 import pickle
 import shutil
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from typing import List
 
 import numpy as np
+import pandas as pd
+import pysftp
 
+# from src.helper.statistics.sentiment_analysis import sentiment_analysis_init, get_lyrics_emotions, \
+#     start_sentiment_analysis
+from src.dimension_reduction.common import feature_list
 from src.helper.absolute_surprise import init_progressions_dict, get_quartile_surprises, get_song_surprise, \
     analyze_absolute_surprises, get_different_progressions_feature, uses_doo_wop_progression
 from src.helper.absolute_surprise_chords import analyze_absolute_surprises_chords, init_chords_dict
+from src.helper.classification.k_nearest_neighbor import k_nearest_neighbor
 from src.helper.file_helper import get_songs_from_binary_file, get_songs, save_feature_csv, get_songs_from_feature_csv, \
-    save_median_feature_csv
+    save_median_feature_csv, save_dataframe
 from src.helper.img.boxplot import create_boxplot
 from src.helper.img.lineplot import lineplot_multiple_lines, stacked_area_plot, lineplot
 from src.helper.img.parallel_coordinates import create_parallel_coordinates_plot, create_parallel_coordinates_plot_new, \
@@ -17,20 +23,26 @@ from src.helper.img.parallel_coordinates import create_parallel_coordinates_plot
 from src.helper.img.pca import pca_test2, get_genres_to_color, chart_pos_to_color, popularity_to_color, decade_to_color
 from src.helper.artists import group_by_artist, init_artists_dict, get_artist_feature_coordinates, \
     draw_feature_line_plot_with_artist_coordinates
-from src.helper.spotify_api import get_popularity, init_spotify
+from src.helper.spotify_api import get_popularity, init_spotify, get_track_analysis, get_playlist_tracks, playlist_ids
 from src.helper.statistics_helper import get_genres_dictionary, \
     most_common_genres, create_key_table, create_genre_scatter_plots, t_test, \
-    analyze_song_feature_correlation, analyze_song_groups, group_by_year
+    analyze_song_feature_correlation, analyze_song_groups, group_by_year, compare_feature_among_genres
+from src.helper.years_scatterplot import draw_year_scatter_plots, test_chart_pos
 from src.helper.years import draw_feature_line_plot, draw_genres_line_plot, \
     draw_genres_area_plot, draw_genres_perc_line_plots, draw_genre_feature_line_plots, init_years_dict, \
-    draw_progressions_line_plot, draw_feature_line_plot_with_pos1_coordinates
+    draw_progressions_line_plot, draw_feature_line_plot_with_pos1_coordinates, draw_mode_area_plot, \
+    draw_feature_line_plot_from_song_feature, draw_sentiment_lineplot, draw_sentiment_lineplot2, analyze_instruments
 from src.models.mgill_chord import RomNumNotations
 from src.models.pca_config import PCAConfig
 from src.models.song import Song, key_dict
-from src.shared import settings, dictionaries
+from src.models.spotify_playlist import SpotifyPlaylist
+from src.models.spotify_song_data import audio_feature_keys
+from src.models.spotify_track import SpotifyTrack, to_dataframe
+from src.shared import settings, song_features
+from src.helper.lyrics_genius import save_song_lyrics, save_song_lyrics2
 
 # TODO move to scatter plot
-from src.shared.dictionaries import init_song_features
+from src.shared.song_features import init_song_features
 
 
 def test_correlation_significance(songs):
@@ -155,8 +167,11 @@ def create_artists_lineplot(songs: List[Song]):
 
 
 def start_correlation_analysis(songs: List[Song]):
-    analyze_song_feature_correlation(songs, Song.get_similar_chords, 'Verwendung ähnlicher Folgen', use_spotify_popularity=True, directory='spotify_popularity')
-    analyze_song_feature_correlation(songs, Song.get_similar_chords, 'Verwendung ähnlicher Folgen test', use_spotify_popularity=False, directory='spotify_popularity')
+    analyze_song_feature_correlation(songs, Song.get_average_chords_per_bar, 'test', use_spotify_popularity=True, directory='spotify_popularity')
+    analyze_song_feature_correlation(songs, Song.get_average_chords_per_bar, 'test test', use_spotify_popularity=False, directory='spotify_popularity')
+
+    analyze_song_feature_correlation(songs, Song.standard_chord_perc, 'test2', use_spotify_popularity=True, directory='spotify_popularity')
+    analyze_song_feature_correlation(songs, Song.standard_chord_perc, 'test test2', use_spotify_popularity=False, directory='spotify_popularity')
     # analyze_song_feature_correlation(songs, Song.get_chord_distances, 'Akkordabstände', use_spotify_popularity=True, directory='spotify_popularity')
     # analyze_song_feature_correlation(songs, Song.get_chord_distances, 'Akkordabstände test', use_spotify_popularity=False, directory='spotify_popularity')
 
@@ -169,26 +184,6 @@ def start_correlation_analysis(songs: List[Song]):
     return
 
 
-feature_list = [
-    # 'danceability',
-    # 'energy',
-    'major_percentage',
-    'absolute_surprise',
-    #'non_triad_chords_percentage',
-    'different_sections_count',
-    'section_repetitions',
-    'get_added_seventh_use',
-    # 'get_added_sixth_use',
-    # 'power_chords',
-    # 'neither_chords',
-    # 'circle_of_fifths_dist',
-    'circle_of_fifths_dist_largest_dist',
-    'tonic_percentage',
-    # 'supertonic_percentage',
-    'dominant_percentage',
-    'i_to_v',
-    'v_to_i'
-]
 
 feature_list1  = [
     # 'decade',
@@ -228,39 +223,7 @@ feature_list1  = [
 
 
 def start_parallel_coordinate_creation():
-    features = [
-    # 'danceability',
-    # 'energy',
-    'major_percentage',
-    'absolute_surprise',
-    #'non_triad_chords_percentage',
-    'different_sections_count',
-    'section_repetitions',
-    'get_added_seventh_use',
-    # 'get_added_sixth_use',
-    # 'power_chords',
-    # 'neither_chords',
-    'circle_of_fifths_dist',
-    # 'circle_of_fifths_dist_largest_dist',
-    'tonic_percentage',
-    # 'supertonic_percentage',
-    'dominant_percentage',
-    # 'i_to_v',
-    # 'v_to_i'
-    ]
-
-    features_arr = [
-    'major_percentage',
-    'circle_of_fifths_dist',
-    'get_added_seventh_use',
-    'tonic_percentage',
-    'dominant_percentage',
-    'section_repetitions',
-    'different_sections_count',
-    'absolute_surprise',
-    ]
-    create_parallel_coordinates_plot_newest(features_arr)
-
+    create_parallel_coordinates_plot_newest(feature_list)
 
 
 def start_pca(songs: List[Song]):
@@ -283,7 +246,7 @@ def start_pca(songs: List[Song]):
 
 
 def draw_feature_line_plots(songs: List[Song]):
-    draw_feature_line_plot(songs, Song.get_similar_chords, 'Verwendung ähnlicher Noten')
+    draw_feature_line_plot(songs, Song.get_chord_distances2, '1234test')
     return
     draw_feature_line_plot(songs, Song.get_chord_distances, 'Akkordabstände')
     draw_feature_line_plot(songs, Song.get_tension_use, 'Verwendung von Tensions')
@@ -301,10 +264,70 @@ def draw_feature_line_plots(songs: List[Song]):
     draw_feature_line_plot(songs_with_audio_features, Song.get_peak_chart_position, 'Höchste Chartposition')
     draw_feature_line_plot(songs_with_audio_features, Song.get_minor_count, 'Anteil von Mollakkorden')
 
+def draw_variance_lineplot(songs: List[Song]):
+    feature_list = [
+        'minor_percentage',
+        'major_percentage',
+        'absolute_surprise',
+        'circle_of_fifths_dist',
+        'circle_of_fifths_dist_largest_dist',
+        'danceability',
+        'energy',
+        'tonic_percentage',
+        'supertonic_percentage',
+        'dominant_percentage',
+        'non_triad_chords_percentage',
+        'different_sections_count',
+        'get_added_seventh_use',
+        'get_added_sixth_use',
+        'power_chords',
+        'neither_chords',
+        'section_repetitions',
+        'i_to_v',
+        'v_to_i',
+        'chart_pos',
+        'spotify_popularity',
+        'mode',
+        'tempo',
+        'valence',
+        'duration',
+        'chord_distances',
+        'different_chords',
+        'different_progressions',
+        'chord_surprise',
+        'average_chord_count_per_bar',
+        'minor_or_major',
+        'chorus_repetitions'
+    ]
+
+    for feature in feature_list:
+        song_feature = song_features.song_features_dict[feature]
+        draw_feature_line_plot_from_song_feature(songs, song_feature)
+
+
+
+# test_chart_pos()
+# draw_year_scatter_plots()
+# exit()
+
+#k_nearest_neighbor()
 
 settings.init_logger('analysis.log')
 init_song_features()
 init_spotify()
+
+
+# all_tracks = []
+# for playlist_id in playlist_ids.keys():
+#     tr = get_playlist_tracks(playlist_id)
+#     tracks = [SpotifyTrack.from_api_response(response, playlist_id[:-1]) for response in tr]
+#     all_tracks += tracks
+#
+# save_dataframe(to_dataframe(all_tracks), 'spotify.csv')
+
+#data = pd.read_csv('./../data/csv/years/1950s.csv')
+
+
 
 bin_file = '../data/songs.pickle'
 
@@ -315,8 +338,76 @@ bin_file = '../data/songs.pickle'
 #     pickle.dump(songs, file)
 # exit()
 
+
 songs: List[Song] = get_songs_from_binary_file(bin_file)
 songs_with_audio_features = [song for song in songs if song.spotify_song_data.audio_features_dictionary is not None]
+
+song_name_dict = defaultdict(list)
+for song in songs:
+    song_name_dict[song.song_name].append(str(song))
+
+n = len(song_name_dict.keys())
+
+duplicates_dict = {k: v for k, v in song_name_dict.items() if len(v) > 1}
+
+songs_with_lyrics = [song for song in songs_with_audio_features if song.sentiments is not None]
+
+
+init_progressions_dict(songs_with_lyrics)
+init_chords_dict(songs_with_lyrics)
+save_feature_csv(songs_with_lyrics, list(song_features.song_features_dict.keys()))
+exit()
+
+# save_song_lyrics2(songs_with_audio_features[351], "Baltimora", 'Tarzan Boy')
+# save_song_lyrics2(songs_with_audio_features[381], "Rod Stewart", 'Twistin the night away')
+# save_song_lyrics2(songs_with_audio_features[565], "The Beach Boys", 'Kokomo')
+# save_song_lyrics2(songs_with_audio_features[712], "Willie Mitchell", '20 75')
+
+
+# for song in songs_with_audio_features:
+#     if int(song.mcgill_billboard_id) < 5:
+#         save_song_lyrics(song)
+#
+# exit()
+
+
+
+
+start_parallel_coordinate_creation()
+
+exit()
+
+
+
+
+draw_variance_lineplot(songs_with_audio_features)
+# compare_feature_among_genres(songs_with_audio_features, features.song_features_dict['minor_percentage'])
+exit()
+
+
+draw_mode_area_plot(songs_with_audio_features)
+exit()
+
+#
+# init_progressions_dict(songs_with_audio_features)
+# init_chords_dict(songs_with_audio_features)
+# save_median_feature_csv(songs_with_audio_features, list(features.song_features_dict.keys()))
+
+
+
+
+
+
+draw_feature_line_plots(songs_with_audio_features)
+exit()
+
+start_correlation_analysis(songs_with_audio_features)
+exit()
+
+
+start_pca(songs_with_audio_features)
+exit()
+
 
 genres_dict = defaultdict(int)
 
@@ -330,48 +421,27 @@ init_artists_dict(songs)
 res = group_by_artist(songs_with_audio_features)
 
 exit()
-init_progressions_dict(songs_with_audio_features)
-init_chords_dict(songs_with_audio_features)
 
-save_feature_csv(songs_with_audio_features, list(dictionaries.song_features_dict.keys()))
-exit()
 
 draw_feature_line_plot_with_pos1_coordinates(songs_with_audio_features, Song.analyze_different_keys2, 'Anteil von Mollakkorden')
 exit()
 
-draw_feature_line_plots(songs_with_audio_features)
-
-exit()
-
-start_correlation_analysis(songs_with_audio_features)
-exit()
 
 
 
-
-
-start_pca(songs_with_audio_features)
-exit()
 
 # res = get_different_progressions_feature(songs_with_audio_features[0])
 # exit()
 
 # TODO number of different chords
 
-
-
-
-
 analyze_absolute_surprises_chords(songs_with_audio_features)
 exit()
 init_progressions_dict(songs_with_audio_features)
-# save_median_feature_csv(songs_with_audio_features, list(dictionaries.song_features_dict.keys()))
-# save_feature_csv(songs_with_audio_features, list(dictionaries.song_features_dict.keys()))
+# save_median_feature_csv(songs_with_audio_features, list(features.song_features_dict.keys()))
+# save_feature_csv(songs_with_audio_features, list(features.song_features_dict.keys()))
 # #songs = get_songs_from_feature_csv()
 # exit()
-
-start_parallel_coordinate_creation()
-exit()
 
 
 

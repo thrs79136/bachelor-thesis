@@ -299,6 +299,8 @@ def pca_test2(songs: List[Song], title, pca_config: PCAConfig):
     plt.savefig(dir + '/scree_plot.png')
     plt.show()
 
+    wt = range(pca_data.shape[0])
+
     pca_df = pd.DataFrame(pca_data, index=[*wt], columns=labels)
 
     # c=pca_df.index.map(color_map)

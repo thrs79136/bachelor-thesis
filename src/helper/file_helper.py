@@ -10,7 +10,7 @@ from src.helper.statistics_helper import group_by_year
 from src.models.mcgill_songdata import Bar
 from src.models.mgill_chord import McGillChord
 from src.models.song import Song
-from src.shared import dictionaries
+from src.shared import song_features
 
 global feature_file_path
 feature_file_path = '../data/csv/song_features.csv'
@@ -18,13 +18,19 @@ feature_file_path = '../data/csv/song_features.csv'
 global year_feature_file_path
 year_feature_file_path = '../data/csv/year_features.csv'
 
+global spotify_playlist_path
+spotify_playlist_path = '../data/csv/years'
+
 song_csv_header = ['mcgill_billboard_id', 'artist', 'song_name', 'chart_year', 'peak_chart_position', 'genres',
                    'spotify_song_data',
                    'spotify_id']
 
 def write_text_file(path: str, content: str):
-    file = open(path, "w")
-    file.write(content)
+    try:
+        file = open(path, "w", encoding = 'utf-8')
+        file.write(content)
+    except Exception:
+        x = 42
 
 
 def write_header(path: str):
@@ -129,13 +135,15 @@ def modify_billboard_index(oldpath: str, newpath: str):
     writing_file.close()
 
 
+def save_dataframe(df, filename):
+    df.to_csv(f'{spotify_playlist_path}/{filename}')
 
 def save_feature_csv(songs: List[Song], feature_names):
     with open(feature_file_path, "w", newline='') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',', escapechar='\\', quoting=csv.QUOTE_NONE)
         csvwriter.writerow(feature_names)
 
-        features = [dictionaries.song_features_dict[feature_name] for feature_name in feature_names]
+        features = [song_features.song_features_dict[feature_name] for feature_name in feature_names]
         for song in songs:
             csv_row = []
             for feature in features:
@@ -149,14 +157,20 @@ def save_median_feature_csv(songs: List[Song], feature_names):
 
     with open(year_feature_file_path, "w", newline='') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',', escapechar='\\', quoting=csv.QUOTE_NONE)
+
+        features = [song_features.song_features_dict[feature_name] for feature_name in feature_names if song_features.song_features_dict[feature_name].is_numerical]
+        feature_names = [feature.feature_id for feature in features]
+
         csvwriter.writerow(feature_names)
 
-        features = [dictionaries.song_features_dict[feature_name] for feature_name in feature_names]
         grouped_songs = group_by_year(songs)
 
         for year, year_songs in grouped_songs.items():
             year_medians = []
             for feature in features:
+                if not feature.is_numerical:
+                    continue
+
                 feature_expr = []
                 for song in year_songs:
                     parameters = [song] + feature.parameters

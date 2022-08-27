@@ -14,7 +14,7 @@ from src.models.song import Song
 from matplotlib.pyplot import figure
 
 from src.models.song_feature import SongFeature
-from src.shared import dictionaries
+from src.shared import song_features
 
 # def create_parallel_coordinates_years_plot(feature_names):
 #
@@ -86,7 +86,7 @@ def create_parallel_coordinates_plot_newest(feature_names):
     test = df['decade'].cat.categories
 
 
-    plt.gcf().subplots_adjust(bottom=0.4)
+    plt.gcf().subplots_adjust(bottom=0.6)
     fig.text(0.1, 0.02, description_text,
              horizontalalignment='left', wrap=True)
 

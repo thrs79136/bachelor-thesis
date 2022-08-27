@@ -1,0 +1,26 @@
+PCA1
+minor_or_major           -0.510585
+circle_of_fifths_dist     0.369871
+chord_distances          -0.367395
+get_added_seventh_use     0.358622
+different_chords          0.333394
+minor_percentage          0.323449
+dominant_percentage      -0.243250
+different_progressions    0.165718
+duration                  0.164110
+chorus_repetitions       -0.075459
+dtype: float64
+
+PCA2
+tonic_percentage               0.509062
+different_chords              -0.441436
+get_added_seventh_use          0.368761
+different_sections_count      -0.339460
+duration                      -0.329028
+average_chord_count_per_bar   -0.277129
+chorus_repetitions            -0.226927
+minor_percentage              -0.182592
+circle_of_fifths_dist          0.133616
+dominant_percentage           -0.064217
+dtype: float64
+
