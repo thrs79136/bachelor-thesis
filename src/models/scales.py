@@ -76,10 +76,6 @@ def get_corresponding_scale_distance_for_chord(chord: McGillChord, tonic, maj_or
     note_names = [f'{note.base_name}{note.accidentals.name}' for note in chord.notes]
 
     if previous_scale_key is None:
-
-        # TODO always use major test REMOVE
-        #scale_key = note_to_interval[tonic]
-
         if maj_or_min == MajOrMin.Major:
             scale_key = note_to_interval[tonic]
         else:
@@ -106,11 +102,21 @@ def get_corresponding_scale_distance_for_chord(chord: McGillChord, tonic, maj_or
     chord_scale_key = note_to_interval[root]
     if chord.chord_type == MajOrMin.Minor:
         chord_scale_key = get_minor_scale_id(tonic)
-    if scale_key == 5 and chord_scale_key == 0:
+    elif chord.chord_type == MajOrMin.Major:
+        x = 42
+
+    if chord.chord_type == MajOrMin.Neither:
+        cloned_chord = chord.clone()
+
+        notes_without_tensions = []
+        for i,v in enumerate(chord.mcgill_intervals):
+            x = 42
+        indices = [i for i, v in enumerate(chord.mcgill_intervals) if v <= 11]
+
+
+        test_res = get_corresponding_scale_distance_for_chord(clone_chord, tonic, maj_or_min, previous_scale_key)
         x = 42
     res = get_scale_distance(scale_key, chord_scale_key)
-    if res == -11:
-        x = 42
     return abs(res)/6, chord_scale_key, res
 
 

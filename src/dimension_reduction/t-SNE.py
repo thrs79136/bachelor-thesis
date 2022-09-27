@@ -12,8 +12,8 @@ from src.dimension_reduction.common import create_scatterplot_with_ellipses, col
 
 dir = '../../data/img/plots/scatter_plots/dimension_reduction/t-SNE'
 
-#data = pd.read_csv('./../data/csv/song_features.csv')
-data = pd.read_csv(spotify_playlists_path)
+data = pd.read_csv('../../data/csv/song_features.csv')
+# data = pd.read_csv(spotify_playlists_path)
 
 dropped_columns  = [
     'decade',

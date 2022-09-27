@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 
 figure_number = 0
 
@@ -67,9 +68,15 @@ def stacked_area_plot(x, y_lists, legend, xlabel, ylabel, filename, title, supti
     ylist_len = len(list(y_lists)[0])
     area_base_line = [0] * ylist_len
 
+    colors = sns.color_palette("Spectral", n_colors=len(legend))
+    # colors = sns.color_palette('magma', n_colors=len(legend))
+    coeff = 1
+    colors[2] = (coeff*0.9971549404075356**2, coeff*0.9118031526336025**2, coeff*0.6010765090349866**2)
+
+
     for index, y_list in enumerate(y_lists):
         area_upper_line = [sum(elts) for elts in zip(area_base_line, y_list)]
-        ax1.fill_between(x, area_base_line, area_upper_line, label=legend[index])
+        ax1.fill_between(x, area_base_line, area_upper_line, label=legend[index], color=colors[index])
         area_base_line = area_upper_line
 
     plt.legend(loc='upper right')

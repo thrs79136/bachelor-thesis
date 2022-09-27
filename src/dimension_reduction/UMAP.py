@@ -16,8 +16,8 @@ reducer = umap.UMAP()
 
 
 wd = os.getcwd()
-#data = pd.read_csv('../../data/csv/song_features.csv')
-data = pd.read_csv(spotify_playlists_path)
+data = pd.read_csv('../../data/csv/song_features.csv')
+#data = pd.read_csv(spotify_playlists_path)
 
 
 song_features = data[

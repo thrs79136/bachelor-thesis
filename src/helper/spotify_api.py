@@ -30,6 +30,24 @@ playlist_ids = {
     '2010s': '37i9dQZF1DX5Ejj0EkURtP',
 }
 
+playlist_ids_genres = {
+    'hiphop': '37i9dQZF1EQnqst5TRi17F',
+    'pop': '37i9dQZF1DX7C2BlYJgCS5',
+    'rock': '37i9dQZF1DX4vth7idTQch',
+    'blues': '37i9dQZF1DXd9rSDyQguIk',
+    'jazz': '37i9dQZF1DXbITWG1ZJKYt',
+    'country': '37i9dQZF1DWZBCPUIUs2iR'
+}
+
+def get_playlist_genre(genre):
+    print(f'get playlist for genre {genre}')
+    results = spotify_client.playlist_tracks(playlist_ids_genres[genre])
+    tracks = results['items']
+    while results['next'] and len(tracks) < 50:
+        results = spotify_client.next(results)
+        tracks.extend(results['items'])
+    return tracks
+
 def get_playlist_tracks(decade):
     results = spotify_client.playlist_tracks(playlist_ids[decade])
     tracks = results['items']

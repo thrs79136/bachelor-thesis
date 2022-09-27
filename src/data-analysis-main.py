@@ -13,7 +13,10 @@ from src.dimension_reduction.common import feature_list
 from src.helper.absolute_surprise import init_progressions_dict, get_quartile_surprises, get_song_surprise, \
     analyze_absolute_surprises, get_different_progressions_feature, uses_doo_wop_progression
 from src.helper.absolute_surprise_chords import analyze_absolute_surprises_chords, init_chords_dict
-from src.helper.classification.k_nearest_neighbor import k_nearest_neighbor
+from src.helper.genres import create_genres_dict
+from src.helper.knn.k_nearest_neighbor import k_nearest_neighbor, k_nearest_neighbor_genre, \
+    k_nearest_neighbor_decade_all_features
+from src.helper.knn.knn_regression import knn_regression
 from src.helper.file_helper import get_songs_from_binary_file, get_songs, save_feature_csv, get_songs_from_feature_csv, \
     save_median_feature_csv, save_dataframe
 from src.helper.img.boxplot import create_boxplot
@@ -23,7 +26,9 @@ from src.helper.img.parallel_coordinates import create_parallel_coordinates_plot
 from src.helper.img.pca import pca_test2, get_genres_to_color, chart_pos_to_color, popularity_to_color, decade_to_color
 from src.helper.artists import group_by_artist, init_artists_dict, get_artist_feature_coordinates, \
     draw_feature_line_plot_with_artist_coordinates
-from src.helper.spotify_api import get_popularity, init_spotify, get_track_analysis, get_playlist_tracks, playlist_ids
+from src.helper.spotify_api import get_popularity, init_spotify, get_track_analysis, get_playlist_tracks, playlist_ids, \
+    playlist_ids_genres, get_playlist_genre
+from src.helper.statistics.best_features_analyzer import get_best_features
 from src.helper.statistics_helper import get_genres_dictionary, \
     most_common_genres, create_key_table, create_genre_scatter_plots, t_test, \
     analyze_song_feature_correlation, analyze_song_groups, group_by_year, compare_feature_among_genres
@@ -31,8 +36,9 @@ from src.helper.years_scatterplot import draw_year_scatter_plots, test_chart_pos
 from src.helper.years import draw_feature_line_plot, draw_genres_line_plot, \
     draw_genres_area_plot, draw_genres_perc_line_plots, draw_genre_feature_line_plots, init_years_dict, \
     draw_progressions_line_plot, draw_feature_line_plot_with_pos1_coordinates, draw_mode_area_plot, \
-    draw_feature_line_plot_from_song_feature, draw_sentiment_lineplot, draw_sentiment_lineplot2, analyze_instruments
-from src.models.mgill_chord import RomNumNotations
+    draw_feature_line_plot_from_song_feature, draw_sentiment_lineplot, draw_sentiment_lineplot2, analyze_instruments, \
+    draw_genres_area_plot_new, draw_genres_line_plot_new
+from src.models.mgill_chord import RomNumNotations, McGillChord
 from src.models.pca_config import PCAConfig
 from src.models.song import Song, key_dict
 from src.models.spotify_playlist import SpotifyPlaylist
@@ -305,16 +311,44 @@ def draw_variance_lineplot(songs: List[Song]):
         draw_feature_line_plot_from_song_feature(songs, song_feature)
 
 
+def save_spotify_playlists(playlist_dict, filename):
+    all_tracks = []
+    for playlist_id in playlist_dict.keys():
+        tr = get_playlist_genre(playlist_id)
+        tracks = []
+        for response in tr:
+            spotifyTrack = SpotifyTrack.from_api_response_genre(response, playlist_id)
+            if spotifyTrack is None:
+                continue
+            tracks.append(spotifyTrack)
+        all_tracks += tracks
+
+    save_dataframe(to_dataframe(all_tracks, 'genre', SpotifyTrack.get_genre), f'{filename}.csv')
+
+
+
+#data = pd.read_csv('./../data/csv/years/1950s.csv')
 
 # test_chart_pos()
 # draw_year_scatter_plots()
 # exit()
 
-#k_nearest_neighbor()
+# res1 = get_best_features('./../data/csv/song_features.csv', 'year', 0.01, spearman=False)
+# res2 = get_best_features('./../data/csv/song_features.csv', 'chart_pos', 0.05, spearman=True)
+# res3 = get_best_features('./../data/csv/song_features.csv', 'spotify_popularity', 0.05, spearman=True)
+#
+# exit()
+#
+# knn_regression()
+# # k_nearest_neighbor_decade_all_features()
+# exit()
 
 settings.init_logger('analysis.log')
 init_song_features()
 init_spotify()
+
+# save_spotify_playlists(playlist_ids_genres, 'genres')
+# exit()
 
 
 # all_tracks = []
@@ -325,9 +359,9 @@ init_spotify()
 #
 # save_dataframe(to_dataframe(all_tracks), 'spotify.csv')
 
-#data = pd.read_csv('./../data/csv/years/1950s.csv')
 
 
+#draw_year_scatter_plots()
 
 bin_file = '../data/songs.pickle'
 
@@ -342,20 +376,40 @@ bin_file = '../data/songs.pickle'
 songs: List[Song] = get_songs_from_binary_file(bin_file)
 songs_with_audio_features = [song for song in songs if song.spotify_song_data.audio_features_dictionary is not None]
 
-song_name_dict = defaultdict(list)
-for song in songs:
-    song_name_dict[song.song_name].append(str(song))
-
-n = len(song_name_dict.keys())
-
-duplicates_dict = {k: v for k, v in song_name_dict.items() if len(v) > 1}
-
-songs_with_lyrics = [song for song in songs_with_audio_features if song.sentiments is not None]
+draw_genres_line_plot(songs_with_audio_features)
+draw_genres_area_plot_new(songs_with_audio_features)
+exit()
+genres_dict = create_genres_dict(songs_with_audio_features)
 
 
-init_progressions_dict(songs_with_lyrics)
-init_chords_dict(songs_with_lyrics)
-save_feature_csv(songs_with_lyrics, list(song_features.song_features_dict.keys()))
+# draw_genres_area_plot(songs_with_audio_features)
+
+test = [song.analyze_different_keys2() for song in songs_with_audio_features]
+
+init_progressions_dict(songs_with_audio_features)
+init_chords_dict(songs_with_audio_features)
+
+save_median_feature_csv(songs_with_audio_features, song_features.song_features_dict.keys())
+
+
+# song_name_dict = defaultdict(list)
+# for song in songs:
+#     song_name_dict[song.song_name].append(str(song))
+#
+# n = len(song_name_dict.keys())
+#
+# songs_with_lyrics = [song for song in songs_with_audio_features if song.sentiments is not None]
+#
+
+
+
+
+
+start_parallel_coordinate_creation()
+
+exit()
+
+#save_feature_csv(songs_with_lyrics, list(song_features.song_features_dict.keys()))
 exit()
 
 # save_song_lyrics2(songs_with_audio_features[351], "Baltimora", 'Tarzan Boy')
@@ -373,9 +427,6 @@ exit()
 
 
 
-start_parallel_coordinate_creation()
-
-exit()
 
 
 

@@ -6,6 +6,7 @@ import pandas as pd
 from scipy.stats import stats
 
 from src.helper.absolute_surprise import get_song_surprise
+from src.helper.genres import genres_genres, genres_accepted_genres
 from src.helper.img.lineplot import lineplot, lineplot_multiple_lines, stacked_area_plot
 from src.helper.statistics_helper import most_common_genres, get_genres_dictionary
 from src.models.song import Song
@@ -142,7 +143,7 @@ def draw_sentiment_lineplot(songs: List[Song]):
         spearman_result = stats.spearmanr(years, percentages)
         suptitle = f'n={len(songs)}; r={"{0:.3f}".format(spearman_result.correlation)}; p={"{0:.3f}".format(spearman_result.pvalue)}'
         if spearman_result.pvalue <= 0.05:
-            x =42
+            x = 42
 
 
         lineplot(years, percentages, 'Jahr', 'Sentiment', f'{sentiment}-years.png', suptitle=suptitle, dir='sentiments', title=sentiment.capitalize())
@@ -311,6 +312,14 @@ def draw_mode_area_plot(songs: List[Song]):
 def compare_genre_features_over_time(songs: List[Song]):
     pass
 
+
+def draw_genres_line_plot_new(songs: List[Song]):
+    years, genre_dict = get_year_genre_perc_dict(songs)
+
+    lineplot_multiple_lines(years, genre_dict.values(), list(genre_dict.keys()), 'Jahr', 'Anteil von Genres',
+                            'genre_perc_lines-.png',
+                            'Anteil von Genres')
+
 # looks like crap
 def draw_genres_line_plot(songs: List[Song]):
     global years_dict
@@ -342,6 +351,52 @@ def draw_genres_line_plot(songs: List[Song]):
                             'Anteil von Genres')
 
 
+def get_year_genre_perc_dict(songs):
+    global years_dict
+
+    init_years_dict(songs)
+    od = OrderedDict(sorted(years_dict.items()))
+    years = [int(year) for year in od.keys()]
+
+    genre_dict = defaultdict(list)
+
+    for year_index, item in enumerate(od.items()):
+
+        print(item[0])
+
+        song_list = item[1]
+        genre_song_count = defaultdict(int)
+        year_song_count = 0
+
+        for genre in genres_genres:
+            genre_dict[genre].append(0)
+
+        try:
+            for song in song_list:
+                song_genres = '-'.join(sorted([genre for genre in song.genres if genre in genres_accepted_genres]))
+                if song_genres in genres_genres:
+                    print(song_genres)
+                    genre_dict[song_genres][-1] += 1
+                    genre_song_count[song_genres] += 1
+                    year_song_count += 1
+        except Exception:
+            print(song.genres[0])
+
+        for genre in genres_genres:
+            genre_dict[genre][-1] = genre_dict[genre][-1] / year_song_count
+
+    return years, genre_dict
+
+
+def draw_genres_area_plot_new(songs: List[Song]):
+    years, genre_dict = get_year_genre_perc_dict(songs)
+
+    stacked_area_plot(years, genre_dict.values(), list(genre_dict.keys()), 'Jahr', 'Anteil von Genres',
+                      'genre_perc_-.png',
+                      'Anteil von Musikrichtungen im Zeitverlauf')
+
+
+
 # also looks like crap
 def draw_genres_area_plot(songs: List[Song]):
     global years_dict
@@ -353,7 +408,7 @@ def draw_genres_area_plot(songs: List[Song]):
     genre_dict = defaultdict(list)
 
     for year_index, song_list in enumerate(od.values()):
-        # genre_song_count = defaultdict(int)
+        genre_song_count = defaultdict(int)
 
         for genre in most_common_genres:
             genre_dict[genre].append(0)
@@ -361,12 +416,12 @@ def draw_genres_area_plot(songs: List[Song]):
         try:
             for song in song_list:
                 # only use songs with one genre
-                if len(song.genres) == 1 and genre_dict.get(song.genres[0], -1) != -1:
-                    genre_dict[song.genres[0]][-1] += 1
-                # for genre in most_common_genres:
-                #     if genre in song.genres:
-                #         genre_dict[genre][-1] += 1
-                # genre_song_count[genre] += 1
+                # if len(song.genres) == 1 and genre_dict.get(song.genres[0], -1) != -1:
+                #     genre_dict[song.genres[0]][-1] += 1
+                for genre in most_common_genres:
+                    if genre in song.genres:
+                        genre_dict[genre][-1] += 1
+                genre_song_count[genre] += 1
         except Exception:
             print(song.genres[0])
 
@@ -374,5 +429,6 @@ def draw_genres_area_plot(songs: List[Song]):
             genre_dict[genre][-1] = genre_dict[genre][-1] / len(song_list)
 
     stacked_area_plot(years, genre_dict.values(), list(genre_dict.keys()), 'Jahr', 'Anteil von Genres',
-                      'genre_perc.png',
+                      'genre_perc2.png',
                       'Anteil von Musikrichtungen im Zeitverlauf')
+

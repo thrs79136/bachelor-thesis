@@ -17,13 +17,13 @@ from src.helper.spotify_api import playlist_ids
 
 path = os.getcwd()
 
-dir = '../../data/img/plots/scatter_plots/dimension_reduction/pca_spotify'
+dir = '../../data/img/plots/scatter_plots/dimension_reduction/pca'
 
 
-data = pd.read_csv(f'../../data/csv/years/spotify.csv')
+#data = pd.read_csv(f'../../data/csv/years/spotify.csv')
 
 
-# data = pd.read_csv('../../data/csv/song_features.csv')
+data = pd.read_csv('../../data/csv/song_features.csv')
 
 print(data.head())
 print(data.shape)

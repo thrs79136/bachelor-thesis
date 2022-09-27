@@ -4,16 +4,15 @@ from matplotlib import pyplot as plt
 from sklearn import preprocessing
 from sklearn.manifold import MDS
 
-from src.dimension_reduction.common import feature_list, create_scatterplot_with_ellipses, spotify_playlists_path
+from src.dimension_reduction.common import feature_list, create_scatterplot_with_ellipses, spotify_playlists_path, \
+    get_data
 
-# data = pd.read_csv('../../data/csv/song_features.csv')
-data = pd.read_csv(spotify_playlists_path)
+data = pd.read_csv('../../data/csv/song_features.csv')
+#data = pd.read_csv(spotify_playlists_path)
 dir = '../../data/img/plots/scatter_plots/dimension_reduction/MDS'
 
 
-song_features = preprocessing.scale(data[
-    feature_list
-].values)
+song_features = get_data()
 
 mds = MDS(n_components=2)
 mds.fit_transform(song_features)

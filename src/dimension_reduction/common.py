@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.patches import Ellipse
 import seaborn as sns
@@ -7,14 +8,65 @@ from src.helper.img.pca import eigsorted
 from src.helper.statistics_helper import most_common_genres
 
 spotify_playlists_path = '../data/csv/years/spotify.csv'
+spotify_genres_playlists_path = '../data/csv/spotify_genres.csv'
 
-global decade_color_map
-decade_color_map = {1950: 0, 1960: 1, 1970: 2, 1980: 3, 1990: 4, 2000: 5, 2010: 6}
+global color_palette
+
+class DimensionReductionConfig:
+    def __init__(self, csv_file, feature_list, color_palette, color_map):
+        self.csv_file = csv_file
+        self.feature_list = feature_list
+        self.color_palette = color_palette
+        self.color_map = color_map
+
+
+audio_feature_keys = ['danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness',
+                      'instrumentalness', 'liveness', 'valence', 'tempo', 'duration_ms', 'time_signature']
+color_palette = sns.color_palette('magma', n_colors=7)
+decade_color_map = {
+    1950: 0,
+    1960: 1,
+    1970: 2,
+    1980: 3,
+    1990: 4,
+    2000: 5,
+    2010: 6
+}
+
+spotify_genres_config = DimensionReductionConfig(spotify_playlists_path, audio_feature_keys, color_palette, decade_color_map)
+
+
+
+current_config = spotify_genres_config
+
+
+
 
 global genre_color_map
 genre_color_map = {'pop': 0, 'rock': 1, 'soul': 2, 'country': 3, 'blues': 4}
 
-global feature_list
+global parallel_coordinates_feature_list
+parallel_coordinates_feature_list = [
+    'circle_of_fifths_dist',  # 1
+    'get_added_seventh_use',  # 2
+    'different_progressions',  # 3
+    'tonic_percentage',  # 4
+    'chord_distances',  # 5
+    'minor_or_major',  # 8
+    'dominant_percentage',  # 9
+    'different_chords',  # 7
+    'average_chord_count_per_bar',  # 11
+    'different_sections_count',  # 6
+    'duration',  # 10
+    'minor_percentage',  # 12
+    'chorus_repetitions',  # 13
+    'acousticness',
+    'energy',
+    'danceability',
+]
+
+
+global feature_list_all
 # parallel coordinates
 # feature_list = [
 #     'circle_of_fifths_dist',  # 1
@@ -32,22 +84,22 @@ global feature_list
 #     'chorus_repetitions'#13
 # ]
 
-feature_list_spotify = [
+feature_list_all = [
     'duration',
     'acousticness',
     # 'spotify_popularity',
-    # 'chord_distances2',
-    # 'chorus_repetitions',
+    'chord_distances2',
+    'chorus_repetitions',
     'energy',
     'danceability',
-    # 'major_percentage',
+    'major_percentage',
     # 'absolute_surprise',
     # 'chord_surprise',
     # 'neither_chords',
-    # 'different_sections_count',
-    # 'non_triad_chords_percentage',
-    # 'get_added_seventh_use',
-    # 'circle_of_fifths_dist',
+    'different_sections_count',
+    'non_triad_chords_percentage',
+    'get_added_seventh_use',
+    'circle_of_fifths_dist',
     #'chord_distances',
     # 'different_progressions',
     # 'different_chords',
@@ -63,7 +115,12 @@ feature_list_spotify = [
     # 'mode',
     # 'average_chord_count_per_bar'
 ]
-feature_list_years = ['duration', 'acousticness', 'chord_distances2', 'chorus_repetitions', 'energy', 'danceability', 'major_percentage', 'neither_chords', 'different_sections_count', 'non_triad_chords_percentage', 'get_added_seventh_use', 'chord_distances', 'circle_of_fifths_dist', 'different_chords', 'different_progressions', 'tonic_percentage', 'v_to_i', 'i_to_v', 'minor_percentage', 'loudness', 'circle_of_fifths_dist_largest_dist', 'different_notes', 'supertonic_percentage', 'power_chords']
+
+# features for song_features.csv with strong correlation
+feature_list_years = ['duration', 'acousticness', 'chord_distances2', 'neither_chords', 'major_percentage', 'energy', 'danceability', 'chorus_repetitions', 'different_sections_count', 'non_triad_chords_percentage', 'get_added_seventh_use', 'power_chords', 'different_chords', 'chord_distances', 'tonic_percentage', 'minor_percentage', 'different_progressions', 'v_to_i', 'circle_of_fifths_dist', 'tonic_percentage', 'average_chord_count_per_bar', 'i_to_v', 'loudness', 'circle_of_fifths_dist_largest_dist', 'different_notes']
+feature_list_chart_pos = ['i_to_v', 'v_to_i', 'chorus_repetitions', 'tonic_percentage', 'danceability', 'loudness', 'minor_percentage', 'circle_of_fifths_dist_largest_dist', 'dominant_percentage']
+feature_list_spotify_popularity = ['acousticness', 'duration', 'chorus_repetitions', 'circle_of_fifths_dist_largest_dist', 'major_percentage', 'neither_chords', 'different_progressions', 'energy', 'circle_of_fifths_dist', 'non_triad_chords_percentage', 'get_added_seventh_use', 'different_notes', 'v_to_i', 'danceability', 'minor_percentage', 'loudness', 'i_to_v', 'chord_distances2', 'power_chords', 'tonic_percentage', 'chord_distances', 'tonic_percentage', 'section_repetitions']
+
 feature_list_sentiments = ['love', 'anger', 'joy', 'sadness']
 feature_list_without_mcgill = [
     'duration',
@@ -85,14 +142,27 @@ audio_feature_keys = ['danceability', 'energy', 'key', 'loudness', 'mode', 'spee
                       'instrumentalness', 'liveness', 'valence', 'tempo', 'duration_ms', 'time_signature']
 
 
-feature_list = audio_feature_keys
+feature_list = feature_list_all
 
-global color_palette
 color_palette = sns.color_palette('magma', n_colors=7)
 color_palette_cont = sns.color_palette('magma', as_cmap=True)
 
 
 use_genres = False
+
+
+def get_data():
+
+    data = pd.read_csv(current_config.csv_file)
+
+    print(data.head())
+    print(data.shape)
+
+    data_dropped = data[
+        current_config.feature_list
+    ].values
+    return data_dropped
+
 
 def create_scatterplot_with_ellipses(data_frame, x_pos, y_pos, dir, title, xlabel=None, ylabel=None):
     global use_genres
@@ -154,7 +224,7 @@ def create_scatterplot_with_ellipses(data_frame, x_pos, y_pos, dir, title, xlabe
     handles = [lp(k, v) for k, v in decade_color_map.items()]
     plt.legend(handles=handles)
 
-    plt.savefig(dir + '/scatter_plot_spotify_years.png')
+    plt.savefig(dir + '/scatter_plot.png')
 
     plt.show()
 
@@ -223,8 +293,6 @@ def add_labels_and_ellipses_for_genres(plt, ax, data_frame, x_pos, y_pos):
         ellipse = get_ellipse(x_values, y_values, color_palette[genre_color_map[genre]])
         ax.add_artist(ellipse)
     # END Ellipses
-
-
 
 
 def get_ellipse(x, y, color):

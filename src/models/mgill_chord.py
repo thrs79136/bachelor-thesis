@@ -45,6 +45,8 @@ note_to_interval = {
 
 # values denote the number of half steps
 degree_to_interval = {
+    'b1': 11,
+
     '1': 0,
     '#1': 1,
     'b2': 1,
@@ -58,13 +60,16 @@ degree_to_interval = {
     '#5': 8,
     'b6': 8,
     '6': 9,
+    'bb7': 9,
     'b7': 10,
     '7': 11,
     'b9': 13,
     '9': 14,
     '#9': 15,
+    'b11': 16,
     '11': 17,
     '#11': 18,
+    'bb13': 19,
     'b13': 20,
     '13': 21
 }
@@ -221,8 +226,9 @@ class McGillChord(Chord):
         # added notes
         paranthese_split = chord.split('(')
         if len(paranthese_split) != 1:
-            added_note = paranthese_split[1].split(')')[0]
-            self.ensure_note_exists(added_note)
+            added_notes = paranthese_split[1].split(')')[0]
+            for added_note in added_notes.split(','):
+                self.ensure_note_exists(added_note)
 
         # inversion
         inversion_split_str = chord.split('/')

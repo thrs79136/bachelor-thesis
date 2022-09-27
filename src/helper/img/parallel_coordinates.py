@@ -14,7 +14,8 @@ from src.models.song import Song
 from matplotlib.pyplot import figure
 
 from src.models.song_feature import SongFeature
-from src.shared import song_features
+from src.shared import song_features as features
+
 
 # def create_parallel_coordinates_years_plot(feature_names):
 #
@@ -28,7 +29,7 @@ def create_parallel_coordinates_plot_newest(feature_names):
 
 
     cols = feature_names
-    song_features: List[SongFeature] = [dictionaries.song_features_dict[feature] for feature in feature_names]
+    song_features: List[SongFeature] = [features.song_features_dict[feature] for feature in feature_names]
 
     feature_labels = []
     description_text = ''
@@ -104,7 +105,7 @@ def create_parallel_coordinates_plot_newest(feature_names):
 def create_parallel_coordinates_plot_new(feature_names):
     df = pd.read_csv('../data/csv/song_features.csv')
 
-    song_features: List[SongFeature] = [dictionaries.song_features_dict[feature] for feature in feature_names]
+    song_features: List[SongFeature] = [features.song_features_dict[feature] for feature in feature_names]
 
     fig_text = ''
     label_dict = {}

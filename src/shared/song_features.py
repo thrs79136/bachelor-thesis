@@ -60,13 +60,13 @@ def init_song_features():
         'chorus_repetitions': SongFeature('chorus_repetitions', 'Anzahlung Wiederholungen des Rephrains', Song.get_chorus_repetitions),
 
         # sentiments
-        'love': SongFeature('love', 'Sentiment: Liebe', Song.get_sentiment, parameters=['love']),
-        'anger': SongFeature('anger', 'Sentiment: Wut', Song.get_sentiment, parameters=['anger']),
-        'sadness': SongFeature('sadness', 'Sentiment: Trauer', Song.get_sentiment, parameters=['sadness']),
-        'joy': SongFeature('joy', 'Sentiment: Freude', Song.get_sentiment, parameters=['joy']),
-
-        'negative': SongFeature('negative', 'Sentiment: Negativ', Song.get_sentiment_pos_neg, parameters=['NEGATIVE']),
-        'positive': SongFeature('positive', 'Sentiment: Positiv', Song.get_sentiment_pos_neg, parameters=['POSITIVE']),
+        # 'love': SongFeature('love', 'Sentiment: Liebe', Song.get_sentiment, parameters=['love']),
+        # 'anger': SongFeature('anger', 'Sentiment: Wut', Song.get_sentiment, parameters=['anger']),
+        # 'sadness': SongFeature('sadness', 'Sentiment: Trauer', Song.get_sentiment, parameters=['sadness']),
+        # 'joy': SongFeature('joy', 'Sentiment: Freude', Song.get_sentiment, parameters=['joy']),
+        #
+        # 'negative': SongFeature('negative', 'Sentiment: Negativ', Song.get_sentiment_pos_neg, parameters=['NEGATIVE']),
+        # 'positive': SongFeature('positive', 'Sentiment: Positiv', Song.get_sentiment_pos_neg, parameters=['POSITIVE']),
 
         # 'chord_distances': SongFeature('chord_distances', 'Akkordabstände', Song.get_chord_distances),
 

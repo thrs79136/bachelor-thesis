@@ -5,23 +5,33 @@ from src.models.song_feature import SongFeature
 from src.shared import song_features
 from src.shared.song_features import init_song_features
 
+
 class TestResult:
-    def __init__(self, feature_id, test_result):
+    # def __init__(self, feature_id, test_result):
+    #     self.feature_id = feature_id
+    #     self.test_result = test_result
+
+    def __init__(self, feature_id, correlation, pvalue):
         self.feature_id = feature_id
-        self.test_result = test_result
+        self.correlation = correlation
+        self.pvalue = pvalue
+
+    def __str__(self):
+        return f'{self.feature_id}: r={self.correlation:.5f}, p={self.pvalue:.5f}'
+
 
 def draw_year_scatter_plots():
 
     test_results = []
     init_song_features()
-    dictionaries.song_features_dict
+    song_features.song_features_dict
 
     df = pd.read_csv('./../data/csv/song_features.csv')
 
     years = df['year'].tolist()
 
     for column_name in df:
-        feature: SongFeature = dictionaries.song_features_dict[column_name]
+        feature: SongFeature = song_features.song_features_dict[column_name]
         if not feature.is_numerical or column_name == 'year' or column_name == 'decade':
             continue
 
@@ -41,7 +51,7 @@ def draw_year_scatter_plots():
 def test_chart_pos():
     test_results = []
     init_song_features()
-    dictionaries.song_features_dict
+    song_features.song_features_dict
 
     df = pd.read_csv('./../data/csv/song_features.csv')
 
@@ -49,13 +59,13 @@ def test_chart_pos():
 
 
     for column_name in df:
-        feature: SongFeature = dictionaries.song_features_dict[column_name]
+        feature: SongFeature = song_features.song_features_dict[column_name]
         if not feature.is_numerical or column_name == 'year' or column_name == 'decade':
             continue
 
         column_values = df[column_name].tolist()
 
-        result = analyze_feature_correlation(chart_positions, column_values, 'Jahr', feature.feature_display_name, feature.feature_display_name, f'{feature.feature_id}.jpg', directory='years', use_pearson=False)
+        result = analyze_feature_correlation(chart_positions, column_values, 'Jahr', feature.feature_display_name, feature.feature_display_name, f'{feature.feature_id}.jpg', directory='years', use_pearson=True, draw_plot=False)
         test_result = TestResult(column_name, result)
         test_results.append(test_result)
 
