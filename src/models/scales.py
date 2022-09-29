@@ -105,17 +105,17 @@ def get_corresponding_scale_distance_for_chord(chord: McGillChord, tonic, maj_or
     elif chord.chord_type == MajOrMin.Major:
         x = 42
 
-    if chord.chord_type == MajOrMin.Neither:
-        cloned_chord = chord.clone()
-
-        notes_without_tensions = []
-        for i,v in enumerate(chord.mcgill_intervals):
-            x = 42
-        indices = [i for i, v in enumerate(chord.mcgill_intervals) if v <= 11]
-
-
-        test_res = get_corresponding_scale_distance_for_chord(clone_chord, tonic, maj_or_min, previous_scale_key)
-        x = 42
+    # if chord.chord_type == MajOrMin.Neither:
+    #     cloned_chord = chord.clone()
+    #
+    #     notes_without_tensions = []
+    #     for i,v in enumerate(chord.mcgill_intervals):
+    #         x = 42
+    #     indices = [i for i, v in enumerate(chord.mcgill_intervals) if v <= 11]
+    #
+    #
+    #     test_res = get_corresponding_scale_distance_for_chord(cloned_chord, tonic, maj_or_min, previous_scale_key)
+    #     x = 42
     res = get_scale_distance(scale_key, chord_scale_key)
     return abs(res)/6, chord_scale_key, res
 

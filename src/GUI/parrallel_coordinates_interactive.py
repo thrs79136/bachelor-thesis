@@ -6,7 +6,8 @@ import numpy as np
 import pandas as pd
 from IPython.external.qt_for_kernel import QtCore
 from PyQt5.QtCore import Qt, QThread
-from PyQt5.QtWidgets import QDialog, QApplication, QPushButton, QVBoxLayout, QGridLayout, QSlider, QLabel, QHBoxLayout
+from PyQt5.QtWidgets import QDialog, QApplication, QPushButton, QVBoxLayout, QGridLayout, QSlider, QLabel, QHBoxLayout, \
+    QComboBox
 from matplotlib import ticker, figure
 from matplotlib.axes import Axes
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -39,146 +40,22 @@ class Line:
         self.year = year
 
 
-class Worker(QObject):
-    finished = pyqtSignal()
-    progress = pyqtSignal()
+median_path = '../../data/csv/year_features.csv'
+songs_path = '../../data/csv/song_features.csv'
 
-    def __init__(self, figure, lines_dict, year_min, year_max):
-        super().__init__()
-
-        self.figure = figure
-        self.lines_dict = lines_dict
-        self.mini = year_min
-        self.maxi = year_max
-
-        # self.lines_dict = defaultdict(list)
-
-    def run(self):
-        """Long-running task."""
-        # TODO change figure
-        self.set_lines()
-        self.progress.emit()
-
-    def set_lines(self):
-        x = 42
-        for i, ax in enumerate(self.figure.axes):
-            ax.lines = [line.line for line in self.lines_dict[i] if self.mini <= line.year <= self.maxi]
-        a = 42
-
-    def plot(self):
-        x = self.figure
-        self.figure.clf()
-        # self.figure = figure.Figure()
-
-        axes = []
-
-        df = self.data_frame.copy(True)
-
-        # categorize decades
-        df = df.drop(df[df.year < self.mini].index)
-        df = df.drop(df[df.year > self.maxi].index)
-
-        cols = parallel_coordinates_feature_list
-        song_features2: List[SongFeature] = [song_features.song_features_dict[feature] for feature in
-                                             parallel_coordinates_feature_list]
-
-        feature_labels = []
-        description_text = ''
-
-        for index, feature in enumerate(song_features2):
-            label = f'F{index + 1}'
-            feature_labels.append(label)
-            description_text += f'{label} - {feature.feature_display_name}\n'
-
-        n = len(parallel_coordinates_feature_list)
-        for i in range(n - 1):
-            ax = self.figure.add_subplot(1, n - 1, i + 1)
-            axes.append(ax)
-
-        colours = (['green', 'red', 'orange', 'purple', 'blue', 'yellow'])
-
-        colours = {df['decade'].cat.categories[i]: colours[i] for i, _ in enumerate(df['decade'].cat.categories)}
-
-        x = [i for i, _ in enumerate(parallel_coordinates_feature_list)]
-
-        # TODO save lines somewhere
-        # lines_dict = defaultdict(list)
-        # lines_dict[subplot_index] = lines
-
-        for i, ax in enumerate(axes):
-            for idx in df.index:
-                year = df.loc[index, 'year']
-                mpg_category = df.loc[idx, 'decade']
-                ax.plot(x, df.loc[idx, parallel_coordinates_feature_list], colours[mpg_category])
-                # lines_dict[i].append(Line(ax.lines[-1], year))
-            ax.set_xlim([x[i], x[i + 1]])
-
-        def set_ticks_for_axis(dim, ax, ticks):
-            min_val, max_val, val_range = self.min_max_range[cols[dim]]
-            step = val_range / float(ticks - 1)
-            tick_labels = [round(min_val + step * i, 2) for i in range(ticks)]
-            norm_min = df[cols[dim]].min()
-            norm_range = np.ptp(df[cols[dim]])
-            norm_step = norm_range / float(ticks - 1)
-            ticks = [round(norm_min + norm_step * i, 2) for i in range(ticks)]
-            ax.yaxis.set_ticks(ticks)
-            ax.set_yticklabels(tick_labels)
-
-        for dim, ax in enumerate(axes):
-            ax.xaxis.set_major_locator(ticker.FixedLocator([dim]))
-            set_ticks_for_axis(dim, ax, ticks=6)
-            ax.set_xticklabels([feature_labels[dim]])
-
-        # Move the final axis' ticks to the right-hand side
-        ax = plt.twinx(axes[-1])
-
-        dim = len(axes)
-        ax.xaxis.set_major_locator(ticker.FixedLocator([x[-2], x[-1]]))
-        set_ticks_for_axis(dim, ax, ticks=6)
-
-        ax.set_xticklabels([feature_labels[-2], feature_labels[-1]])
-
-        self.figure.subplots_adjust(wspace=0)
-
-        # fig.text(0.1, 0.02, description_text,
-        #          horizontalalignment='left', wrap=True)
-
-        # # TODO save lines somewhere
-        # lines_dict = defaultdict(list)
-        # # lines_dict[subplot_index] = lines
-        # for ax in axes:
-
-        v = axes
-        for i in range(len(axes[0].lines) - 1):
-            axes[0].lines.pop(0)
-
-        plt.legend(
-            [plt.Line2D((0, 1), (0, 0), color=colours[cat]) for cat in df['decade'].cat.categories],
-            ['1950s', '1960s', '1970s', '1980s', '1990s'],
-            bbox_to_anchor=(1.2, 1), loc=2, borderaxespad=0.)
-
-        v = self.figure
-        x = 42
-        # self.canvas.draw_idle()
 
 class Window(QDialog):
-
     # constructor
     def __init__(self, parent=None):
         super(Window, self).__init__(parent)
 
-        self.data_frame = pd.read_csv('../../data/csv/year_features.csv')
+        self.data_frame = pd.read_csv(songs_path)
         self.data_frame['decade'] = pd.cut(self.data_frame['decade'], [1940, 1950, 1960, 1970, 1980, 1990, 2000])
 
         min_max_range = {}
         for col in parallel_coordinates_feature_list:
             min_max_range[col] = [self.data_frame[col].min(), self.data_frame[col].max(), np.ptp(self.data_frame[col])]
             self.data_frame[col] = np.true_divide(self.data_frame[col] - self.data_frame[col].min(), np.ptp(self.data_frame[col]))
-
-        self.label = QLabel('0', self)
-        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter |
-                                Qt.AlignmentFlag.AlignVCenter)
-        self.label.setMinimumWidth(80)
 
         self.min_max_range = min_max_range
         self.figure = None
@@ -187,7 +64,6 @@ class Window(QDialog):
         self.mini = 1958
         self.maxi = 1991
 
-        #self.figure = None
 
         self.lines_dict = defaultdict(list)
         self.create_figure()
@@ -199,6 +75,8 @@ class Window(QDialog):
             annot.set_visible(False)
             self.annotations.append(annot)
 
+        self.label = QLabel(str(self.mini), self)
+        self.label2 = QLabel(str(self.maxi), self)
 
         self.draw()
 
@@ -237,9 +115,9 @@ class Window(QDialog):
             ax = self.figure.add_subplot(1, n - 1, i + 1)
             axes.append(ax)
 
-        colours = (['green', 'red', 'orange', 'purple', 'blue', 'yellow'])
+        #colours = (['green', 'red', 'orange', 'purple', 'blue', 'yellow'])
 
-        colours = {df['decade'].cat.categories[i]: colours[i] for i, _ in enumerate(df['decade'].cat.categories)}
+        #colours = {df['decade'].cat.categories[i]: colours[i] for i, _ in enumerate(df['decade'].cat.categories)}
 
         x = [i for i, _ in enumerate(parallel_coordinates_feature_list)]
 
@@ -247,7 +125,10 @@ class Window(QDialog):
             for idx in df.index:
                 year = df.loc[idx, 'year']
                 mpg_category = df.loc[idx, 'decade']
-                ax.plot(x, df.loc[idx, parallel_coordinates_feature_list], colours[mpg_category])
+                #ax.plot(x, df.loc[idx, parallel_coordinates_feature_list], colours[mpg_category])
+                ax.plot(x, df.loc[idx, parallel_coordinates_feature_list], 'navy')
+
+
                 self.lines_dict[i].append(Line(ax.lines[-1], year))
             ax.set_xlim([x[i], x[i + 1]])
 
@@ -286,8 +167,12 @@ class Window(QDialog):
         # # lines_dict[subplot_index] = lines
         # for ax in axes:
 
+        # plt.legend(
+        #     [plt.Line2D((0, 1), (0, 0), color=colours[cat]) for cat in df['decade'].cat.categories],
+        #     ['1950s', '1960s', '1970s', '1980s', '1990s'],
+        #     bbox_to_anchor=(1.2, 1), loc=2, borderaxespad=0.)
         plt.legend(
-            [plt.Line2D((0, 1), (0, 0), color=colours[cat]) for cat in df['decade'].cat.categories],
+            [plt.Line2D((0, 1), (0, 0), color='blue') for cat in df['decade'].cat.categories],
             ['1950s', '1960s', '1970s', '1980s', '1990s'],
             bbox_to_anchor=(1.2, 1), loc=2, borderaxespad=0.)
 
@@ -295,11 +180,25 @@ class Window(QDialog):
         x = 42
         # self.canvas.draw_idle()
 
+
+    def update_year(self):
+        value = self.range_slider.value()
+        self.mini = value[0] + 1958
+        self.maxi = value[1] + 1958
+
+        self.label.setText(str(self.mini))
+        self.label2.setText(str(self.maxi))
+
+
     def valuechange(self):
         print(self.range_slider.value())
         value = self.range_slider.value()
         self.mini = value[0] + 1958
         self.maxi = value[1] + 1958
+
+        self.label.setText(str(self.mini))
+        self.label2.setText(str(self.maxi))
+
         # plot(self.figure, self.mini, self.maxi)
         self.start_plot_thread()
         self.canvas.draw_idle()
@@ -377,6 +276,8 @@ class Window(QDialog):
         self.range_slider.setMaximum(1991-1958)
 
         self.range_slider.setMaximumSize(QtCore.QSize(16777215, 30))
+        self.range_slider.sliderMoved.connect(self.update_year)
+
         self.range_slider.sliderReleased.connect(self.valuechange)
 
         print(type(self.figure))
@@ -403,7 +304,6 @@ class Window(QDialog):
         self.valuechange()
         # self.canvas.draw_idle()
 
-
         # this is the Navigation widget
         # it takes the Canvas widget and a parent
         # self.toolbar = NavigationToolbar(self.canvas, self)
@@ -421,11 +321,29 @@ class Window(QDialog):
         # layout.addWidget(self.toolbar)
 
         # adding canvas to the layout
-        # hbox = QHBoxLayout()
 
 
+        widget = QComboBox()
+        widget.addItems(["Alle Lieder", "Erfolgreiche Lieder"])
+        widget.setMaximumSize(200, 20)
+        self.layout.addWidget(widget)
         self.layout.addWidget(self.canvas)
-        self.layout.addWidget(self.range_slider)
+
+        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+        self.label.setMinimumWidth(80)
+
+        self.label2.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+        self.label2.setMinimumWidth(80)
+
+
+        vbox = QHBoxLayout()
+
+        vbox.addWidget(self.label)
+        vbox.addWidget(self.range_slider)
+        vbox.addWidget(self.label2)
+
+        #self.layout.addWidget(self.range_slider)
+        self.layout.addLayout(vbox)
 
         # adding push button to the layout
         # layout.addWidget(self.button)

@@ -326,6 +326,15 @@ def save_spotify_playlists(playlist_dict, filename):
     save_dataframe(to_dataframe(all_tracks, 'genre', SpotifyTrack.get_genre), f'{filename}.csv')
 
 
+def get_most_popular_song_per_year(songs: List[Song]):
+    most_popular_songs = []
+
+    years_group = group_by_year(songs)
+    for song_list in years_group.values():
+        sorted_by_popularity = sorted(song_list, key=lambda item: item.get_spotify_popularity())
+        most_popular_songs.append(sorted_by_popularity[0])
+
+    return most_popular_songs
 
 #data = pd.read_csv('./../data/csv/years/1950s.csv')
 
@@ -375,6 +384,18 @@ bin_file = '../data/songs.pickle'
 
 songs: List[Song] = get_songs_from_binary_file(bin_file)
 songs_with_audio_features = [song for song in songs if song.spotify_song_data.audio_features_dictionary is not None]
+
+for song in songs_with_audio_features:
+    if song.get_spotify_popularity() == None:
+        print(song)
+exit()
+res = get_most_popular_song_per_year(songs_with_audio_features)
+exit()
+
+init_progressions_dict(songs_with_audio_features)
+init_chords_dict(songs_with_audio_features)
+save_feature_csv(songs_with_audio_features, list(song_features.song_features_dict.keys()))
+exit()
 
 draw_genres_line_plot(songs_with_audio_features)
 draw_genres_area_plot_new(songs_with_audio_features)

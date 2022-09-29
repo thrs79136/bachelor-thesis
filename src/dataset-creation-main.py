@@ -2,9 +2,11 @@ import csv
 import pickle
 from typing import List
 
+import pandas as pd
+
 from src.helper import spotify_api
 from src.helper.file_helper import save_song, write_header, row_count, save_songs, get_songs_from_binary_file
-from src.helper.spotify_api import get_audio_features, get_spotify_song_id, get_playlist
+from src.helper.spotify_api import get_audio_features, get_spotify_song_id
 from src.models.song import Song
 
 from src.models.spotify_song_data import SpotifySongData
@@ -117,13 +119,11 @@ spotify_api.init_spotify()
 bin_file = '../data/songs.pickle'
 #
 songs: List[Song] = get_songs_from_binary_file(bin_file)
-for song in songs:
-    if song.spotify_song_data.audio_features_dictionary is not None:
-        song.spotify_song_data.audio_features_dictionary = None
 
-
-for song in songs:
-    res = add_spotify_id(song)
+# add spotify popularity
+data = pd.read_csv('./../data/csv/song_features.csv')
+for song in data:
+    x = 42
 
 # csv
 save_songs(songs_path, songs)

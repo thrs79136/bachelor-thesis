@@ -901,6 +901,9 @@ class Song:
         for chord in different_chords_dict.values():
             min_or_maj = MajOrMin.Major if self.spotify_song_data.audio_features_dictionary[
                                                'mode'] == 1 else MajOrMin.Minor
+            if chord.mcgill_chord_name == 'Eb:sus4(b7,9,#11)':
+                x = 42
+            print(chord)
             dist, prev_harm, test = get_corresponding_scale_distance_for_chord(chord, tonic, min_or_maj)
             sum += dist
 

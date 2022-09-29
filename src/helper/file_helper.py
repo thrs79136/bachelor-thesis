@@ -138,15 +138,19 @@ def modify_billboard_index(oldpath: str, newpath: str):
 def save_dataframe(df, filename):
     df.to_csv(f'{spotify_playlist_path}/{filename}')
 
-def save_feature_csv(songs: List[Song], feature_names):
-    with open(feature_file_path, "w", newline='') as csvfile:
+
+def save_feature_csv(songs: List[Song], feature_names, file=feature_file_path):
+    with open(file, "w", newline='') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',', escapechar='\\', quoting=csv.QUOTE_NONE)
         csvwriter.writerow(feature_names)
 
         features = [song_features.song_features_dict[feature_name] for feature_name in feature_names]
         for song in songs:
             csv_row = []
+
             for feature in features:
+                if song.artist == 'Jackson Browne' and feature.feature_id == 'circle_of_fifths_dist':
+                    x = 42
                 parameters = [song] + feature.parameters
                 csv_row.append(feature.feature_fn(*parameters))
 
