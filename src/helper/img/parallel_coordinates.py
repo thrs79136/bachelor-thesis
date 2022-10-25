@@ -20,9 +20,9 @@ from src.shared import song_features as features
 # def create_parallel_coordinates_years_plot(feature_names):
 #
 
-def create_parallel_coordinates_plot_newest(feature_names):
+def create_parallel_coordinates_plot_newest(feature_names, filepath='../data/csv/year_features.csv', filename='years_median.png'):
 
-    df = pd.read_csv('../data/csv/year_features.csv')
+    df = pd.read_csv(filepath)
 
     # categorize decades
     df['decade'] = pd.cut(df['decade'], [1940, 1950, 1960, 1970, 1980, 1990, 2000])
@@ -96,7 +96,7 @@ def create_parallel_coordinates_plot_newest(feature_names):
         ['1950s', '1960s', '1970s', '1980s', '1990s'],
         bbox_to_anchor=(1.2, 1), loc=2, borderaxespad=0.)
 
-    plt.savefig('../data/img/plots/line_plots/years_median.png')
+    plt.savefig(f'../data/img/plots/line_plots/{filename}')
 
     plt.show()
 

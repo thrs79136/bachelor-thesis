@@ -7,6 +7,7 @@ import seaborn as sns
 from src.helper.img.pca import eigsorted
 from src.helper.statistics_helper import most_common_genres
 
+mcgill_features_path = '../data/csv/song_features.csv'
 spotify_playlists_path = '../data/csv/years/spotify.csv'
 spotify_genres_playlists_path = '../data/csv/spotify_genres.csv'
 
@@ -117,7 +118,7 @@ feature_list_all = [
 ]
 
 # features for song_features.csv with strong correlation
-feature_list_years = ['duration', 'acousticness', 'chord_distances2', 'neither_chords', 'major_percentage', 'energy', 'danceability', 'chorus_repetitions', 'different_sections_count', 'non_triad_chords_percentage', 'get_added_seventh_use', 'power_chords', 'different_chords', 'chord_distances', 'tonic_percentage', 'minor_percentage', 'different_progressions', 'v_to_i', 'circle_of_fifths_dist', 'tonic_percentage', 'average_chord_count_per_bar', 'i_to_v', 'loudness', 'circle_of_fifths_dist_largest_dist', 'different_notes']
+feature_list_years = ['duration', 'acousticness', 'synthesizer', 'chord_distances2', 'neither_chords', 'major_percentage', 'energy', 'danceability', 'chorus_repetitions', 'different_sections_count', 'non_triad_chords_percentage', 'get_added_seventh_use', 'power_chords', 'different_chords', 'chord_distances', 'tonic_percentage', 'minor_percentage', 'different_progressions', 'v_to_i', 'circle_of_fifths_dist', 'tonic_percentage', 'average_chord_count_per_bar', 'i_to_v', 'loudness', 'circle_of_fifths_dist_largest_dist', 'different_notes']
 feature_list_chart_pos = ['i_to_v', 'v_to_i', 'chorus_repetitions', 'tonic_percentage', 'danceability', 'loudness', 'minor_percentage', 'circle_of_fifths_dist_largest_dist', 'dominant_percentage']
 feature_list_spotify_popularity = ['acousticness', 'duration', 'chorus_repetitions', 'circle_of_fifths_dist_largest_dist', 'major_percentage', 'neither_chords', 'different_progressions', 'energy', 'circle_of_fifths_dist', 'non_triad_chords_percentage', 'get_added_seventh_use', 'different_notes', 'v_to_i', 'danceability', 'minor_percentage', 'loudness', 'i_to_v', 'chord_distances2', 'power_chords', 'tonic_percentage', 'chord_distances', 'tonic_percentage', 'section_repetitions']
 

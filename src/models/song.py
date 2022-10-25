@@ -254,6 +254,10 @@ class Song:
 
     # FEATURES
 
+    # returns true if instrument is used in song, false otherwise
+    def get_instrument_usage(self, instrument):
+        return instrument in self.mcgill_billboard_song_data.instruments
+
     def get_chorus_repetitions(self):
         chorus_count = 0
         for section in self.mcgill_billboard_song_data.sections:
@@ -885,7 +889,6 @@ class Song:
 
         different_chords_dict = {}
 
-        tonic = key_dict2[self.spotify_song_data.audio_features_dictionary['key']]
         tonic = self.mcgill_billboard_song_data.tonic
         analyzed_chords_count = 0
 
@@ -901,9 +904,6 @@ class Song:
         for chord in different_chords_dict.values():
             min_or_maj = MajOrMin.Major if self.spotify_song_data.audio_features_dictionary[
                                                'mode'] == 1 else MajOrMin.Minor
-            if chord.mcgill_chord_name == 'Eb:sus4(b7,9,#11)':
-                x = 42
-            print(chord)
             dist, prev_harm, test = get_corresponding_scale_distance_for_chord(chord, tonic, min_or_maj)
             sum += dist
 
@@ -914,24 +914,26 @@ class Song:
         return self.genres
 
     def get_genres_id(self):
-        genres = self.genres
-        genres_for_id = []
+        return '.'.join(sorted([genre for genre in self.genres]))
 
-        for genre in genres:
-            if genre in most_common_genres:
-                genres_for_id.append(genre)
-
-        if len(genres_for_id) == 0:
-            return 'other'
-        elif len(genres_for_id) == 1:
-            return genres_for_id[0]
-        else:
-            required_comb = []
-            for genre in genres_for_id:
-                if genre in most_common_genres:
-                    required_comb.append(genre)
-            sor = sorted(required_comb)
-            return '.'.join(sor)
+        # genres = self.genres
+        # genres_for_id = []
+        #
+        # for genre in genres:
+        #     if genre in most_common_genres:
+        #         genres_for_id.append(genre)
+        #
+        # if len(genres_for_id) == 0:
+        #     return 'other'
+        # elif len(genres_for_id) == 1:
+        #     return genres_for_id[0]
+        # else:
+        #     required_comb = []
+        #     for genre in genres_for_id:
+        #         if genre in most_common_genres:
+        #             required_comb.append(genre)
+        #     sor = sorted(required_comb)
+        #     return '.'.join(sor)
 
 
     def get_used_instruments(self):

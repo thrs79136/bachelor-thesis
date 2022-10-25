@@ -71,7 +71,6 @@ def get_minor_scale_id(major_tonic):
     return (note_to_interval[major_tonic] - 9) % 12
 
 
-# TODO create result class
 def get_corresponding_scale_distance_for_chord(chord: McGillChord, tonic, maj_or_min, previous_scale_key = None):
     note_names = [f'{note.base_name}{note.accidentals.name}' for note in chord.notes]
 

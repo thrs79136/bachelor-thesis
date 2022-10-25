@@ -1,5 +1,6 @@
 # determine best features by low pvalue and high correlation
 import pandas as pd
+from scipy.stats import stats
 
 from src.helper.statistics_helper import analyze_feature_correlation
 from src.helper.years_scatterplot import TestResult
@@ -33,7 +34,12 @@ def get_best_features(csv_file_path, analyzed_feature, max_pvalue=0.01, spearman
 
         column_values = df[column_name].tolist()
 
-        test_result = analyze_feature_correlation(analyzed_feature_values, column_values, feature.feature_id, spearman)
+        if not feature.is_boolean:
+            test_result = analyze_feature_correlation(analyzed_feature_values, column_values, feature.feature_id, spearman)
+        else:
+            test_result_raw = stats.pointbiserialr(analyzed_feature_values, column_values)
+            test_result = TestResult(feature.feature_id, test_result_raw.correlation, test_result_raw.pvalue)
+
         test_results.append(test_result)
 
     results_low_pvalue = [res for res in test_results if res.pvalue <= max_pvalue]
@@ -46,3 +52,6 @@ def get_best_features(csv_file_path, analyzed_feature, max_pvalue=0.01, spearman
 
     return features_names
 
+
+def get_best_features_years(csv_file_path, max_pvalue=0.01):
+    return get_best_features(csv_file_path, 'year', max_pvalue, False)

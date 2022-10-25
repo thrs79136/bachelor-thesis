@@ -8,7 +8,9 @@ from sklearn.datasets import load_iris
 
 from src.dimension_reduction.common import spotify_playlists_path, spotify_genres_playlists_path, feature_list_years
 from src.helper.file_helper import feature_file_path
+from src.helper.genres import create_genres_df, genres_genres, transform_genre_string
 
+import itertools
 
 def k_nearest_neighbor():
     data = pd.read_csv(spotify_playlists_path)
@@ -57,29 +59,32 @@ def k_nearest_neighbor():
     plt.show()
     fig.savefig(f'../data/img/plots/k_nearest_neighbor/before_90s.png')
 
-def k_nearest_neighbor_genre():
-    data = pd.read_csv(spotify_genres_playlists_path)
 
-    # Create feature and target arrays
-    genre_to_int = {
-        'hiphop': 0,
-        'pop': 1,
-        'rock': 2,
-        'blues': 3,
-        'jazz': 4,
-        'country': 5
-    }
+def knn_genre_mcgill():
+    df = pd.read_csv(feature_file_path)
+    genres_df = create_genres_df(df)
 
-    y = [genre_to_int[genre] for genre in data.genre]
-    # y = data.genre
+    for i in range(genres_df.shape[0]):
+        #song.genre = transform_genre_string(song.genre)
+        genres_df.iloc[i-1, genres_df.columns.get_loc('genre')] = transform_genre_string(genres_df.iloc[i-1, genres_df.columns.get_loc('genre')])
 
-    # for d in data.decade:
-    #     if d < 1990:
-    #         y.append(1)
-    #     else:
-    #         y.append(0)
+    k_nearest_neighbor_genre(genres_df, genres_genres, 'mcgillgenres.png', 'KNN mit Klassifizierung nach Musikrichtung (Datensatz 1)', ['decade', 'artist', 'genre'])
 
-    data = data.drop(['id', 'artists', 'name', 'genre'], axis=1)
+
+def knn_genre_spotify():
+    df = pd.read_csv(spotify_genres_playlists_path)
+    k_nearest_neighbor_genre(df, ['hiphop', 'pop', 'rock', 'blues', 'jazz', 'country'], 'spotify_genres.png', 'KNN mit Klassifizierung nach Musikrichtung (Datensatz 3)', ['id', 'artists', 'name', 'genre'])
+
+
+def k_nearest_neighbor_genre(df, genres, filename, title, dropped_columns=[]):
+
+    genre_to_int = {}
+    for index, value in enumerate(genres):
+        genre_to_int[value] = index
+
+    y = [genre_to_int[genre] for genre in df.genre]
+
+    data = df.drop(dropped_columns, axis=1)
 
     X = data.to_numpy()
     scaler = preprocessing.StandardScaler().fit(X)
@@ -112,18 +117,31 @@ def k_nearest_neighbor_genre():
     plt.xlabel('k nächste Nachbarn')
     plt.ylabel('Genauigkeit')
     plt.show()
-    fig.savefig(f'../data/img/plots/k_nearest_neighbor/genres.png')
+    fig.savefig(f'../data/img/plots/k_nearest_neighbor/{filename}')
 
-def k_nearest_neighbor_decade_all_features():
+
+def k_nearest_neighbor_all_decades_all_features():
+    k_nearest_neighbor_decade_all_features(True)
+
+
+def k_nearest_neighbor_before_90s_all_features():
+    k_nearest_neighbor_decade_all_features(False)
+
+# spotify features, harmonic features, instruments, ...
+def k_nearest_neighbor_decade_all_features(all_decades):
     data = pd.read_csv(feature_file_path)
 
-    # y = data.decade
-    y = []
-    for d in data.decade:
-        if d < 1990:
-            y.append(1)
-        else:
-            y.append(0)
+    if all_decades:
+        filename = 'decade_all_features_90s.png'
+        y = data.decade
+    else:
+        filename = 'decade_all_features.png'
+        y = []
+        for d in data.decade:
+            if d < 1990:
+                y.append(1)
+            else:
+                y.append(0)
 
     data = data[data.columns.intersection(feature_list_years)]
 
@@ -159,5 +177,5 @@ def k_nearest_neighbor_decade_all_features():
     plt.xlabel('k')
     plt.ylabel('Genauigkeit')
     plt.show()
-    fig.savefig(f'../data/img/plots/k_nearest_neighbor/decade_all_features_90s.png')
+    fig.savefig(f'../data/img/plots/k_nearest_neighbor/{filename}')
 

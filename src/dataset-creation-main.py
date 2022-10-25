@@ -119,11 +119,10 @@ spotify_api.init_spotify()
 bin_file = '../data/songs.pickle'
 #
 songs: List[Song] = get_songs_from_binary_file(bin_file)
+songs_with_audio_features = [song for song in songs if song.spotify_song_data.audio_features_dictionary is not None]
 
-# add spotify popularity
-data = pd.read_csv('./../data/csv/song_features.csv')
-for song in data:
-    x = 42
+for song in songs_with_audio_features:
+    song.add_spotify_popularity()
 
 # csv
 save_songs(songs_path, songs)
@@ -131,10 +130,7 @@ save_songs(songs_path, songs)
 with open(bin_file, 'wb') as file:
     pickle.dump(songs, file)
 
-
-
-
-
+exit()
 
 # add_spotify_ids(songs)
 

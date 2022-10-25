@@ -126,7 +126,7 @@ class Window(QDialog):
                 year = df.loc[idx, 'year']
                 mpg_category = df.loc[idx, 'decade']
                 #ax.plot(x, df.loc[idx, parallel_coordinates_feature_list], colours[mpg_category])
-                ax.plot(x, df.loc[idx, parallel_coordinates_feature_list], 'navy')
+                ax.plot(x, df.loc[idx, parallel_coordinates_feature_list], 'navy', alpha=0.2)
 
 
                 self.lines_dict[i].append(Line(ax.lines[-1], year))

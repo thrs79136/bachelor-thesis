@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
@@ -7,8 +9,13 @@ figure_number = 0
 def lineplot(x, y, xlabel, ylabel, filename: str, title='', suptitle='', dir='', dot_coordinates=None, dot_legend=''):
     global figure_number
 
+    filepath = '../data/img/plots/line_plots/'
+
     if dir != '':
-        dir += '/'
+        filepath += f'{dir}/{filename}'
+        Path(filepath + dir).mkdir(parents=True, exist_ok=True)
+    else:
+        filepath += filename
 
     plt.figure(figure_number)
     fig, ax = plt.subplots()
@@ -30,7 +37,7 @@ def lineplot(x, y, xlabel, ylabel, filename: str, title='', suptitle='', dir='',
 
     # plt.ylim([0, 1.])
     plt.show()
-    fig.savefig('../data/img/plots/line_plots/' + dir + filename)
+    fig.savefig(filepath)
 
     figure_number += 1
 

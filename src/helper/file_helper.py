@@ -95,6 +95,16 @@ def get_songs_from_binary_file(file_path: str) -> List[Song]:
         return pickle.load(file2)
 
 
+dataset1_filepath = '../data/songs.pickle'
+
+
+# get all songs from mcgill billboard project that are on spotify
+def get_dataset_1() -> List[Song]:
+    with open(dataset1_filepath, 'rb') as file2:
+        dataset = pickle.load(file2)
+        return [song for song in dataset if song.spotify_song_data.audio_features_dictionary is not None]
+
+
 def get_csv_reader(filepath: str) -> csv.DictReader:
     with open(filepath, newline='') as csvfile:
         return csv.DictReader(csvfile, delimiter=',', escapechar='\\', quoting=csv.QUOTE_NONE)
@@ -139,6 +149,22 @@ def save_dataframe(df, filename):
     df.to_csv(f'{spotify_playlist_path}/{filename}')
 
 
+def save_all_features_to_csv(songs: List[Song]):
+    features = song_features.song_features_dict.values()
+
+    with open('TODO filepath', "w", newline='') as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=',', escapechar='\\', quoting=csv.QUOTE_NONE)
+        csvwriter.writerow([feature.feature_id for feature in features])
+
+        for song in songs:
+            csv_row = []
+            for feature in features:
+                parameters = [song] + feature.parameters
+                csv_row.append(feature.feature_fn(*parameters))
+
+            csvwriter.writerow(csv_row)
+
+# for dataframe
 def save_feature_csv(songs: List[Song], feature_names, file=feature_file_path):
     with open(file, "w", newline='') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',', escapechar='\\', quoting=csv.QUOTE_NONE)
@@ -147,10 +173,7 @@ def save_feature_csv(songs: List[Song], feature_names, file=feature_file_path):
         features = [song_features.song_features_dict[feature_name] for feature_name in feature_names]
         for song in songs:
             csv_row = []
-
             for feature in features:
-                if song.artist == 'Jackson Browne' and feature.feature_id == 'circle_of_fifths_dist':
-                    x = 42
                 parameters = [song] + feature.parameters
                 csv_row.append(feature.feature_fn(*parameters))
 

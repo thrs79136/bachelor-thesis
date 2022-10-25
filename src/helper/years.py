@@ -70,7 +70,7 @@ def draw_sentiment_lineplot2(songs: List[Song]):
         lineplot(years, percentages, 'Jahr', 'Sentiment', f'{sentiment}-years.png', suptitle=suptitle)
 
 
-def analyze_instruments(songs: List[Song]):
+def analyze_instruments(songs: List[Song], dir=''):
     years_instrument_dict = {}
     total_songs_count = defaultdict(int)
 
@@ -102,9 +102,7 @@ def analyze_instruments(songs: List[Song]):
         percentages = [inst_dict[instrument] for inst_dict in od.values()]
         spearman_result = stats.spearmanr(years, percentages)
         suptitle = f'n={len(songs)}; r={"{0:.3f}".format(spearman_result.correlation)}; p={"{0:.3f}".format(spearman_result.pvalue)}'
-        lineplot(years, percentages, 'Jahr', 'Anteil Lieder', f'{instrument}-percentages.png', suptitle=suptitle, title = instrument)
-
-
+        lineplot(years, percentages, 'Jahr', 'Anteil Lieder', f'{instrument}-percentages.png', suptitle=suptitle, title = instrument, dir=dir)
 
 
 def draw_sentiment_lineplot(songs: List[Song]):
@@ -388,13 +386,12 @@ def get_year_genre_perc_dict(songs):
     return years, genre_dict
 
 
-def draw_genres_area_plot_new(songs: List[Song]):
+def draw_genres_area_plot_new(songs: List[Song], filename='genre_perc_-.png'):
     years, genre_dict = get_year_genre_perc_dict(songs)
 
     stacked_area_plot(years, genre_dict.values(), list(genre_dict.keys()), 'Jahr', 'Anteil von Genres',
-                      'genre_perc_-.png',
+                      filename,
                       'Anteil von Musikrichtungen im Zeitverlauf')
-
 
 
 # also looks like crap
