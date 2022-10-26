@@ -17,7 +17,7 @@ from src.helper.spotify_api import playlist_ids
 
 path = os.getcwd()
 
-dir = '../../data/img/plots/scatter_plots/dimension_reduction/pca'
+dir = '../../data/img_old/plots/scatter_plots/dimension_reduction/pca'
 
 
 #data = pd.read_csv(f'../../data/csv/years/spotify.csv')

@@ -1,0 +1,14 @@
+PCA1
+acousticness    0.643812
+energy         -0.591332
+danceability   -0.396073
+duration       -0.280997
+dtype: float64
+
+PCA2
+duration        0.829679
+danceability   -0.549873
+energy         -0.081608
+acousticness   -0.051117
+dtype: float64
+

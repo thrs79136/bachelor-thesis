@@ -152,7 +152,7 @@ def save_dataframe(df, filename):
 def save_all_features_to_csv(songs: List[Song]):
     features = song_features.song_features_dict.values()
 
-    with open('TODO filepath', "w", newline='') as csvfile:
+    with open(feature_file_path, "w", newline='') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',', escapechar='\\', quoting=csv.QUOTE_NONE)
         csvwriter.writerow([feature.feature_id for feature in features])
 
@@ -163,6 +163,7 @@ def save_all_features_to_csv(songs: List[Song]):
                 csv_row.append(feature.feature_fn(*parameters))
 
             csvwriter.writerow(csv_row)
+
 
 # for dataframe
 def save_feature_csv(songs: List[Song], feature_names, file=feature_file_path):

@@ -239,12 +239,18 @@ class Song:
         return content
 
     def get_sentiment(self, sentiment):
+        if self.emotions is None:
+            return None
+
         for el in self.emotions:
             if el['label'] == sentiment:
                 return el['score']
         return None
 
     def get_sentiment_pos_neg(self, sentiment):
+        if self.sentiments is None:
+            return None
+
         if sentiment == 'POSITIVE' or sentiment == 'NEGATIVE':
             for el in self.sentiments:
                 if el['label'] == sentiment:

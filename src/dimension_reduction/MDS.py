@@ -9,7 +9,7 @@ from src.dimension_reduction.common import feature_list, create_scatterplot_with
 
 data = pd.read_csv('../../data/csv/song_features.csv')
 #data = pd.read_csv(spotify_playlists_path)
-dir = '../../data/img/plots/scatter_plots/dimension_reduction/MDS'
+dir = '../../data/img_old/plots/scatter_plots/dimension_reduction/MDS'
 
 
 song_features = get_data()

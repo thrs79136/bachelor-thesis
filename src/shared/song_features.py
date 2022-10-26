@@ -59,7 +59,7 @@ def init_song_features():
         'chord_distances2': SongFeature('chord_distances2', 'Akkordabstände (Bassnote)', '', Song.get_chord_distances2),
 
         'different_chords': SongFeature('different_chords','Verschiedene Akkorde',  '', Song.get_different_chords_count),
-        'different_progressions': SongFeature('different_progressions', 'Verschiedene Akkordfolgen', get_different_progressions_feature),
+        'different_progressions': SongFeature('different_progressions', 'Verschiedene Akkordfolgen', '', get_different_progressions_feature),
         'different_notes': SongFeature('different_notes', 'Anzahl erschiedener Noten', '', Song.get_different_notes_count),
         'average_chord_count_per_bar': SongFeature('average_chord_count_per_bar', 'Anzahl verschiedener Akkorde pro Takt', '', Song.get_average_chords_per_bar),
         'minor_or_major': SongFeature('minor_or_major', 'Verwendung reiner Moll- oder Durakkorde', '', Song.standard_chord_perc),

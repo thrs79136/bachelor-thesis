@@ -11,7 +11,7 @@ from src.dimension_reduction.common import decade_color_map, feature_list, get_e
 from src.helper.statistics_helper import most_common_genres
 
 
-dir = '../../data/img/plots/scatter_plots/dimension_reduction/UMAP'
+dir = '../../data/img_old/plots/scatter_plots/dimension_reduction/UMAP'
 reducer = umap.UMAP()
 
 

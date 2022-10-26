@@ -1,0 +1,26 @@
+PCA1
+energy           -0.528232
+loudness         -0.460828
+acousticness      0.452018
+danceability     -0.303882
+valence          -0.290384
+time_signature   -0.256188
+speechiness      -0.177424
+mode              0.123453
+duration_ms      -0.085338
+tempo            -0.061597
+dtype: float64
+
+PCA2
+duration_ms         0.530643
+valence            -0.501571
+danceability       -0.461858
+acousticness       -0.241951
+tempo               0.205254
+key                 0.191004
+instrumentalness    0.178885
+time_signature     -0.168758
+loudness            0.155294
+energy              0.153634
+dtype: float64
+

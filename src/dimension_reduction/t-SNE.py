@@ -10,7 +10,7 @@ from src.dimension_reduction.common import create_scatterplot_with_ellipses, col
     feature_list, \
     add_labels_and_ellipses_for_genres, spotify_playlists_path
 
-dir = '../../data/img/plots/scatter_plots/dimension_reduction/t-SNE'
+dir = '../../data/img_old/plots/scatter_plots/dimension_reduction/t-SNE'
 
 data = pd.read_csv('../../data/csv/song_features.csv')
 # data = pd.read_csv(spotify_playlists_path)

@@ -15,22 +15,26 @@ def sentiment_analysis_init():
     classifier_neg_pos = pipeline("sentiment-analysis", top_k=1)
 
 
-def startsentiment_analysis(song: Song):
+def sentiment_analysis_neg_pos(song: Song):
     global classifier_emotions
 
-    sentiment_analysis(song, classifier_emotions)
+    prediction = sentiment_analysis(song, classifier_neg_pos)
+    if prediction is not None:
+        song.sentiments = prediction[0]
 
 
 def sentiment_analysis_emotions(song: Song):
     global classifier_emotions
 
-    sentiment_analysis(song, classifier_neg_pos)
+    prediction = sentiment_analysis(song, classifier_emotions)
+    if prediction is not None:
+        song.emotions = prediction[0]
 
 
 def sentiment_analysis(song: Song, classifier):
     lyrics = song.get_lyrics()
     if lyrics == 'Instrumental':
-        return
+        return None
 
     prediction = classifier(lyrics, return_all_scores=True, truncation=True)
-    song.sentiments = prediction[0]
+    return prediction

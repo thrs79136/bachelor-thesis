@@ -1,0 +1,20 @@
+PCA1
+acousticness          0.546270
+energy               -0.450058
+duration             -0.351449
+chorus_repetitions   -0.337973
+danceability         -0.322968
+major_percentage      0.289998
+chord_distances2      0.269976
+dtype: float64
+
+PCA2
+chord_distances2     -0.507513
+major_percentage     -0.480448
+duration              0.432769
+energy               -0.382670
+danceability         -0.357545
+acousticness          0.210032
+chorus_repetitions   -0.076953
+dtype: float64
+
