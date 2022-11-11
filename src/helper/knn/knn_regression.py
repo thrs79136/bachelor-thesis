@@ -13,6 +13,11 @@ from sklearn.metrics import mean_squared_error
 from math import sqrt
 import matplotlib.pyplot as plt
 
+def knn_regression_all():
+    knn_regression_spotify_popularity_ds1()
+    knn_regression_chart_pos_ds1()
+    knn_regression_year_ds1()
+
 def knn_regression_spotify_popularity_ds1():
     knn_regression('spotify_popularity', feature_list_spotify_popularity, 'Vorhersage der Spotify Popularity mittels KNN-Regression', 'knn_regression_popularity_ds1_m.png', True)
 

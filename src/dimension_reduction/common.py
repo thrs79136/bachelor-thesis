@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -24,21 +27,13 @@ class DimensionReductionConfig:
 audio_feature_keys = ['danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness',
                       'instrumentalness', 'liveness', 'valence', 'tempo', 'duration_ms', 'time_signature']
 color_palette = sns.color_palette('magma', n_colors=7)
-decade_color_map = {
-    1950: 0,
-    1960: 1,
-    1970: 2,
-    1980: 3,
-    1990: 4,
-    2000: 5,
-    2010: 6
-}
 
-spotify_genres_config = DimensionReductionConfig(spotify_playlists_path, audio_feature_keys, color_palette, decade_color_map)
+
+# spotify_genres_config = DimensionReductionConfig(spotify_playlists_path, audio_feature_keys, color_palette, decade_color_map)
 
 
 
-current_config = spotify_genres_config
+# current_config = spotify_genres_config
 
 
 
@@ -143,34 +138,74 @@ audio_feature_keys = ['danceability', 'energy', 'key', 'loudness', 'mode', 'spee
                       'instrumentalness', 'liveness', 'valence', 'tempo', 'duration_ms', 'time_signature']
 
 
-feature_list = feature_list_all
+#feature_list_year = ['acousticness', 'danceability', 'duration_ms', 'energy', 'loudness', 'minor_percentage', 'major_percentage', 'neither_chords', 'get_added_seventh_use', 'non_triad_chords_percentage', 'tonic_percentage', 'v_to_i', 'circle_of_fifths_dist', 'circle_of_fifths_dist_largest_dist', 'chord_distances', 'chord_distances2', 'different_chords', 'different_progressions', 'different_notes', 'different_sections_count', 'chorus_repetitions']
+# feature_list_year = ['acousticness', 'danceability', 'duration_ms', 'energy', 'major_percentage', 'neither_chords', 'get_added_seventh_use', 'non_triad_chords_percentage', 'tonic_percentage', 'v_to_i', 'circle_of_fifths_dist', 'circle_of_fifths_dist_largest_dist', 'chord_distances', 'chord_distances2', 'different_chords', 'different_progressions', 'different_sections_count', 'chorus_repetitions']
+#feature_list_year = ['acousticness', 'danceability', 'duration_ms', 'energy', 'major_percentage', 'neither_chords', 'get_added_seventh_use', 'non_triad_chords_percentage', 'circle_of_fifths_dist', 'chord_distances', 'chord_distances2', 'different_sections_count', 'chorus_repetitions']
+feature_list_year = ['acousticness', 'danceability', 'duration_ms', 'energy', 'major_percentage', 'neither_chords', 'non_triad_chords_percentage', 'chord_distances2', 'different_sections_count', 'chorus_repetitions']
 
-color_palette = sns.color_palette('magma', n_colors=7)
+feature_list_chart_pos = []
+feature_list_spotify_popularity = []
+
+feature_lists = {
+    'year': feature_list_year,
+    'chart_pos': feature_list_chart_pos,
+    'spotify_popularity': feature_list_spotify_popularity
+ }
+
+decade_color_map = {
+    1950: 0,
+    1960: 1,
+    1970: 2,
+    1980: 3,
+    1990: 4,
+}
+
+decade_color_map2 = {
+    1950: 0,
+    1960: 1,
+    1970: 2,
+    1980: 3,
+    1990: 4,
+    2000: 5,
+    2010: 6
+}
+
+color_maps = {
+    'year': decade_color_map
+}
+
+color_palette_year = sns.color_palette('magma', n_colors=12)
+
+color_palette = sns.color_palette('magma', n_colors=12)
 color_palette_cont = sns.color_palette('magma', as_cmap=True)
 
+color_palettes = {
+    'year': sns.color_palette('CMRmap', n_colors=12)[1::2]
+}
+
+feature_list = feature_list_all
 
 use_genres = False
 
+#
+# def get_data():
+#
+#     data = pd.read_csv(current_config.csv_file)
+#
+#     print(data.head())
+#     print(data.shape)
+#
+#     data_dropped = data[
+#         current_config.feature_list
+#     ].values
+#     return data_dropped
 
-def get_data():
 
-    data = pd.read_csv(current_config.csv_file)
-
-    print(data.head())
-    print(data.shape)
-
-    data_dropped = data[
-        current_config.feature_list
-    ].values
-    return data_dropped
-
-
-def create_scatterplot_with_ellipses(data_frame, x_pos, y_pos, dir, title, xlabel=None, ylabel=None):
+def create_scatterplot_with_ellipses(data_frame, x_pos, y_pos, colored_feature, directory, title, xlabel=None, ylabel=None):
     global use_genres
 
-
     if use_genres:
-        create_scatterplot_with_ellipses_genres(data_frame, x_pos, y_pos, dir, title, xlabel, ylabel)
+        create_scatterplot_with_ellipses_genres(data_frame, x_pos, y_pos, directory, title, xlabel, ylabel)
         return
 
     fig, ax = plt.subplots()
@@ -186,14 +221,17 @@ def create_scatterplot_with_ellipses(data_frame, x_pos, y_pos, dir, title, xlabe
     # for i in color_indices:
     #     colours.append(color_palette_cont.colors[i])
     d = data_frame.decade
-    c = [color_palette[x] for x in data_frame.decade.map(decade_color_map)]
+
+    color_map = color_maps[colored_feature]
+    # c = [color_palette[x] for x in data_frame.decade.map(color_map)]
+    color_palette = color_palettes[colored_feature]
 
     plt.scatter(
         x_pos,
         y_pos,
         s=30,
         marker='o',
-        c=[color_palette[x] for x in data_frame.decade.map(decade_color_map)],
+        c=[color_palette[x] for x in data_frame.decade.map(color_map)],
         #c=colours,
 
         # c=[x for x in data.artist.map(map_artist)],
@@ -205,9 +243,10 @@ def create_scatterplot_with_ellipses(data_frame, x_pos, y_pos, dir, title, xlabe
     if ylabel is not None:
         plt.ylabel(ylabel)
 
-    color_list = data_frame['decade'].map(decade_color_map)
+    if colored_feature == 'year' or colored_feature == 'year_spotify':
+        color_list = data_frame['decade'].map(color_map)
 
-    for k, decade_color in decade_color_map.items():
+    for k, decade_color in color_map.items():
         x_values = []
         y_values = []
         for index, color in enumerate(color_list):
@@ -218,19 +257,23 @@ def create_scatterplot_with_ellipses(data_frame, x_pos, y_pos, dir, title, xlabe
         ellipse = get_ellipse(x_values, y_values, color_palette[decade_color])
         ax.add_artist(ellipse)
 
-    # Lables
-    lp = lambda genre, color: plt.plot([], color=color_palette[color], ms=7, mec="none",
-                                       label=str(genre), ls="", marker="o")[0]
+    label_string = lambda label: f'{label}er' if colored_feature == 'year' or colored_feature == 'year1' else label
 
-    handles = [lp(k, v) for k, v in decade_color_map.items()]
+    # Lables
+    lp = lambda category, color: plt.plot([], color=color_palette[color], ms=7, mec="none",
+                                       label=label_string(str(category)), ls="", marker="o")[0]
+
+    handles = [lp(k, v) for k, v in color_map.items()]
     plt.legend(handles=handles)
 
-    plt.savefig(dir + '/scatter_plot.png')
+    Path(directory).mkdir(parents=True, exist_ok=True)
+    plt.savefig(directory + f'/scatter_plot_{colored_feature}.jpg')
+
 
     plt.show()
 
 
-def create_scatterplot_with_ellipses_genres(data_frame, x_pos, y_pos, dir, title, xlabel=None, ylabel=None):
+def create_scatterplot_with_ellipses_genres(data_frame, x_pos, y_pos, directory, title, xlabel=None, ylabel=None):
     fig, ax = plt.subplots()
 
     plt.title(title)
@@ -273,7 +316,8 @@ def create_scatterplot_with_ellipses_genres(data_frame, x_pos, y_pos, dir, title
     handles = [lp(k, v) for k, v in genre_color_map.items()]
     plt.legend(handles=handles)
 
-    plt.savefig(dir + '/scatter_plot_genre.png')
+    Path(directory).mkdir(parents=True, exist_ok=True)
+    plt.savefig(directory + '/scatter_plot_genre.png')
 
     plt.show()
 

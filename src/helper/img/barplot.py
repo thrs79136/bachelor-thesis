@@ -1,6 +1,9 @@
-import numpy as np
-from matplotlib import pyplot as plt
+from pathlib import Path
 
+import numpy as np
+import pandas as pd
+from matplotlib import pyplot as plt
+import seaborn as sns
 
 def addlabels(x,y):
     for i in range(len(x)):
@@ -8,19 +11,28 @@ def addlabels(x,y):
         plt.text(i, y[i] + 0.015, text, ha = 'center')
 
 
-def create_barplot(bar_values, labels, filename, title, subtitle=''):
+# def addlabels(x,y):
+#     for i in range(len(x)):
+#         plt.text(i, y[i]//2, y[i], ha = 'center')
 
-    fig = plt.figure(figsize=(5, 5))
+
+def create_barplot(bar_values, labels, ylabel, filename, title, subtitle='', ylim=None):
+
+    #fig = plt.figure(figsize=(5, 5))
+    fig = plt.figure()
+    fig.subplots_adjust(bottom=0.3)
 
     y_pos = np.arange(len(labels))
 
     plt.bar(y_pos, bar_values, align='center', alpha=0.7, width=0.75)
-    plt.ylim(0, 1.05)
+
+    if ylim:
+        plt.ylim(0, ylim)
 
     addlabels(labels, bar_values)
 
-    plt.xticks(y_pos, labels)
-    plt.ylabel('Genauigkeit')
+    plt.xticks(y_pos, labels, rotation=60)
+    plt.ylabel(ylabel)
     plt.title(title, fontsize=14, y=1.05)
     plt.suptitle(subtitle, fontsize=10, y=0.92)
     fig.savefig('../data/img/plots/bar_plots/' + filename)
@@ -46,3 +58,78 @@ def create_barplot(bar_values, labels, filename, title, subtitle=''):
     # fig.savefig('../data/img/plots/bar_plots/' + filename)
     #
     # plt.show()
+
+
+def create_stacked_barplot(bar_values, labels, legend, title, suptitle, directory=''):
+    fig = plt.figure()
+    ax = plt.subplot(111)
+
+    # bar_values.reverse()
+    for i, values in enumerate(bar_values):
+        bar_values[i] = np.array(values)
+
+
+    color_palette = sns.color_palette("icefire", n_colors=len(legend))
+
+    # plot bars in stack manner
+    for i, values in enumerate(bar_values):
+        j = len(bar_values) - i -1
+        low = j+1
+        plt.bar(labels, bar_values[j], bottom=sum(bar_values[low:]) if j != len(bar_values)-1 else None, label=legend[j], color=color_palette[j])
+
+    plt.ylabel("Anteil der Lieder")
+
+    box = ax.get_position()
+    if len(legend[0]) >= 10 and len(legend) <= 2:
+        # bottom
+        ax.set_position([box.x0, box.y0 + box.height * 0.2, box.width, box.height * 0.8])
+        # Put a legend to the right of the current axis
+        ax.legend(legend, loc='lower left', bbox_to_anchor=(0, -0.3))
+        handles, labels = ax.get_legend_handles_labels()
+        ax.legend(handles[::-1], labels[::-1], loc='lower left', bbox_to_anchor=(0, -0.3))
+    else:
+        # right
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+        ax.legend(legend, loc='center left', bbox_to_anchor=(1, 0.65))
+        handles, labels = ax.get_legend_handles_labels()
+        ax.legend(handles[::-1], labels[::-1], loc='center left', bbox_to_anchor=(1, 0.65))
+
+    plt.suptitle(suptitle)
+    plt.title(title)
+    plt.show()
+    # TODO
+    plt.savefig()
+    x = 42
+
+
+def create_grouped_barplot(bar_values, labels, legend, filename, title, subtitle='', ylabel='', directory=''):
+
+    fig = plt.figure(figsize=(8, 5))
+    x = [i for i in range(12)]
+    bar_values = [x] * 5
+
+    y1 = [34, 56, 12, 89, 12, 10, 10]*2
+    # create data
+    # x = np.arange(len(bar_values))
+    x = np.arange(len(y1))
+
+
+    width = 0.05
+
+    # plot data in grouped manner of bar type
+    for i in range(len(y1)):
+        plt.bar(x - width + i * width, y1, width)
+
+    plt.title(title, fontsize=14, y=1.05)
+    plt.suptitle(subtitle, fontsize=10, y=0.92)
+
+    # plt.xticks(x, labels)
+    # plt.xlabel("Teams")
+    plt.ylabel(ylabel)
+    # plt.legend(legend)
+
+    path = f'../data/img/plots/bar_plots/{directory}'
+    Path(path).mkdir(parents=True, exist_ok=True)
+
+    fig.savefig(path + filename)
+    plt.show()

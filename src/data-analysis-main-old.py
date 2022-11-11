@@ -46,10 +46,10 @@ from src.models.mgill_chord import RomNumNotations, McGillChord
 from src.models.pca_config import PCAConfig
 from src.models.song import Song, key_dict
 from src.models.spotify_track import SpotifyTrack, to_dataframe
-from src.shared import settings, song_features
+from src.shared import settings, shared
 
 # TODO move to scatter plot
-from src.shared.song_features import init_song_features
+from src.shared.shared import init_song_features
 
 
 def test_correlation_significance(songs):

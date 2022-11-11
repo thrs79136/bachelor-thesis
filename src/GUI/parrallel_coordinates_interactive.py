@@ -24,8 +24,8 @@ from qtrangeslider import QRangeSlider, QLabeledRangeSlider
 
 from src.dimension_reduction.common import parallel_coordinates_feature_list
 from src.models.song_feature import SongFeature
-from src.shared import song_features
-from src.shared.song_features import init_song_features
+from src.shared import shared
+from src.shared.shared import init_song_features
 
 
 from PyQt5.QtCore import QRunnable, Qt, QThreadPool
@@ -107,8 +107,8 @@ class Window(QDialog):
         for index, feature in enumerate(song_features2):
             label = f'F{index + 1}'
             feature_labels.append(label)
-            description_text += f'{label} - {feature.feature_display_name}\n'
-            self.annotation_texts.append(f'{label} - {feature.feature_display_name}')
+            description_text += f'{label} - {feature.display_name}\n'
+            self.annotation_texts.append(f'{label} - {feature.display_name}')
 
         n = len(parallel_coordinates_feature_list)
         for i in range(n - 1):

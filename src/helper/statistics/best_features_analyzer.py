@@ -5,8 +5,8 @@ from scipy.stats import stats
 from src.helper.statistics_helper import analyze_feature_correlation
 from src.helper.years_scatterplot import TestResult
 from src.models.song_feature import SongFeature
-from src.shared import song_features
-from src.shared.song_features import init_song_features
+from src.shared import shared
+from src.shared.shared import init_song_features
 
 
 def get_best_features(csv_file_path, analyzed_feature, max_pvalue=0.01, spearman=True):

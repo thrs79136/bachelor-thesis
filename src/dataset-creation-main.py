@@ -1,9 +1,11 @@
 import csv
 import pickle
+from collections import defaultdict
 from typing import List
 
 import pandas as pd
 
+from src.dimension_reduction.common import spotify_playlists_path
 from src.helper import spotify_api
 from src.helper.file_helper import save_song, write_header, row_count, save_songs, get_songs_from_binary_file
 from src.helper.spotify_api import get_audio_features, get_spotify_song_id
@@ -15,6 +17,19 @@ from src.shared import settings
 old_songs_path = '../data/songs.csv'
 songs_path = '../data/songs-finished.csv'
 
+
+def get_songs_old():
+    billboardindex_path = '../data/billboard-2.0-index.csv'
+    songs = []
+
+    with open(billboardindex_path, newline='') as csvfile:
+        csvreader = csv.DictReader(csvfile, delimiter=';', escapechar='', quoting=csv.QUOTE_NONE)
+        for row in csvreader:
+            song = Song.from_mcgill_csv_row(row)
+            if song is not None:
+                songs.append(song)
+
+    return songs
 
 def merge_datasets():
     billboardindex_path = './data/billboard-2.0-index.csv'
@@ -110,6 +125,36 @@ def remove_duplicates():
     print(len(songs))
 
     save_songs(songs_path, songs)
+
+def remove_duplicates2(songs):
+    song_artist_names_dict = {}
+    song_names_dict = defaultdict(list)
+    songs_without_dupl = []
+    for song in songs:
+        if song_artist_names_dict.get(song.song_name + song.artist, -1) == -1:
+            songs_without_dupl.append(song)
+        song_artist_names_dict[song.song_name + song.artist] = True
+
+
+    for song in songs_without_dupl:
+        song_names_dict[song.song_name].append(song)
+
+
+    test_duplicates = []
+
+    for key, value in song_names_dict.items():
+        if len(value) > 1:
+            test_duplicates.append(value)
+
+    x = 42
+
+def add_spotify_ids_to_dataset_2():
+    df = pd.read_csv(spotify_playlists_path)
+
+
+my_songs = get_songs_old()
+songsnew = remove_duplicates2(my_songs)
+
 
 
 settings.init_logger('add_spotify_ids.log')

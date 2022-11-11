@@ -8,11 +8,12 @@ from sklearn import preprocessing
 
 from src.dimension_reduction.common import create_scatterplot_with_ellipses, color_palette, decade_color_map, \
     feature_list, \
-    add_labels_and_ellipses_for_genres, spotify_playlists_path
+    add_labels_and_ellipses_for_genres, spotify_playlists_path, feature_lists
+from src.shared import shared
 
-dir = '../../data/img_old/plots/scatter_plots/dimension_reduction/t-SNE'
+dir = '../data/img/plots/scatter_plots/dimension_reduction/t-SNE'
 
-data = pd.read_csv('../../data/csv/song_features.csv')
+# data = pd.read_csv('../data/csv/song_features.csv')
 # data = pd.read_csv(spotify_playlists_path)
 
 dropped_columns  = [
@@ -56,55 +57,23 @@ dropped_columns  = [
 
 # data = data.drop(data[(data.artist != 'Elvis Presley') & (data.artist != 'The Rolling Stones') & (data.artist != 'The Beatles') & (data.artist != 'Brenda Lee') & (data.artist != 'James Brown')].index)
 
-data_dropped = data[
-    feature_list
-].values
+def create_tsne_plot():
+
+    data = shared.mcgill_df
+    data_dropped = data[
+        feature_lists['year']
+    ].values
+
+    # 10 - 1000
+    m = TSNE(learning_rate=100)
+
+    scaled_data = preprocessing.scale(data_dropped)
 
 
-# 10 - 1000
-m = TSNE(learning_rate=100)
+    tsne_features = m.fit_transform(scaled_data)
 
-scaled_data = preprocessing.scale(data_dropped)
+    data['x'] = tsne_features[:,0]
+    data['y'] = tsne_features[:,1]
 
-
-tsne_features = m.fit_transform(scaled_data)
-
-data['x'] = tsne_features[:,0]
-data['y'] = tsne_features[:,1]
-
-
-
-
-def map_artist(input):
-    artist_to_color_dict = {
-        'Elvis Presley': 'red',
-        'The Rolling Stones': 'blue',
-        'The Beatles': 'green',
-        'Brenda Lee': 'purple',
-        'James Brown': 'black'
-
-    }
-
-    color = artist_to_color_dict.get(input, -1)
-    if color == -1:
-        return 'grey'
-    return color
-
-
-    x = 42
-
-# fig, ax = plt.subplots()
-# plt.scatter(
-#     tsne_features[:,0],
-#     tsne_features[:,1],
-#     s=50,
-#     marker='o',
-#     c=[color_palette[x] for x in data.decade.map(decade_color_map)],
-#     #c=[x for x in data.artist.map(map_artist)],
-#     edgecolors='white',
-# )
-
-#sns.scatterplot(x='x', y='y', hue='decade', data=data)
-
-create_scatterplot_with_ellipses(data, tsne_features[:, 0], tsne_features[:, 1], dir, 't-SNE')
+    create_scatterplot_with_ellipses(data, tsne_features[:, 0], tsne_features[:, 1], 'year', dir, 't-SNE')
 

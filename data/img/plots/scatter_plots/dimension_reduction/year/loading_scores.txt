@@ -1,0 +1,23 @@
+PCA1/n
+neither_chords                 0.473900
+non_triad_chords_percentage    0.469248
+major_percentage              -0.399690
+acousticness                  -0.315572
+duration_ms                    0.280291
+chord_distances2              -0.245778
+energy                         0.215847
+different_sections_count       0.210392
+chorus_repetitions             0.205153
+danceability                   0.154839
+dtype: float64/n/nPCA2/n
+energy                        -0.492544
+acousticness                   0.461437
+non_triad_chords_percentage    0.362710
+neither_chords                 0.337200
+danceability                  -0.323163
+chorus_repetitions            -0.291182
+major_percentage              -0.245037
+different_sections_count      -0.190124
+duration_ms                   -0.114935
+chord_distances2              -0.024342
+dtype: float64/n/n

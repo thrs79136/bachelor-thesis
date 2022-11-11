@@ -6,38 +6,44 @@ import seaborn as sns
 
 figure_number = 0
 
-def lineplot(x, y, xlabel, ylabel, filename: str, title='', suptitle='', dir='', dot_coordinates=None, dot_legend=''):
+def lineplot(x, y, xlabel, ylabel, filename: str, title='', suptitle='', directory='', dot_coordinates=None, dot_legend=''):
     global figure_number
 
-    filepath = '../data/img/plots/line_plots/'
+    plt.style.use('seaborn-whitegrid')
 
-    if dir != '':
-        filepath += f'{dir}/{filename}'
-        Path(filepath + dir).mkdir(parents=True, exist_ok=True)
-    else:
-        filepath += filename
+    path = f'../data/img/plots/{directory}'
+    Path(path).mkdir(parents=True, exist_ok=True)
+
 
     plt.figure(figure_number)
     fig, ax = plt.subplots()
     plt.plot(x, y)
 
+    color_palette = sns.color_palette("icefire", n_colors=len(dot_legend))
+    #color_palette = ['red', 'blue'] * 5
+
     # dots
     if dot_coordinates is not None:
-        dot_x_values = [tupl[0] for tupl in dot_coordinates]
-        dot_y_values = [tupl[1] for tupl in dot_coordinates]
+        for i, dot_coordinate_list in enumerate(dot_coordinates):
+            dot_x_values = [tupl[0] for tupl in dot_coordinate_list]
+            dot_y_values = [tupl[1] for tupl in dot_coordinate_list]
 
-        plt.plot(dot_x_values, dot_y_values, 'D', color='black', label=dot_legend)
+            plt.plot(dot_x_values, dot_y_values, 'D', color=color_palette[i], label=dot_legend[i])
+        plt.legend(loc='upper right')
 
-    plt.legend(loc='upper right')
+    plt.title(title, fontsize=20, y=1.15, wrap=True)
+    plt.suptitle(suptitle, fontsize=16, y=0.82)
+    plt.xlabel(xlabel, fontsize=18)
+    plt.ylabel(ylabel, fontsize=18)
 
-    plt.title(title, fontsize=13, y=1.05)
-    plt.suptitle(suptitle, fontsize=10, y=0.92)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
+
+    plt.subplots_adjust(top=0.75, left=0.17)
 
     # plt.ylim([0, 1.])
     plt.show()
-    fig.savefig(filepath)
+    fig.savefig(path + filename)
 
     figure_number += 1
 

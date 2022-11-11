@@ -213,7 +213,10 @@ class Song:
         return year - (year % 10)
 
     def get_spotify_feature(self, key):
-        return self.spotify_song_data.audio_features_dictionary[key]
+        value = self.spotify_song_data.audio_features_dictionary[key]
+        if key == 'duration_ms':
+            return value/60
+        return value
 
     def get_lyrics(self):
         artist = ''.join(e for e in self.artist if e.isalnum())
@@ -378,7 +381,7 @@ class Song:
                     note_id = note_to_interval[note_name]
                     notes_dict[note_id] = True
 
-        return len(notes_dict.keys())/12
+        return len(notes_dict.keys())
 
 
     def get_different_sections_count(self):
@@ -681,21 +684,6 @@ class Song:
 
         return count / total_transitions_count
 
-
-    def chord_frequency2(self, rom_num_check):
-        count = 0
-        total_chords_count = 0
-        for section in self.mcgill_billboard_song_data.sections:
-            chords = section.get_progression_chords()
-            total_chords_count += len(chords)
-            for chord in chords:
-                # type = chord.roman_numeral_notation.maj_or_min
-                # if type == MajOrMin.Major or type == MajOrMin.Minor:
-                rom_num = str(chord.roman_numeral_notation)
-                if rom_num == rom_num_check:
-                    count += 1
-
-        return count / total_chords_count
 
     def chord_frequency(self, rom_num_check):
         count = 0

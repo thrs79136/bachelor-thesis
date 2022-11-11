@@ -3,7 +3,6 @@ from collections import defaultdict
 from typing import List
 
 from src.helper.statistics_helper import analyze_song_feature_correlation
-from src.helper.years import draw_feature_line_plot
 from src.models.song import Song
 
 chord_count_dict = defaultdict(int)
@@ -17,7 +16,7 @@ def analyze_absolute_surprises_chords(songs: List[Song]):
     init_chords_dict(songs)
 
     analyze_song_feature_correlation(songs, get_song_chord_surprise, 'Average song chord surprise', directory='surprise')
-    draw_feature_line_plot(songs, Song.get_added_seventh_use, 'Überraschungswert für Akkorde')
+    # draw_feature_line_plot(songs, Song.get_added_seventh_use, 'Überraschungswert für Akkorde')
 
 
 def init_chords_dict(songs: List[Song]):

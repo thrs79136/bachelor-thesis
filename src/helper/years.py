@@ -152,42 +152,43 @@ def draw_sentiment_lineplot(songs: List[Song]):
     x = 42
 
 
-def draw_feature_line_plot_from_song_feature(songs: List[Song], songfeature: SongFeature):
-    title = songfeature.feature_display_name
-    ylabel = title
-    feature_fn = songfeature.feature_fn
-    fn_parameters = songfeature.parameters
-    draw_feature_line_plot(songs, feature_fn, ylabel, title, fn_parameters=fn_parameters, use_variance=True)
+# rewrite this
+# def draw_feature_line_plot_from_song_feature(songs: List[Song], songfeature: SongFeature):
+#     title = songfeature.display_name
+#     ylabel = title
+#     feature_fn = songfeature.feature_fn
+#     fn_parameters = songfeature.parameters
+#     draw_feature_line_plot(songs, feature_fn, ylabel, title, fn_parameters=fn_parameters, use_variance=True)
 
 
-def draw_feature_line_plot(songs: List[Song], feature_fn, ylabel, title='', suptitle='', dir='',
-                           fn_parameters=[], artist_coordinates=None, coordinate_legend=None, use_variance=False):
-    global years_dict
-
-    init_years_dict(songs)
-
-    od = OrderedDict(sorted(years_dict.items()))
-
-    medians_or_variance = []
-
-    for value in od.values():
-        feature_values = [feature_fn(song, *fn_parameters) for song in value]
-        result = np.var(feature_values) if use_variance else np.median(feature_values)
-        medians_or_variance.append(result)
-
-    years = [int(year) for year in od.keys()]
-    if title == '':
-        title = ylabel
-
-    file_name = ylabel.lower().replace(' ', '_')
-
-    spearman_result = stats.spearmanr(years, medians_or_variance)
-    suptitle = f'n={len(songs)}; r={"{0:.3f}".format(spearman_result.correlation)}; p={"{0:.3f}".format(spearman_result.pvalue)}'
-    if use_variance and dir == '':
-        dir = 'variance'
-
-    lineplot(years, medians_or_variance, 'Jahr', ylabel, file_name, title, suptitle, dir, dot_coordinates=artist_coordinates, dot_legend=coordinate_legend)
-
+# def draw_feature_line_plot(songs: List[Song], feature_fn, ylabel, title='', suptitle='', dir='',
+#                            fn_parameters=[], artist_coordinates=None, coordinate_legend=None, use_variance=False):
+#     global years_dict
+#
+#     init_years_dict(songs)
+#
+#     od = OrderedDict(sorted(years_dict.items()))
+#
+#     medians_or_variance = []
+#
+#     for value in od.values():
+#         feature_values = [feature_fn(song, *fn_parameters) for song in value]
+#         result = np.var(feature_values) if use_variance else np.median(feature_values)
+#         medians_or_variance.append(result)
+#
+#     years = [int(year) for year in od.keys()]
+#     if title == '':
+#         title = ylabel
+#
+#     file_name = ylabel.lower().replace(' ', '_')
+#
+#     spearman_result = stats.spearmanr(years, medians_or_variance)
+#     suptitle = f'n={len(songs)}; r={"{0:.3f}".format(spearman_result.correlation)}; p={"{0:.3f}".format(spearman_result.pvalue)}'
+#     if use_variance and dir == '':
+#         dir = 'variance'
+#
+#     lineplot(years, medians_or_variance, 'Jahr', ylabel, file_name, title, suptitle, dir, dot_coordinates=artist_coordinates, dot_legend=coordinate_legend)
+#
 
 def draw_feature_line_plot_with_pos1_coordinates(songs: List[Song], feature_fn, ylabel, title='', fn_parameters=[]):
     filename = f"{ylabel.lower().replace(' ', '_')}.png"

@@ -24,13 +24,13 @@ class TestResult:
     #     self.feature_id = feature_id
     #     self.test_result = test_result
 
-    def __init__(self, feature_id, correlation, pvalue):
-        self.feature_id = feature_id
+    def __init__(self, feature, correlation, pvalue):
+        self.feature = feature
         self.correlation = correlation
         self.pvalue = pvalue
 
     def __str__(self):
-        return f'{self.feature_id.replace("_", " ")} & {round(self.correlation, 5)} & {round(self.pvalue, 5)}'
+        return f'{self.feature.feature_id.replace("_", " ")} & {round(self.correlation, 5)} & {round(self.pvalue, 5)}'
 
 
 def analyze_feature_correlation(x_values, y_values, x_label, y_label, title, filename, directory=None, use_pearson=True, draw_plot=True):
@@ -56,13 +56,13 @@ def analyze_feature_correlation(x_values, y_values, x_label, y_label, title, fil
 
 
 # spearman is for ranked data
-def analyze_feature_correlation(x_values, y_values, feature_id, use_pearson):
+def analyze_feature_correlation(x_values, y_values, use_pearson, feature):
     if use_pearson:
         test_result = stats.pearsonr(x_values, y_values)
-        test_result_cls = TestResult(feature_id, test_result[0], test_result[1])
+        test_result_cls = TestResult(feature, test_result[0], test_result[1])
     else:
         test_result = stats.spearmanr(x_values, y_values)
-        test_result_cls = TestResult(feature_id, test_result.correlation, test_result.pvalue)
+        test_result_cls = TestResult(feature, test_result.correlation, test_result.pvalue)
 
     return test_result_cls
 
@@ -94,7 +94,7 @@ def compare_feature_among_genres(songs: List[Song], feature: SongFeature):
 
         box_plot_values.append(feature_expr)
 
-    title = feature.feature_display_name
+    title = feature.display_name
     filename = f'{feature.feature_id}.jpg'
 
     oneway_result = stats.f_oneway(*box_plot_values)
@@ -420,7 +420,7 @@ def create_key_table(songs: List[Song], filename: str, genre: str = None):
 
     sorted_result = {k: v for k, v in sorted(result.items(), key=lambda item: item[1]['median'])}
 
-    keys = ['C', 'C#/Db', 'D', 'D#/Eb', 'E', 'F', 'F#/Gb', 'G', 'G#/Ab', 'A', 'A#/Bb', 'B']
+    keys = ['C', 'C#/Db', 'D', 'D#/Eb', 'E', 'F', 'F#/Gb', 'G', 'G#/Ab', 'A', 'A#/B', 'H']
     sorted_keys = [keys[res] for res in sorted_result.keys()]
     data = [[res['median'] for res in sorted_result.values()],
             sorted_keys,

@@ -55,6 +55,7 @@ def uses_doo_wop_progression(song: Song):
     return 'IV,I,bVII' in song_dict.keys()
 
 
+# in relation to the total progression count
 def get_different_progressions_feature(song: Song):
     song_dict = prog_count_dict_by_song[song.mcgill_billboard_id]
     items_num = len(song_dict.keys())

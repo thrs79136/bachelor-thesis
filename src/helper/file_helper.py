@@ -10,10 +10,8 @@ from src.helper.statistics_helper import group_by_year
 from src.models.mcgill_songdata import Bar
 from src.models.mgill_chord import McGillChord
 from src.models.song import Song
-from src.shared import song_features
-
-global feature_file_path
-feature_file_path = '../data/csv/song_features.csv'
+from src.shared import shared
+from src.shared.shared import feature_file_path
 
 global year_feature_file_path
 year_feature_file_path = '../data/csv/year_features.csv'
@@ -150,7 +148,7 @@ def save_dataframe(df, filename):
 
 
 def save_all_features_to_csv(songs: List[Song]):
-    features = song_features.song_features_dict.values()
+    features = shared.song_features_dict.values()
 
     with open(feature_file_path, "w", newline='') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',', escapechar='\\', quoting=csv.QUOTE_NONE)
@@ -171,7 +169,7 @@ def save_feature_csv(songs: List[Song], feature_names, file=feature_file_path):
         csvwriter = csv.writer(csvfile, delimiter=',', escapechar='\\', quoting=csv.QUOTE_NONE)
         csvwriter.writerow(feature_names)
 
-        features = [song_features.song_features_dict[feature_name] for feature_name in feature_names]
+        features = [shared.song_features_dict[feature_name] for feature_name in feature_names]
         for song in songs:
             csv_row = []
             for feature in features:
@@ -186,7 +184,7 @@ def save_median_feature_csv(songs: List[Song], feature_names):
     with open(year_feature_file_path, "w", newline='') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',', escapechar='\\', quoting=csv.QUOTE_NONE)
 
-        features = [song_features.song_features_dict[feature_name] for feature_name in feature_names if song_features.song_features_dict[feature_name].is_numerical]
+        features = [shared.song_features_dict[feature_name] for feature_name in feature_names if shared.song_features_dict[feature_name].is_numerical]
         feature_names = [feature.feature_id for feature in features]
 
         csvwriter.writerow(feature_names)

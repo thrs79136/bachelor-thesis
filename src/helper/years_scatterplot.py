@@ -2,8 +2,8 @@ import pandas as pd
 
 from src.helper.statistics_helper import analyze_feature_correlation
 from src.models.song_feature import SongFeature
-from src.shared import song_features
-from src.shared.song_features import init_song_features
+from src.shared import shared
+from src.shared.shared import init_song_features
 
 
 class TestResult:
@@ -37,7 +37,7 @@ def draw_year_scatter_plots():
 
         column_values = df[column_name].tolist()
 
-        result = analyze_feature_correlation(years, column_values, 'Jahr', feature.feature_display_name, feature.feature_display_name, f'{feature.feature_id}.jpg', directory='years', draw_plot=False)
+        result = analyze_feature_correlation(years, column_values, 'Jahr', feature.display_name, feature.display_name, f'{feature.feature_id}.jpg', directory='years', draw_plot=False)
         test_result = TestResult(column_name, result)
         test_results.append(test_result)
 
@@ -65,7 +65,7 @@ def test_chart_pos():
 
         column_values = df[column_name].tolist()
 
-        result = analyze_feature_correlation(chart_positions, column_values, 'Jahr', feature.feature_display_name, feature.feature_display_name, f'{feature.feature_id}.jpg', directory='years', use_pearson=True, draw_plot=False)
+        result = analyze_feature_correlation(chart_positions, column_values, 'Jahr', feature.display_name, feature.display_name, f'{feature.feature_id}.jpg', directory='years', use_pearson=True, draw_plot=False)
         test_result = TestResult(column_name, result)
         test_results.append(test_result)
 

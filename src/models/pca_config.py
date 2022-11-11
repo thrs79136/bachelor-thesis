@@ -1,4 +1,4 @@
-from src.shared import song_features
+from src.shared import shared
 
 
 class PCAConfig:
