@@ -143,8 +143,8 @@ audio_feature_keys = ['danceability', 'energy', 'key', 'loudness', 'mode', 'spee
 #feature_list_year = ['acousticness', 'danceability', 'duration_ms', 'energy', 'major_percentage', 'neither_chords', 'get_added_seventh_use', 'non_triad_chords_percentage', 'circle_of_fifths_dist', 'chord_distances', 'chord_distances2', 'different_sections_count', 'chorus_repetitions']
 feature_list_year = ['acousticness', 'danceability', 'duration_ms', 'energy', 'major_percentage', 'neither_chords', 'non_triad_chords_percentage', 'chord_distances2', 'different_sections_count', 'chorus_repetitions']
 
-feature_list_chart_pos = []
-feature_list_spotify_popularity = []
+feature_list_chart_pos = ['danceability', 'loudness', 'minor_percentage', 'major_percentage', 'tonic_percentage', 'circle_of_fifths_dist_largest_dist', 'section_repetitions', 'chorus_repetitions']
+feature_list_spotify_popularity = ['acousticness', 'danceability', 'duration_ms', 'energy', 'loudness', 'major_percentage', 'neither_chords', 'get_added_seventh_use', 'v_to_i', 'circle_of_fifths_dist', 'circle_of_fifths_dist_largest_dist', 'different_progressions', 'different_notes', 'chorus_repetitions']
 
 feature_lists = {
     'year': feature_list_year,

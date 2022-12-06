@@ -26,9 +26,11 @@ song_features_dict = {
     'artist': SongFeature('artist', 'Künstler', '', Song.get_artist, is_numerical=False),
     'chart_pos': SongFeature('chart_pos', 'Höchste Chartposition', '', Song.get_peak_chart_position),
     'genre': SongFeature('genre', 'Genre', '', Song.get_genres_id, is_numerical=False, is_nominal=True),
+    'genre_groups': SongFeature('genre_groups', 'Genre Group', '', Song.get_group_genres, is_numerical=False, is_nominal=True),
 
     # Spotify
     'spotify_popularity': SongFeature('spotify_popularity', 'Spotify Popularity', '', Song.get_spotify_popularity),
+    'spotify_id': SongFeature('spotify_id', 'Spotify Id', '', Song.get_spotify_id, is_numerical=False),
 
     'acousticness': SongFeature('acousticness', 'Acousticness', '1', Song.get_spotify_feature, ['acousticness']),
     'danceability': SongFeature('danceability', 'Danceability', '2', Song.get_spotify_feature, ['danceability']),
@@ -56,7 +58,7 @@ song_features_dict = {
 
 
     'non_triad_chords_percentage': SongFeature('non_triad_chords_percentage',
-                                               'Akkorde, die keinen Dreiklang enthalten', '16',
+                                               'Anteil Akkorde ohne Dreiklang', '16',
                                                Song.get_non_triad_rate),
     'minor_or_major': SongFeature('minor_or_major', 'Anteil von Moll- oder Durdreiklängen', '17',
                                   Song.standard_chord_perc),
@@ -87,7 +89,7 @@ song_features_dict = {
     'different_sections_count': SongFeature('different_sections_count', 'Anzahl verschiedener Sektionen', '27',
                                             Song.get_different_sections_count),
 
-    'section_repetitions': SongFeature('section_repetitions', 'Anzahl von Wiederholungen bereits gespielter Sektionen',
+    'section_repetitions': SongFeature('section_repetitions', 'Anzahl Wiederholungen bereits gespielter Sektionen',
                                        '28', Song.get_section_repetitions_count),
     'chorus_repetitions': SongFeature('chorus_repetitions', 'Anzahl Wiederholungen des Rephrains', '29', Song.get_chorus_repetitions),
 
@@ -122,7 +124,7 @@ song_features_dict = {
     # 'VII_percentage': SongFeature('VII_percentage', 'Anteil der VII', '', Song.chord_frequency, ['VII']),
 }
 
-non_y_axis_features = ['decade', 'year', 'artist', 'chart_pos', 'genre', 'spotify_popularity']
+non_y_axis_features = ['decade', 'year', 'artist', 'chart_pos', 'genre', 'spotify_popularity', 'spotify_id', 'genre_groups']
 
 
 def normalize(df):
@@ -137,10 +139,13 @@ def normalize(df):
     return df_z_scaled
 
 feature_file_path = '../data/csv/song_features.csv'
+median_file_path = '../data/csv/year_features.csv'
 dataset2_path = '../data/csv/years/spotify.csv'
 
 mcgill_df = pd.read_csv(feature_file_path)
 normalized_mcgill_df = normalize(mcgill_df)
 
-spotify_year_df = pd.read_csv(dataset2_path)
+median_df = pd.read_csv(median_file_path)
 
+spotify_year_df = pd.read_csv(dataset2_path)
+x = 42

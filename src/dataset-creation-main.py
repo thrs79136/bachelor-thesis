@@ -5,10 +5,11 @@ from typing import List
 
 import pandas as pd
 
-from src.dimension_reduction.common import spotify_playlists_path
+from src.dimension_reduction.common import spotify_playlists_path, mcgill_features_path
 from src.helper import spotify_api
-from src.helper.file_helper import save_song, write_header, row_count, save_songs, get_songs_from_binary_file
-from src.helper.spotify_api import get_audio_features, get_spotify_song_id
+from src.helper.file_helper import save_song, write_header, row_count, save_songs, get_songs_from_binary_file, \
+    save_dataframe
+from src.helper.spotify_api import get_audio_features, get_spotify_song_id, get_popularity, get_spotify_genres
 from src.models.song import Song
 
 from src.models.spotify_song_data import SpotifySongData
@@ -150,24 +151,50 @@ def remove_duplicates2(songs):
 
 def add_spotify_ids_to_dataset_2():
     df = pd.read_csv(spotify_playlists_path)
+    for i in range(len(df)):
+        print(f'{i}/{len(df)}')
+
+        row = df.iloc[i]
+        spotify_id = row['id']
+        popularity = get_popularity(spotify_id)
+        df.at[i, 'spotify_popularity'] = popularity
 
 
-my_songs = get_songs_old()
-songsnew = remove_duplicates2(my_songs)
+    save_dataframe(df, 'spotify.csv')
+
+
+def add_spotify_genre_to_dataset_1():
+    df = pd.read_csv(mcgill_features_path)
+    for i in range(len(df)):
+        print(f'{i}/{len(df)}')
+
+        row = df.iloc[i]
+        spotify_id = row['spotify_id']
+        genres = get_spotify_genres(spotify_id)
+        df.at[i, 'spotify_genres'] = '.'.join(genres)
+
+    #save_dataframe(df, 'song_features.csv')
+    df.to_csv('../data/csv/song_features.csv')
+
+# my_songs = get_songs_old()
+# songsnew = remove_duplicates2(my_songs)
 
 
 
 settings.init_logger('add_spotify_ids.log')
 spotify_api.init_spotify()
 
+add_spotify_genre_to_dataset_1()
+#add_spotify_ids_to_dataset_2()
+exit()
 
 bin_file = '../data/songs.pickle'
 #
 songs: List[Song] = get_songs_from_binary_file(bin_file)
 songs_with_audio_features = [song for song in songs if song.spotify_song_data.audio_features_dictionary is not None]
 
-for song in songs_with_audio_features:
-    song.add_spotify_popularity()
+# for song in songs_with_audio_features:
+#     song.add_spotify_popularity()
 
 # csv
 save_songs(songs_path, songs)

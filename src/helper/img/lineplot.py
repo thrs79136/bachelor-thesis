@@ -48,11 +48,11 @@ def lineplot(x, y, xlabel, ylabel, filename: str, title='', suptitle='', directo
     figure_number += 1
 
 
-def lineplot_multiple_lines(x, y_lists, legend, xlabel, ylabel, filename: str, title, suptitle='', dir=''):
+def lineplot_multiple_lines(x, y_lists, legend, xlabel, ylabel, filename: str, title, suptitle='', directory='', dot_coordinates=None, dot_legend=None, dot_labels=None):
     global figure_number
 
-    if dir != '':
-        dir += '/'
+    if directory != '':
+        directory += '/'
 
     fig, ax = plt.subplots()
 
@@ -60,12 +60,29 @@ def lineplot_multiple_lines(x, y_lists, legend, xlabel, ylabel, filename: str, t
         plt.plot(x, y_values, label=legend[i])
     plt.legend(loc='upper right')
 
+    if dot_coordinates is not None:
+        for i, dot_coordinate_list in enumerate(dot_coordinates):
+            dot_x_values = [tupl[0] for tupl in dot_coordinate_list]
+            dot_y_values = [tupl[1] for tupl in dot_coordinate_list]
+
+            plt.plot(dot_x_values, dot_y_values, 'D', color='red', label=dot_legend[i])
+            if dot_labels:
+                for j, dot_coordinate in enumerate(dot_coordinate_list):
+                    if i < len(dot_labels) and j < len(dot_labels[i]):
+                        ax.annotate(dot_labels[i][j], (dot_coordinate[0], dot_coordinate[1] + 1))
+
+        plt.legend(loc='upper right')
+
     plt.title(title, fontsize=13, y=1.05)
     plt.suptitle(suptitle, fontsize=10, y=0.92)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.show()
-    fig.savefig('../data/img/plots/line_plots/' + dir + filename)
+
+    path = f'../data/img/plots/line_plots/{directory}'
+    Path(path).mkdir(parents=True, exist_ok=True)
+
+    fig.savefig(path + filename)
 
     figure_number += 1
 

@@ -16,7 +16,7 @@ def addlabels(x,y):
 #         plt.text(i, y[i]//2, y[i], ha = 'center')
 
 
-def create_barplot(bar_values, labels, ylabel, filename, title, subtitle='', ylim=None):
+def create_barplot(bar_values, labels, ylabel, filename, title, subtitle='', ylim=None, horizontal_line=None):
 
     #fig = plt.figure(figsize=(5, 5))
     fig = plt.figure()
@@ -25,6 +25,9 @@ def create_barplot(bar_values, labels, ylabel, filename, title, subtitle='', yli
     y_pos = np.arange(len(labels))
 
     plt.bar(y_pos, bar_values, align='center', alpha=0.7, width=0.75)
+
+    if horizontal_line:
+        plt.axhline(y=horizontal_line, linewidth=1, color='red')
 
     if ylim:
         plt.ylim(0, ylim)
@@ -60,7 +63,8 @@ def create_barplot(bar_values, labels, ylabel, filename, title, subtitle='', yli
     # plt.show()
 
 
-def create_stacked_barplot(bar_values, labels, legend, title, suptitle, directory=''):
+def create_stacked_barplot(bar_values, labels, legend, title, suptitle, filename, directory=''):
+
     fig = plt.figure()
     ax = plt.subplot(111)
 
@@ -75,6 +79,12 @@ def create_stacked_barplot(bar_values, labels, legend, title, suptitle, director
     for i, values in enumerate(bar_values):
         j = len(bar_values) - i -1
         low = j+1
+
+        test1 = len(bar_values)
+        test2 = bar_values[low:]
+        test3 = sum(test2)
+        parameter = sum(bar_values[low:]) if j != len(bar_values)-1 else None
+
         plt.bar(labels, bar_values[j], bottom=sum(bar_values[low:]) if j != len(bar_values)-1 else None, label=legend[j], color=color_palette[j])
 
     plt.ylabel("Anteil der Lieder")
@@ -96,10 +106,15 @@ def create_stacked_barplot(bar_values, labels, legend, title, suptitle, director
 
     plt.suptitle(suptitle)
     plt.title(title)
+
     plt.show()
-    # TODO
-    plt.savefig()
-    x = 42
+
+    if directory != '':
+        directory = f'{directory}/'
+    path = f'../data/img/plots/bar_plots/{directory}'
+    Path(path).mkdir(parents=True, exist_ok=True)
+
+    fig.savefig(path + filename)
 
 
 def create_grouped_barplot(bar_values, labels, legend, filename, title, subtitle='', ylabel='', directory=''):

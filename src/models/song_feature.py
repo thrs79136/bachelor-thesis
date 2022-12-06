@@ -17,3 +17,5 @@ class SongFeature:
 
         self.is_sentiment_feature = is_sentiment_feature
 
+    def __repr__(self):
+        return f'{self.latex_id} {self.feature_id} {self.display_name}'

@@ -6,6 +6,7 @@ from typing import List, Iterable
 import re
 import logging
 
+from src.helper.genres import genres_accepted_genres, genres_genres
 from src.helper.lastfm_helper import LastFmHelper
 from src.models.mcgill_songdata import McGillSongData, Section, Bar
 from src.models.mgill_chord import MajOrMin, note_to_interval, McGillChord
@@ -204,6 +205,12 @@ class Song:
 
     def get_spotify_popularity(self):
         return self.spotify_song_data.popularity
+
+    def get_spotify_id(self):
+        return self.spotify_id
+
+    # def get_spotify_id(self):
+    #     return self.spotify_id
 
     def get_chart_year(self):
         return int(self.chart_year)
@@ -910,6 +917,12 @@ class Song:
     def get_genres_id(self):
         return '.'.join(sorted([genre for genre in self.genres]))
 
+    def get_group_genres(self):
+        song_genres = '-'.join(sorted([genre for genre in self.genres if genre in genres_accepted_genres]))
+        if song_genres in genres_genres:
+            return song_genres
+        return ''
+
         # genres = self.genres
         # genres_for_id = []
         #
@@ -987,8 +1000,4 @@ class Song:
 
         if exists(path_old) and not exists(path_new):
             os.rename(path_old, path_new)
-
-
-
-
 

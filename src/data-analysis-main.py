@@ -9,6 +9,8 @@ from src.helper.img.barplot import create_grouped_barplot, create_stacked_barplo
 from src.helper.img.boxplot import create_boxplot
 from src.helper.img.parallel_coordinates import create_parallel_coordinates
 from src.helper.img.scatterplot import create_scatter_plot
+from src.helper.knn.k_nearest_neighbor import k_nearest_neighbor_all_decades_all_features, knn_classification_all
+from src.helper.knn.knn_regression import knn_regression_all
 from src.helper.statistics.feature_analyzer import analyze_all_features, compare_features_among_genres, \
     create_correlation_matrix
 # from src.helper.statistics.sentiment_analysis import sentiment_analysis_init, \
@@ -46,19 +48,27 @@ def save_feature_csv(songs):
 
 # songs = get_songs_from_binary_file(bin_file)
 
-#songs = get_dataset_1()
-#init(songs)
-#save_feature_csv(songs)
-result_dict = analyze_all_features(redraw_plots=False)
-print([feature.feature.feature_id for feature in result_dict['year']])
+songs = get_dataset_1()
+init(songs)
+save_feature_csv(songs)
+
+# result_dict = analyze_all_features(redraw_plots=False)
+# print([feature.feature.feature_id for feature in result_dict['chart_pos']])
+# exit()
 # draw_feature_line_plots()
 # get_most_common_genres()
 # analyze_artists_over_time()
 
 # create_correlation_matrix([result.feature for result in result_dict['year']])
-#create_pca_plot()
-create_tsne_plot()
-#create_parallel_coordinates(result_dict)
+# create_pca_plot()
+# create_tsne_plot()
+# create_parallel_coordinates(result_dict)
+
+# classification
+knn_classification_all()
+
+# # regression
+# knn_regression_all()
 exit()
 
 

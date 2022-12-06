@@ -18,8 +18,11 @@ def get_normalized_median(feature: SongFeature):
     if feature.feature_id == 'duration_ms':
         pass
     df: Union[Union[TextFileReader, DataFrame], Any] = shared.normalized_mcgill_df
-    median = df.groupby('year')[feature.feature_id].median()
-    return median
+    try:
+        median = df.groupby('year')[feature.feature_id].median()
+        return median
+    except Exception:
+        x = 42
 
 
 def draw_feature_line_plots():

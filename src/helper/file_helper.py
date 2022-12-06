@@ -144,7 +144,8 @@ def modify_billboard_index(oldpath: str, newpath: str):
 
 
 def save_dataframe(df, filename):
-    df.to_csv(f'{spotify_playlist_path}/{filename}')
+    path = f'{spotify_playlist_path}/{filename}'
+    df.to_csv(path)
 
 
 def save_all_features_to_csv(songs: List[Song]):

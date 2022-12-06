@@ -1,16 +1,96 @@
+from cmath import sqrt
+import random
+
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn import preprocessing
+from sklearn.metrics import mean_squared_error
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_iris
 
-from src.dimension_reduction.common import spotify_playlists_path, spotify_genres_playlists_path, feature_list_years
+from src.dimension_reduction.common import spotify_playlists_path, spotify_genres_playlists_path, feature_list_years, \
+    feature_lists
 from src.helper.file_helper import feature_file_path
 from src.helper.genres import create_genres_df, genres_genres, transform_genre_string
 
 import itertools
+
+from src.helper.img.lineplot import lineplot_multiple_lines
+from src.shared import shared
+
+
+def knn_classification_all():
+    knn_decade_ds1()
+    knn_decade_ds2()
+    knn_genre_ds1()
+
+
+def knn_decade_ds1():
+    knn_classification_dataframe(shared.mcgill_df, feature_lists['year'], 'decade', 'decade_ds1.jpg')
+
+
+def knn_decade_ds2():
+    pass
+    # genre_groups
+    # knn_classification_dataframe(shared.mcgill_df)
+    # pass
+
+
+def knn_genre_ds1():
+    pass
+
+
+def knn_classification_dataframe(dataframe, feature_list, classification_column, filename):
+
+    X = dataframe[feature_list].to_numpy()
+    scaler = preprocessing.StandardScaler().fit(X)
+    X = scaler.transform(X)
+
+    y = dataframe[classification_column]
+
+    # Split into training and test set
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42)
+
+    # TODO increase size
+    neighbors = np.arange(1, 100)
+    train_accuracy = np.empty(len(neighbors))
+    test_accuracy = np.empty(len(neighbors))
+
+    random_score = knn_random_value(y)
+
+
+    # Loop over K values
+    for i, k in enumerate(neighbors):
+        knn = KNeighborsClassifier(n_neighbors=k)
+        knn.fit(X_train, y_train)
+
+        # Compute training and test data accuracy
+        train_accuracy[i] = knn.score(X_train, y_train)
+        test_accuracy[i] = knn.score(X_test, y_test)
+
+
+    # get best k value
+    val, idx = max((val, idx) for (idx, val) in enumerate(test_accuracy))
+
+
+
+    # TODO random assignment
+    lineplot_multiple_lines(neighbors, [train_accuracy, test_accuracy],
+                            ['Testdaten', 'RMSE bei zufälliger Zuordnung'], 'k', 'Genauigkeit', filename, 'hallo',
+                            dot_coordinates=[[(neighbors[idx], val)]],
+                            dot_legend=[f'Höchste Genauigkeit (p={val:.3f}, k={neighbors[idx]})'],
+                            directory='knn/classification')
+
+
+def knn_random_value(column):
+    arr = column.values.tolist()
+    random_prediction = [random.sample(arr, 1)[0] for _ in range(len(arr))]
+    match = [i for i in range(len(arr)) if random_prediction[i] == arr[i]]
+    return len(match)/len(arr)
+
 
 def k_nearest_neighbor():
     data = pd.read_csv(spotify_playlists_path)

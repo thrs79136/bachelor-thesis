@@ -17,6 +17,40 @@ from src.shared.shared import non_y_axis_features
 artists_dict = None
 normalized_artist_dict = None
 
+
+# def analyze_genres_over_time():
+#     grouped_df = shared.normalized_mcgill_df.groupby('genre_groups')
+#
+#     dict = {}
+#     labels = []
+#     deviation_values = []
+#     for genre, group_df in grouped_df:
+#         labels.append(genre)
+#         dev_value = get_deviation_value_songs(group_df)
+#         deviation_values.append(dev_value)
+#         dict[genre] = dev_value
+#
+#     return deviation_values
+
+#
+# def get_deviation_value_songs(df):
+#     deviation = 0
+#     n = len(list(shared.song_features_dict.values()))
+#
+#     for feature in shared.song_features_dict.values():
+#         if feature.feature_id not in shared.non_y_axis_features and feature.is_numerical and not feature.is_boolean and not feature.is_sentiment_feature:
+#             norm_median = get_normalized_median(feature)
+#             for i, song in df.iterrows():
+#                 year = song['year']
+#                 dev = (norm_median.loc[song['year']] - song[feature.feature_id])**2
+#                 if math.isnan(dev):
+#                     x = 42
+#                 deviation += dev
+#
+#     return deviation/(n*len(df))
+
+
+# TODO check if all features are normalized
 def analyze_artists_over_time():
     global artists_dict
     global normalized_artist_dict
@@ -50,8 +84,9 @@ def analyze_artists_over_time():
         print(f'{artist} & {get_deviation_value(artist):.3f} \\\\ \n \\hline')
 
     print('deviation of all songs')
-    print(get_deviation_value_all_songs())
-    create_barplot([get_deviation_value(artist) for artist in most_common_artists], most_common_artists, '$a_K$', 'a_k.jpg', '$a_K$ nach Künstler', ylim=1.4)
+    dev_value_all_songs = get_deviation_value_all_songs()
+    print(dev_value_all_songs)
+    create_barplot([get_deviation_value(artist) for artist in most_common_artists], most_common_artists, '$a_K$', 'a_k.jpg', '$a_K$ nach Künstler', ylim=1.4, horizontal_line=dev_value_all_songs)
 
     # for feature in list(shared.song_features_dict.values()):
     #     if feature.feature_id not in non_y_axis_features:

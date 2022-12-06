@@ -13,6 +13,7 @@ def knn_n_minus_one_mcgill_decade():
     df = pd.read_csv(feature_file_path)
     knn_n_minus_one_training_records(df, 'decade', 'decade_mcgill.png', 'KNN mit Klassifizierung nach Jahrzehnt (Datensatz 1)', ['decade', 'artist', 'genre'])
 
+
 def knn_n_minus_one_mcgill_genre():
     df = pd.read_csv(feature_file_path)
     genres_df = create_genres_df(df)

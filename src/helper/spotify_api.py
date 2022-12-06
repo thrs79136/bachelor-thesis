@@ -100,3 +100,18 @@ def get_popularity(song_id: string):
 
     res = spotify_client.track(song_id)
     return res['popularity']
+
+def get_spotify_genres(song_id: string):
+    global spotify_client
+
+    res = spotify_client.track(song_id)
+    artists = res['artists']
+    if len(artists) == 0:
+        return
+    artist_id = res['artists'][0]['id']
+    result = spotify_client.artist(artist_id)
+    genres = result['genres']
+    if len(genres) == 0:
+        print(artists[0]['name'])
+        return []
+    return genres
