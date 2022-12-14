@@ -20,11 +20,18 @@ most_common_genres = ['rock', 'pop', 'soul', 'country', 'blues']
 
 
 class TestResult:
+    def __init__(self, feature, pvalue):
+        self.feature = feature
+        self.pvalue = pvalue
+
+
+class CorrelationTestResult(TestResult):
     # def __init__(self, feature_id, test_result):
     #     self.feature_id = feature_id
     #     self.test_result = test_result
 
     def __init__(self, feature, correlation, pvalue):
+        super().__init__(feature, pvalue)
         self.feature = feature
         self.correlation = correlation
         self.pvalue = pvalue
@@ -59,10 +66,10 @@ def analyze_feature_correlation(x_values, y_values, x_label, y_label, title, fil
 def analyze_feature_correlation(x_values, y_values, use_pearson, feature):
     if use_pearson:
         test_result = stats.pearsonr(x_values, y_values)
-        test_result_cls = TestResult(feature, test_result[0], test_result[1])
+        test_result_cls = CorrelationTestResult(feature, test_result[0], test_result[1])
     else:
         test_result = stats.spearmanr(x_values, y_values)
-        test_result_cls = TestResult(feature, test_result.correlation, test_result.pvalue)
+        test_result_cls = CorrelationTestResult(feature, test_result.correlation, test_result.pvalue)
 
     return test_result_cls
 

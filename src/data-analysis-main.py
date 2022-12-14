@@ -1,22 +1,27 @@
 import pickle
 
-from src.dimension_reduction.PCA import create_pca_plot
+from src.dimension_reduction.MDS import create_mds_plot, create_mds_plots
+from src.dimension_reduction.PCA import create_pca_plot, create_pca_plots
 from src.dimension_reduction.t_SNE import create_tsne_plot
 from src.helper.absolute_surprise import init_progressions_dict
-from src.helper.artists import analyze_artists_over_time
+from src.helper.artists import analyze_artists_over_time, analyze_feature_median_deviation
 from src.helper.file_helper import get_dataset_1, save_all_features_to_csv, get_songs, get_songs_from_binary_file
 from src.helper.img.barplot import create_grouped_barplot, create_stacked_barplot
 from src.helper.img.boxplot import create_boxplot
+from src.helper.img.lineplot import stacked_area_plot
 from src.helper.img.parallel_coordinates import create_parallel_coordinates
 from src.helper.img.scatterplot import create_scatter_plot
 from src.helper.knn.k_nearest_neighbor import k_nearest_neighbor_all_decades_all_features, knn_classification_all
 from src.helper.knn.knn_regression import knn_regression_all
+from src.helper.statistics.correlation_matrix import create_correlation_matrix_plt
 from src.helper.statistics.feature_analyzer import analyze_all_features, compare_features_among_genres, \
     create_correlation_matrix
 # from src.helper.statistics.sentiment_analysis import sentiment_analysis_init, \
 #     sentiment_analysis_emotions, sentiment_analysis_neg_pos
-from src.helper.statistics.genres import get_most_common_genres
+from src.helper.statistics.genres import get_most_common_genres, genres_stacked_area_plot
+from src.helper.statistics.multivariate_regression import multiple_regression, multiple_regression_all
 from src.helper.statistics.year_feature_median import get_median, draw_feature_line_plot, draw_feature_line_plots
+from src.helper.svm.svm import svm_all
 from src.shared import shared
 from src.shared.shared import init_song_features
 
@@ -48,27 +53,40 @@ def save_feature_csv(songs):
 
 # songs = get_songs_from_binary_file(bin_file)
 
-songs = get_dataset_1()
-init(songs)
-save_feature_csv(songs)
+# songs = get_dataset_1()
+# init(songs)
+# save_feature_csv(songs)
+
 
 # result_dict = analyze_all_features(redraw_plots=False)
-# print([feature.feature.feature_id for feature in result_dict['chart_pos']])
+# for key, value in result_dict.items():
+#     print(key)
+#     print(', '.join(feature.feature.feature_id.replace('_', '\_') for feature in value))
+#
 # exit()
+#print([feature.feature.feature_id for feature in result_dict['genre']])
+# exit()
+# genres_stacked_area_plot()
+# stacked_area_plot([0,1,2,3], [[1,1,1,1],[2,2,2,2]], ['hello', 'hello2'], 'xlabel', 'ylabel', 'filename.jpg', 'title')
+
 # draw_feature_line_plots()
 # get_most_common_genres()
-# analyze_artists_over_time()
+# analyze_feature_median_deviation()
 
-# create_correlation_matrix([result.feature for result in result_dict['year']])
-# create_pca_plot()
-# create_tsne_plot()
+
+#create_pca_plots()
+#create_mds_plots()
 # create_parallel_coordinates(result_dict)
 
+create_correlation_matrix_plt()
+# multiple_regression_all()
 # classification
-knn_classification_all()
+# knn_classification_all()
 
 # # regression
 # knn_regression_all()
+
+# svm_all()
 exit()
 
 

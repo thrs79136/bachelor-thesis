@@ -11,7 +11,7 @@ from src.helper.genres import genres_genres
 from src.helper.img.barplot import create_stacked_barplot
 from src.helper.img.boxplot import create_boxplot
 from src.helper.img.scatterplot import create_scatter_plot
-from src.helper.statistics_helper import analyze_feature_correlation
+from src.helper.statistics_helper import analyze_feature_correlation, TestResult
 from src.models.song import Song, most_common_genres
 from src.models.song_feature import SongFeature
 from src.shared import shared
@@ -22,16 +22,13 @@ import seaborn as sns
 # TODO do these separately
 non_y_axis_features = ['decade', 'year', 'artist', 'chart_pos', 'genre', 'spotify_popularity', 'spotify_id', 'genre_groups']
 
-# TODO only use this function in main
 def analyze_all_features(redraw_plots=True):
     dataframe = pd.read_csv(feature_file_path)
     result_dict = {}
-    result_dict['genre'] = compare_features_among_genres(dataframe, redraw_plots)
-    return result_dict
-
+    result_dict['genre'] = compare_features_among_genres(dataframe, 0.005, redraw_plots)
     result_dict['year'] = analyze_features(dataframe, 'year', True, 0.2, 0.05, redraw_plots)
     result_dict['chart_pos'] = analyze_features(dataframe, 'chart_pos', False, 0.08, 0.1, redraw_plots)
-    result_dict['spotify_popularity'] = analyze_features(dataframe, 'spotify_popularity', False, 0.1, 0.05, redraw_plots)
+    result_dict['spotify_popularity'] = analyze_features(dataframe, 'spotify_popularity', False, 0.1, 0.01, redraw_plots)
     return result_dict
 
 
@@ -131,11 +128,11 @@ def create_correlation_matrix(features):
     print([feature.feature_id for feature in ordered_features])
     x = 42
 
-
+# TODO move to common helper class
 def get_genre_group_string(group):
     return '-'.join([genre.capitalize() for genre in group.split('-')])
 
-def compare_features_among_genres(df, redraw_plots):
+def compare_features_among_genres(df, maximum_p_value, redraw_plots):
     # filter data frame
     df = df[~df['genre_groups'].isnull()]
     genre_dict = defaultdict(list)
@@ -157,7 +154,10 @@ def compare_features_among_genres(df, redraw_plots):
     test_results = analyze_ordinal_features_for_genres(df, ordinal_features, redraw_plots)
     analyze_nominal_features_for_genres(df, nominal_features, redraw_plots)
 
-    return test_results
+    # filter test results
+    filtered_test_results = [result for result in test_results if result.pvalue <= maximum_p_value]
+
+    return filtered_test_results
 
 
 def analyze_nominal_features_for_genres(df, nominal_features, redraw_plots):
@@ -226,10 +226,9 @@ def analyze_nominal_features_for_genres(df, nominal_features, redraw_plots):
 
 def analyze_ordinal_features_for_genres(df, ordinal_features, redraw_plots):
     grouped_df = df.groupby('genre_groups')
+    test_results = []
 
     for feature in ordinal_features:
-        if feature.feature_id == 'supertonic_percentage':
-            x = 42
         box_plot_values = []
         labels = []
 
@@ -240,11 +239,16 @@ def analyze_ordinal_features_for_genres(df, ordinal_features, redraw_plots):
 
         # TODO check if sorted correctly (probably not)
 
+        stat, pvalue, med, tbl = stats.median_test(*box_plot_values)
+        test_result = TestResult(feature, pvalue)
+        test_results.append(test_result)
+
         if redraw_plots:
-            stat, pvalue, med, tbl = stats.median_test(*box_plot_values)
             median_test_result_str = f'Mood\'s median test; χ2={stat:.3f}; p={pvalue:.3f}'
             create_boxplot(box_plot_values, labels, f'${feature.latex_name}$ {feature.display_name} nach Genre', median_test_result_str, f'genre_{feature.latex_id}.jpg',
                            f'correlation/genre', ylabel=feature.display_name)
+
+    return test_results
 
 
 

@@ -50,8 +50,13 @@ normalized_artist_dict = None
 #     return deviation/(n*len(df))
 
 
+def analyze_feature_median_deviation():
+    dev_value_all_songs = get_deviation_value_all_songs()
+    # analyze_artists_over_time(dev_value_all_songs)
+    analyze_genre_deviations_from_median(dev_value_all_songs)
+
 # TODO check if all features are normalized
-def analyze_artists_over_time():
+def analyze_artists_over_time(dev_value_all_songs):
     global artists_dict
     global normalized_artist_dict
 
@@ -93,6 +98,22 @@ def analyze_artists_over_time():
     #         draw_feature_line_plot_with_artist_coordinates(most_common_artists, feature)
 
 
+def analyze_genre_deviations_from_median(dev_value_all_songs):
+    df = shared.normalized_mcgill_df
+    df = df[~df['genre_groups'].isnull()]
+
+    df_groups = df.groupby('genre_groups')
+
+    deviation_values = []
+    genre_keys = []
+    for key, df in df_groups:
+        genre_keys.append(key)
+        genre_songs = [song for _, song in df.iterrows()]
+        deviation_values.append(get_deviation_value_songs(genre_songs))
+
+    create_barplot(deviation_values, genre_keys, '$a_G$', 'a_k_genres.jpg', '$a_G$ nach Musikrichtung', ylim=1.8, horizontal_line=dev_value_all_songs, figsize=(4.5, 4.8))
+
+
 # def draw_artist_line_plots(artists):
 #     for feature in shared.song_features_dict.values():
 #         draw_feature_line_plot_with_artist_coordinates(artists, feature)
@@ -118,20 +139,26 @@ def get_deviation_value_all_songs():
 def get_deviation_value(artist):
     global normalized_artist_dict
     songs = normalized_artist_dict[artist]
+    return get_deviation_value_songs(songs)
 
+
+def get_deviation_value_songs(songs):
     deviation = 0
     n = len(list(shared.song_features_dict.values()))
 
     for feature in shared.song_features_dict.values():
-        if feature.feature_id not in shared.non_y_axis_features:
+        if feature.feature_id not in shared.non_y_axis_features and feature.is_numerical and not feature.is_sentiment_feature:
             norm_median = get_normalized_median(feature)
             for song in songs:
                 year = song['year']
                 value = norm_median.loc[year]
+                feature_val = song[feature.feature_id]
                 dev = (norm_median.loc[song['year']] - song[feature.feature_id])**2
-                if dev > 10:
+                if math.isnan(dev):
                     x = 42
                 deviation += dev
+                if math.isnan(deviation):
+                    x = 42
 
     return deviation/(n*len(songs))
 

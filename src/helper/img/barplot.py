@@ -16,10 +16,10 @@ def addlabels(x,y):
 #         plt.text(i, y[i]//2, y[i], ha = 'center')
 
 
-def create_barplot(bar_values, labels, ylabel, filename, title, subtitle='', ylim=None, horizontal_line=None):
+def create_barplot(bar_values, labels, ylabel, filename, title, subtitle='', ylim=None, horizontal_line=None, directory='', figsize=(6.4,4.8)):
 
-    #fig = plt.figure(figsize=(5, 5))
-    fig = plt.figure()
+    fig = plt.figure(figsize=figsize)
+    # fig = plt.figure(figsize=())
     fig.subplots_adjust(bottom=0.3)
 
     y_pos = np.arange(len(labels))
@@ -38,7 +38,12 @@ def create_barplot(bar_values, labels, ylabel, filename, title, subtitle='', yli
     plt.ylabel(ylabel)
     plt.title(title, fontsize=14, y=1.05)
     plt.suptitle(subtitle, fontsize=10, y=0.92)
-    fig.savefig('../data/img/plots/bar_plots/' + filename)
+
+    if directory != '':
+        directory = f'{directory}/'
+    path = f'../data/img/plots/bar_plots/{directory}'
+    Path(path).mkdir(parents=True, exist_ok=True)
+    fig.savefig(path + filename)
 
     plt.show()
 

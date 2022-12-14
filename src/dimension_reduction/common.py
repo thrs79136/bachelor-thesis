@@ -1,4 +1,5 @@
 import os
+from copy import copy
 from pathlib import Path
 
 import numpy as np
@@ -145,11 +146,17 @@ feature_list_year = ['acousticness', 'danceability', 'duration_ms', 'energy', 'm
 
 feature_list_chart_pos = ['danceability', 'loudness', 'minor_percentage', 'major_percentage', 'tonic_percentage', 'circle_of_fifths_dist_largest_dist', 'section_repetitions', 'chorus_repetitions']
 feature_list_spotify_popularity = ['acousticness', 'danceability', 'duration_ms', 'energy', 'loudness', 'major_percentage', 'neither_chords', 'get_added_seventh_use', 'v_to_i', 'circle_of_fifths_dist', 'circle_of_fifths_dist_largest_dist', 'different_progressions', 'different_notes', 'chorus_repetitions']
+feature_list_genre = ['acousticness', 'danceability', 'duration_ms', 'energy', 'loudness', 'speechiness', 'minor_percentage', 'major_percentage', 'neither_chords', 'get_added_seventh_use', 'non_triad_chords_percentage', 'minor_or_major', 'tonic_percentage', 'v_to_i', 'chord_distances', 'chord_distances2', 'different_chords', 'different_sections_count', 'section_repetitions']
+
+feature_list_genre_less = ['acousticness', 'danceability', 'duration_ms', 'energy', 'loudness', 'minor_percentage', 'major_percentage']
+
 
 feature_lists = {
     'year': feature_list_year,
     'chart_pos': feature_list_chart_pos,
-    'spotify_popularity': feature_list_spotify_popularity
+    'spotify_popularity': feature_list_spotify_popularity,
+    'genre': feature_list_genre,
+    'genre_groups': feature_list_genre
  }
 
 decade_color_map = {
@@ -160,18 +167,28 @@ decade_color_map = {
     1990: 4,
 }
 
-decade_color_map2 = {
-    1950: 0,
-    1960: 1,
-    1970: 2,
-    1980: 3,
-    1990: 4,
-    2000: 5,
-    2010: 6
+genres_color_map = {
+    'rock': 0,
+    'pop-rock': 1,
+    'pop': 2,
+    'soul': 3,
+    'country': 4,
+    'funk-soul': 5
 }
 
+# decade_color_map2 = {
+#     1950: 0,
+#     1960: 1,
+#     1970: 2,
+#     1980: 3,
+#     1990: 4,
+#     2000: 5,
+#     2010: 6
+# }
+
 color_maps = {
-    'year': decade_color_map
+    'year': decade_color_map,
+    'genre_groups': genres_color_map
 }
 
 color_palette_year = sns.color_palette('magma', n_colors=12)
@@ -180,7 +197,19 @@ color_palette = sns.color_palette('magma', n_colors=12)
 color_palette_cont = sns.color_palette('magma', as_cmap=True)
 
 color_palettes = {
-    'year': sns.color_palette('CMRmap', n_colors=12)[1::2]
+    'year': sns.color_palette('CMRmap', n_colors=12)[1::2],
+    #'genre_groups': [(0.8853517877739331, 0.3190311418685121, 0.29042675893886966), (0.9873125720876587, 0.6473663975394078, 0.3642445213379469), (0.9943179751791559, 0.8313849891525765, 0.36129296971368624), (0.9288735101883892, 0.9715494040753557, 0.6380622837370243), (0.6334486735870821, 0.8521337946943485, 0.6436755094194541), (0.2800461361014994, 0.6269896193771626, 0.7024221453287197)]
+    # 'genre_groups': [
+    #     '#ba2727', # rock red
+    #     '#ec9d22', # poprock orange
+    #     '#c8d42c', #pop light orange TODO
+    #     '#41bc31', #soul light green TODO
+    #     '#2c6bad', # country darker green
+    #     '#000000'] # funk sould looks good
+    'genre_groups': sns.color_palette('nipy_spectral', n_colors=12)[1::2]
+    # 'genre_groups': sns.hls_palette(n_colors=12, s=1)[1::2]    'genre_groups': sns.hls_palette(n_colors=12, s=1)[1::2]
+    #'genre_groups':  sns.color_palette('Spectral', n_colors=12)[1::2]
+
 }
 
 feature_list = feature_list_all
@@ -202,11 +231,11 @@ use_genres = False
 
 
 def create_scatterplot_with_ellipses(data_frame, x_pos, y_pos, colored_feature, directory, title, xlabel=None, ylabel=None):
-    global use_genres
+    # global use_genres
 
-    if use_genres:
-        create_scatterplot_with_ellipses_genres(data_frame, x_pos, y_pos, directory, title, xlabel, ylabel)
-        return
+    # if use_genres:
+    #     create_scatterplot_with_ellipses_genres(data_frame, x_pos, y_pos, directory, title, xlabel, ylabel)
+    #     return
 
     fig, ax = plt.subplots()
 
@@ -220,18 +249,32 @@ def create_scatterplot_with_ellipses(data_frame, x_pos, y_pos, colored_feature, 
     # colours = []
     # for i in color_indices:
     #     colours.append(color_palette_cont.colors[i])
+    group_by_feature = colored_feature if colored_feature != 'year' else 'decade'
     d = data_frame.decade
 
     color_map = color_maps[colored_feature]
     # c = [color_palette[x] for x in data_frame.decade.map(color_map)]
     color_palette = color_palettes[colored_feature]
 
+    f = 0.5
+
+    # def darken(c):
+    #     return c * f
+    #
+    # # make it darker
+    # for i, c in enumerate(color_palette):
+    #     color_palette[i] = (darken(c[0]), darken(c[1]), darken(c[2]))
+
+
+    color_list = data_frame[group_by_feature].map(color_map)
+
+
     plt.scatter(
         x_pos,
         y_pos,
         s=30,
         marker='o',
-        c=[color_palette[x] for x in data_frame.decade.map(color_map)],
+        c=[color_palette[x] for x in data_frame[group_by_feature].map(color_map)],
         #c=colours,
 
         # c=[x for x in data.artist.map(map_artist)],
@@ -243,8 +286,8 @@ def create_scatterplot_with_ellipses(data_frame, x_pos, y_pos, colored_feature, 
     if ylabel is not None:
         plt.ylabel(ylabel)
 
-    if colored_feature == 'year' or colored_feature == 'year_spotify':
-        color_list = data_frame['decade'].map(color_map)
+    # if colored_feature == 'year' or colored_feature == 'year_spotify':
+    #     color_list = data_frame['decade'].map(color_map)
 
     for k, decade_color in color_map.items():
         x_values = []
@@ -254,7 +297,18 @@ def create_scatterplot_with_ellipses(data_frame, x_pos, y_pos, colored_feature, 
                 x_values.append(x_pos[index])
                 y_values.append(y_pos[index])
 
+
         ellipse = get_ellipse(x_values, y_values, color_palette[decade_color])
+
+        if colored_feature == 'genre_groups':
+            center = ellipse.get_center()
+            ellipse_shadow = copy(ellipse)
+            ellipse_shadow.set_center((center[0]+0.025, center[1]-0.025))
+            ellipse_shadow.set_color('black')
+            ellipse_shadow.set_alpha(0.7)
+            ellipse_shadow.set_facecolor('none')
+            ax.add_artist(ellipse_shadow)
+
         ax.add_artist(ellipse)
 
     label_string = lambda label: f'{label}er' if colored_feature == 'year' or colored_feature == 'year1' else label

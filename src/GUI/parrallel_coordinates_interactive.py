@@ -230,7 +230,7 @@ class ParallelCoordinatesWidget(QWidget):
             for dim, ax in enumerate(self.axes):
                 ax.xaxis.set_major_locator(ticker.FixedLocator([dim]))
                 set_ticks_for_axis(dim, ax, ticks=6)
-                ax.set_xticklabels([feature_labels[dim]])
+                # ax.set_xticklabels([feature_labels[dim]])
 
             # Move the final axis' ticks to the right-hand side
             ax = plt.twinx(self.axes[-1])
@@ -239,7 +239,7 @@ class ParallelCoordinatesWidget(QWidget):
             ax.xaxis.set_major_locator(ticker.FixedLocator([x[-2], x[-1]]))
             set_ticks_for_axis(dim, ax, ticks=6)
 
-            ax.set_xticklabels([feature_labels[-2], feature_labels[-1]])
+            # ax.set_xticklabels([feature_labels[-2], feature_labels[-1]])
 
             self.figure_p.subplots_adjust(wspace=0)
 

@@ -15,10 +15,15 @@ from src.helper.file_helper import write_text_file
 from src.shared import shared
 
 
-def create_pca_plot(colored_feature='year'):
-    directory = f'../data/img/plots/scatter_plots/dimension_reduction/{colored_feature}'
+def create_pca_plots():
+    create_pca_plot('year')
+    create_pca_plot('genre_groups')
 
-    data = shared.mcgill_df
+def create_pca_plot(colored_feature='year'):
+    directory = f'../data/img/plots/scatter_plots/dimension_reduction/pca/{colored_feature}'
+
+    df = shared.mcgill_df
+    data = df[~df[colored_feature].isnull()]
 
     # print(data.head())
     # print(data.shape)
@@ -57,12 +62,24 @@ def create_pca_plot(colored_feature='year'):
     create_scatterplot_with_ellipses(data, pca_df.PC1.values, pca_df.PC2.values, colored_feature, directory, 'Hauptkomponentenanalyse', 'Hauptkomponente 1 - {0}%'.format(per_var[0]), 'Hauptkomponente 2 - {0}%'.format(per_var[1]))
 
     file_content = ''
+    table_rows = ['' for _ in range(len(feature_list))]
+
     for i in range(2):
         loading_scores = pd.Series(pca.components_[i], index=feature_list)
         sorted_loading_scores = loading_scores.abs().sort_values(ascending=False)
 
-        top_10_genes = sorted_loading_scores[0:10].index.values
+        n = len(feature_list)
+        top_10_genes = sorted_loading_scores[0:n].index.values
+        for j, variable in enumerate(top_10_genes):
+            variable_str = variable.replace('_', '\_')
+            table_rows[j] += f'{variable_str} & {loading_scores[variable]:0.3f}'
+            if i == 0:
+                table_rows[j] += ' & '
+            # file_content += f'{variable} & {loading_scores[variable]:0.3f} \\\\ \n \\hline \n'
 
-        file_content += f'PCA{str(i+1)}/n{str(loading_scores[top_10_genes])}/n/n'
-        write_text_file(directory + '/loading_scores.txt', file_content)
-        
+        # file_content += f'PCA{str(i+1)}/n{str(loading_scores[top_10_genes])}/n/n'
+
+
+    for row in table_rows:
+        file_content += f'{row} \\\\ \n \\hline \n'
+    write_text_file(directory + '/loading_scores.txt', file_content)

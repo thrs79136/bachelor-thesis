@@ -1,0 +1,38 @@
+major\_percentage & -0.426 & energy & -0.545 \\ 
+ \hline 
+non\_triad\_chords\_percentage & 0.350 & loudness & -0.471 \\ 
+ \hline 
+neither\_chords & 0.340 & acousticness & 0.441 \\ 
+ \hline 
+chord\_distances & -0.298 & section\_repetitions & -0.243 \\ 
+ \hline 
+chord\_distances2 & -0.296 & minor\_or\_major & -0.240 \\ 
+ \hline 
+minor\_or\_major & -0.273 & danceability & -0.218 \\ 
+ \hline 
+minor\_percentage & 0.267 & get\_added\_seventh\_use & 0.192 \\ 
+ \hline 
+different\_chords & 0.265 & different\_chords & 0.151 \\ 
+ \hline 
+duration\_ms & 0.250 & v\_to\_i & 0.149 \\ 
+ \hline 
+v\_to\_i & -0.211 & different\_sections\_count & -0.113 \\ 
+ \hline 
+acousticness & -0.164 & minor\_percentage & 0.085 \\ 
+ \hline 
+different\_sections\_count & 0.152 & speechiness & -0.069 \\ 
+ \hline 
+tonic\_percentage & -0.118 & chord\_distances & -0.064 \\ 
+ \hline 
+section\_repetitions & -0.092 & duration\_ms & -0.062 \\ 
+ \hline 
+energy & 0.062 & tonic\_percentage & 0.053 \\ 
+ \hline 
+get\_added\_seventh\_use & 0.042 & major\_percentage & -0.051 \\ 
+ \hline 
+speechiness & 0.038 & chord\_distances2 & -0.046 \\ 
+ \hline 
+loudness & 0.028 & neither\_chords & -0.033 \\ 
+ \hline 
+danceability & 0.024 & non\_triad\_chords\_percentage & -0.011 \\ 
+ \hline 

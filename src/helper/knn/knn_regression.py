@@ -21,7 +21,7 @@ from src.shared import shared
 def knn_regression_all():
 
     knn_regression_spotify_popularity_ds1()
-    knn_regression_spotify_popularity_ds2()
+    # knn_regression_spotify_popularity_ds2()
     knn_regression_chart_pos_ds1()
     knn_regression_year_ds1()
 
@@ -97,7 +97,7 @@ def knn_regression_dataframe(data, column, feature_list, title, filename, use_me
 
     # title = f'Vorhersage von {shared.song_features_dict[column].display_name} über KNN-Regression'
     lineplot_multiple_lines(neighbors, [rmse_values, [random_assignment_rmse] * len(neighbors)],
-                            ['Testdaten', 'RMSE bei zufälliger Zuordnung'], 'k', 'RMSE', filename, title,
+                            ['Testdaten', 'RMSE bei zufälliger Zuordnung'], 'k', 'RMSE', f'{column}.jpg', title,
                             dot_coordinates=[[(neighbors[idx],val)]], dot_legend=[f'Minimaler RMSE (k={neighbors[idx]}, RMSE={val:.3f})'],
                             directory='knn/regression')
 

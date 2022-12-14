@@ -23,7 +23,7 @@ from src.shared import shared
 
 def knn_classification_all():
     knn_decade_ds1()
-    knn_decade_ds2()
+    # knn_decade_ds2()
     knn_genre_ds1()
 
 
@@ -39,7 +39,9 @@ def knn_decade_ds2():
 
 
 def knn_genre_ds1():
-    pass
+    df = shared.mcgill_df
+    genres_df = df[~df['genre_groups'].isnull()]
+    knn_classification_dataframe(genres_df, feature_lists['genre'], 'genre_groups', 'genre.jpg')
 
 
 def knn_classification_dataframe(dataframe, feature_list, classification_column, filename):
@@ -55,12 +57,12 @@ def knn_classification_dataframe(dataframe, feature_list, classification_column,
         X, y, test_size=0.2, random_state=42)
 
     # TODO increase size
-    neighbors = np.arange(1, 100)
+    #  Expected n_neighbors <= n_samples,  but n_samples = 589, n_neighbors = 590
+    max_k = len(X_train)
+    # max_k = 10
+    neighbors = np.arange(1, max_k)
     train_accuracy = np.empty(len(neighbors))
     test_accuracy = np.empty(len(neighbors))
-
-    random_score = knn_random_value(y)
-
 
     # Loop over K values
     for i, k in enumerate(neighbors):
@@ -75,14 +77,15 @@ def knn_classification_dataframe(dataframe, feature_list, classification_column,
     # get best k value
     val, idx = max((val, idx) for (idx, val) in enumerate(test_accuracy))
 
-
+    random_score = knn_random_value(y)
+    random_score_line = [random_score] * (max_k - 1)
 
     # TODO random assignment
-    lineplot_multiple_lines(neighbors, [train_accuracy, test_accuracy],
-                            ['Testdaten', 'RMSE bei zufälliger Zuordnung'], 'k', 'Genauigkeit', filename, 'hallo',
+    lineplot_multiple_lines(neighbors, [train_accuracy, test_accuracy, random_score_line],
+                            ['Trainingsdaten', 'Testdaten', 'Zufällige Zuordnung'], 'k', 'Genauigkeit p', filename, '',
                             dot_coordinates=[[(neighbors[idx], val)]],
                             dot_legend=[f'Höchste Genauigkeit (p={val:.3f}, k={neighbors[idx]})'],
-                            directory='knn/classification')
+                            directory='knn/classification', figsize=(4.8, 3.599))
 
 
 def knn_random_value(column):

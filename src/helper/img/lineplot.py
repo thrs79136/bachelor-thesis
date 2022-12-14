@@ -6,6 +6,7 @@ import seaborn as sns
 
 figure_number = 0
 
+
 def lineplot(x, y, xlabel, ylabel, filename: str, title='', suptitle='', directory='', dot_coordinates=None, dot_legend=''):
     global figure_number
 
@@ -48,13 +49,13 @@ def lineplot(x, y, xlabel, ylabel, filename: str, title='', suptitle='', directo
     figure_number += 1
 
 
-def lineplot_multiple_lines(x, y_lists, legend, xlabel, ylabel, filename: str, title, suptitle='', directory='', dot_coordinates=None, dot_legend=None, dot_labels=None):
+def lineplot_multiple_lines(x, y_lists, legend, xlabel, ylabel, filename: str, title, suptitle='', directory='', dot_coordinates=None, dot_legend=None, dot_labels=None, figsize=(6.4,4.8)):
     global figure_number
 
     if directory != '':
         directory += '/'
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=figsize)
 
     for i, y_values in enumerate(y_lists):
         plt.plot(x, y_values, label=legend[i])
@@ -73,6 +74,7 @@ def lineplot_multiple_lines(x, y_lists, legend, xlabel, ylabel, filename: str, t
 
         plt.legend(loc='upper right')
 
+    plt.subplots_adjust(bottom=0.15)
     plt.title(title, fontsize=13, y=1.05)
     plt.suptitle(suptitle, fontsize=10, y=0.92)
     plt.xlabel(xlabel)
@@ -92,8 +94,8 @@ def stacked_area_plot(x, y_lists, legend, xlabel, ylabel, filename, title, supti
     if dir != '':
         dir += '/'
 
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111)
+    fig = plt.figure(figsize=(7, 4.08))
+    ax = fig.add_subplot(111)
 
     ylist_len = len(list(y_lists)[0])
     area_base_line = [0] * ylist_len
@@ -106,15 +108,27 @@ def stacked_area_plot(x, y_lists, legend, xlabel, ylabel, filename, title, supti
 
     for index, y_list in enumerate(y_lists):
         area_upper_line = [sum(elts) for elts in zip(area_base_line, y_list)]
-        ax1.fill_between(x, area_base_line, area_upper_line, label=legend[index], color=colors[index])
+        ax.fill_between(x, area_base_line, area_upper_line, label=legend[index], color=colors[index])
         area_base_line = area_upper_line
 
-    plt.legend(loc='upper right')
+    box = ax.get_position()
+    # right
+    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+    ax.legend(legend, loc='center left', bbox_to_anchor=(1, 0.65))
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(handles[::-1], labels[::-1], loc='center left', bbox_to_anchor=(1, 0.65))
+
+    fontsize = 11
+
+    plt.xticks(fontsize=fontsize)
+    plt.yticks(fontsize=fontsize)
+
+    plt.subplots_adjust(bottom=0.2, right=0.8)
 
     plt.title(title, fontsize=13, y=1.05)
     plt.suptitle(suptitle, fontsize=10, y=0.92)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    plt.xlabel(xlabel, fontsize=fontsize)
+    plt.ylabel(ylabel, fontsize=fontsize)
 
     plt.show()
     fig.savefig('../data/img/plots/line_plots/' + dir + filename)
