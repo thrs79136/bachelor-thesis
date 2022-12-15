@@ -1,20 +1,20 @@
 neither\_chords & 0.474 & energy & -0.493 \\ 
  \hline 
-non\_triad\_chords\_percentage & 0.469 & acousticness & 0.461 \\ 
+non\_triad\_chords & 0.469 & acousticness & 0.461 \\ 
  \hline 
-major\_percentage & -0.400 & non\_triad\_chords\_percentage & 0.363 \\ 
+major\_chords & -0.400 & non\_triad\_chords & 0.363 \\ 
  \hline 
 acousticness & -0.316 & neither\_chords & 0.337 \\ 
  \hline 
 duration\_ms & 0.280 & danceability & -0.323 \\ 
  \hline 
-chord\_distances2 & -0.246 & chorus\_repetitions & -0.291 \\ 
+bass\_distances & -0.246 & chorus\_repetitions & -0.291 \\ 
  \hline 
-energy & 0.216 & major\_percentage & -0.245 \\ 
+energy & 0.216 & major\_chords & -0.245 \\ 
  \hline 
-different\_sections\_count & 0.210 & different\_sections\_count & -0.190 \\ 
+different\_sections & 0.210 & different\_sections & -0.190 \\ 
  \hline 
 chorus\_repetitions & 0.205 & duration\_ms & -0.115 \\ 
  \hline 
-danceability & 0.155 & chord\_distances2 & -0.024 \\ 
+danceability & 0.155 & bass\_distances & -0.024 \\ 
  \hline 

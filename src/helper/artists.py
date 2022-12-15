@@ -7,6 +7,7 @@ import pandas as pd
 from src.helper.file_helper import feature_file_path
 from src.helper.img.barplot import create_barplot
 from src.helper.img.lineplot import lineplot
+from src.helper.statistics.feature_analyzer import get_genre_group_string
 from src.helper.statistics.year_feature_median import get_median, draw_feature_line_plot, get_normalized_median
 #from src.helper.years import draw_feature_line_plot
 from src.models.song import Song
@@ -52,7 +53,7 @@ normalized_artist_dict = None
 
 def analyze_feature_median_deviation():
     dev_value_all_songs = get_deviation_value_all_songs()
-    # analyze_artists_over_time(dev_value_all_songs)
+    analyze_artists_over_time(dev_value_all_songs)
     analyze_genre_deviations_from_median(dev_value_all_songs)
 
 # TODO check if all features are normalized
@@ -91,7 +92,7 @@ def analyze_artists_over_time(dev_value_all_songs):
     print('deviation of all songs')
     dev_value_all_songs = get_deviation_value_all_songs()
     print(dev_value_all_songs)
-    create_barplot([get_deviation_value(artist) for artist in most_common_artists], most_common_artists, '$a_K$', 'a_k.jpg', '$a_K$ nach Künstler', ylim=1.4, horizontal_line=dev_value_all_songs)
+    create_barplot([get_deviation_value(artist) for artist in most_common_artists], most_common_artists, '$a_K$', 'a_k.jpg', '$a_K$ nach Künstler', ylim=1.4, horizontal_line=dev_value_all_songs, figsize=(4.48, 4.5))
 
     # for feature in list(shared.song_features_dict.values()):
     #     if feature.feature_id not in non_y_axis_features:
@@ -111,7 +112,8 @@ def analyze_genre_deviations_from_median(dev_value_all_songs):
         genre_songs = [song for _, song in df.iterrows()]
         deviation_values.append(get_deviation_value_songs(genre_songs))
 
-    create_barplot(deviation_values, genre_keys, '$a_G$', 'a_k_genres.jpg', '$a_G$ nach Musikrichtung', ylim=1.8, horizontal_line=dev_value_all_songs, figsize=(4.5, 4.8))
+    labels = [get_genre_group_string(g) for g in genre_keys]
+    create_barplot(deviation_values, labels, '$a_k$', 'a_k_genres.jpg', '$a_k$ nach Musikrichtung', ylim=1.8, horizontal_line=dev_value_all_songs, figsize=(3.5, 3.9))
 
 
 # def draw_artist_line_plots(artists):

@@ -20,7 +20,7 @@ def create_barplot(bar_values, labels, ylabel, filename, title, subtitle='', yli
 
     fig = plt.figure(figsize=figsize)
     # fig = plt.figure(figsize=())
-    fig.subplots_adjust(bottom=0.3)
+    fig.subplots_adjust(bottom=0.32, left=0.15)
 
     y_pos = np.arange(len(labels))
 
@@ -34,7 +34,7 @@ def create_barplot(bar_values, labels, ylabel, filename, title, subtitle='', yli
 
     addlabels(labels, bar_values)
 
-    plt.xticks(y_pos, labels, rotation=60)
+    plt.xticks(y_pos, labels, rotation=90)
     plt.ylabel(ylabel)
     plt.title(title, fontsize=14, y=1.05)
     plt.suptitle(subtitle, fontsize=10, y=0.92)

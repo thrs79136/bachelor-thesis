@@ -58,27 +58,27 @@ def save_feature_csv(songs):
 # save_feature_csv(songs)
 
 
-# result_dict = analyze_all_features(redraw_plots=False)
-# for key, value in result_dict.items():
-#     print(key)
-#     print(', '.join(feature.feature.feature_id.replace('_', '\_') for feature in value))
-#
+result_dict = analyze_all_features(redraw_plots=False)
+for key, value in result_dict.items():
+    print(key)
+    print(', '.join(f"'{feature.feature.feature_id}'" for feature in value))
+    # print(', '.join(feature.feature.feature_id.replace('_', '\_') for feature in value))
+
 # exit()
 #print([feature.feature.feature_id for feature in result_dict['genre']])
 # exit()
 # genres_stacked_area_plot()
-# stacked_area_plot([0,1,2,3], [[1,1,1,1],[2,2,2,2]], ['hello', 'hello2'], 'xlabel', 'ylabel', 'filename.jpg', 'title')
 
 # draw_feature_line_plots()
 # get_most_common_genres()
-# analyze_feature_median_deviation()
+#analyze_feature_median_deviation()
 
 
-#create_pca_plots()
+create_pca_plots()
 #create_mds_plots()
 # create_parallel_coordinates(result_dict)
 
-create_correlation_matrix_plt()
+# create_correlation_matrix_plt()
 # multiple_regression_all()
 # classification
 # knn_classification_all()
