@@ -4,8 +4,10 @@ from src.dimension_reduction.MDS import create_mds_plot, create_mds_plots
 from src.dimension_reduction.PCA import create_pca_plot, create_pca_plots
 from src.dimension_reduction.t_SNE import create_tsne_plot
 from src.helper.absolute_surprise import init_progressions_dict
+from src.helper.absolute_surprise_chords import init_chords_dict
 from src.helper.artists import analyze_artists_over_time, analyze_feature_median_deviation
-from src.helper.file_helper import get_dataset_1, save_all_features_to_csv, get_songs, get_songs_from_binary_file
+from src.helper.file_helper import get_dataset_1, save_all_features_to_csv, get_songs, get_songs_from_binary_file, \
+    save_median_feature_csv
 from src.helper.img.barplot import create_grouped_barplot, create_stacked_barplot
 from src.helper.img.boxplot import create_boxplot
 from src.helper.img.lineplot import stacked_area_plot
@@ -48,21 +50,27 @@ def save_feature_csv(songs):
 
 
 # songs = get_songs('../data/songs-finished.csv')
-#songs = [song for song in songs_all if song.spotify_song_data.audio_features_dictionary is not None]
+# songs = [song for song in songs if song.spotify_song_data.audio_features_dictionary is not None]
+# init_progressions_dict(songs)
+# init_chords_dict(songs)
+# save_median_feature_csv(songs, shared.song_features_dict.keys())
+
 # songs_with_duplicates = get_songs('../data/songs.csv')
 
-# songs = get_songs_from_binary_file(bin_file)
+songs = get_songs_from_binary_file(bin_file)
+
 
 # songs = get_dataset_1()
-# init(songs)
+init(songs)
 # save_feature_csv(songs)
+save_median_feature_csv(songs, shared.song_features_dict.keys())
 
 
-result_dict = analyze_all_features(redraw_plots=False)
-for key, value in result_dict.items():
-    print(key)
-    print(', '.join(f"'{feature.feature.feature_id}'" for feature in value))
-    # print(', '.join(feature.feature.feature_id.replace('_', '\_') for feature in value))
+# result_dict = analyze_all_features(redraw_plots=True)
+# for key, value in result_dict.items():
+#     print(key)
+#     print(', '.join(f"'{feature.feature.feature_id}'" for feature in value))
+#     # print(', '.join(feature.feature.feature_id.replace('_', '\_') for feature in value))
 
 # exit()
 #print([feature.feature.feature_id for feature in result_dict['genre']])
@@ -71,12 +79,12 @@ for key, value in result_dict.items():
 
 # draw_feature_line_plots()
 # get_most_common_genres()
-#analyze_feature_median_deviation()
+# analyze_feature_median_deviation()
 
 
-create_pca_plots()
+#create_pca_plots()
 #create_mds_plots()
-# create_parallel_coordinates(result_dict)
+create_parallel_coordinates()
 
 # create_correlation_matrix_plt()
 # multiple_regression_all()

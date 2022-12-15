@@ -6,11 +6,9 @@ audio_feature_keys = ['danceability', 'duration_ms', 'energy', 'key', 'loudness'
 
 
 class SpotifySongData:
-
-
     def __init__(self, audio_features_dictionary, popularity=None):
         self.audio_features_dictionary = audio_features_dictionary
-        self.popularity = None;
+        self.popularity = popularity;
 
     @classmethod
     def from_spotify_api_response(cls, audio_features_response):

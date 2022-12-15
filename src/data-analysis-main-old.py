@@ -458,7 +458,6 @@ test = [song.analyze_different_keys2() for song in songs_with_audio_features]
 init_progressions_dict(songs_with_audio_features)
 init_chords_dict(songs_with_audio_features)
 
-save_median_feature_csv(songs_with_audio_features, song_features.song_features_dict.keys())
 
 
 # song_name_dict = defaultdict(list)

@@ -22,11 +22,11 @@ def human_format(num_list):
 
 def create_parallel_coordinates(filepath='../data/csv/year_features.csv', filename='years_median.jpg'):
 
-    ordered_feature_ids = ['acousticness', 'v_to_i', 'chord_distances', 'chord_distances2', 'major_percentage', 'tonic_percentage', 'get_added_seventh_use', 'circle_of_fifths_dist', 'circle_of_fifths_dist_largest_dist', 'different_notes', 'different_chords', 'different_progressions', 'minor_percentage', 'duration_ms', 'different_sections_count', 'chorus_repetitions', 'danceability', 'energy', 'loudness', 'neither_chords', 'non_triad_chords_percentage']
-
+    ordered_feature_ids = ['acousticness', 'v_to_i', 'root_distances', 'bass_distances', 'major_chords', 'tonic_chords', 'seventh_chords', 'circle_of_fifths', 'circle_of_fifths_max', 'different_notes', 'different_chords', 'different_progressions', 'minor_chords', 'duration_ms', 'different_sections', 'chorus_repetitions', 'danceability', 'energy', 'neither_chords', 'non_triad_chords']
 
     song_features = [shared.song_features_dict[feature] for feature in ordered_feature_ids]
     print([feature.latex_id for feature in song_features])
+
     df = pd.read_csv(filepath)
     #
     # labels = {}
@@ -47,7 +47,7 @@ def create_parallel_coordinates(filepath='../data/csv/year_features.csv', filena
     # description_text = ''
     #
     for index, feature in enumerate(song_features):
-        label = f'${feature.latex_name}$'.replace('L,', '')
+        label = f'{feature.feature_id}'.replace('L,', '')
         feature_labels.append(label)
         # description_text += f'{label} - {feature.display_name}\n'
 
@@ -90,7 +90,7 @@ def create_parallel_coordinates(filepath='../data/csv/year_features.csv', filena
     for dim, ax in enumerate(axes):
         ax.xaxis.set_major_locator(ticker.FixedLocator([dim]))
         set_ticks_for_axis(dim, ax, ticks=6)
-        ax.set_xticklabels([feature_labels[dim]], fontsize=18, rotation=60)
+        ax.set_xticklabels([feature_labels[dim]], fontsize=18, rotation=90)
 
     # Move the final axis' ticks to the right-hand side
     ax = plt.twinx(axes[-1])
@@ -100,8 +100,8 @@ def create_parallel_coordinates(filepath='../data/csv/year_features.csv', filena
     #ax.set_xticks([x[-2], x[-1]])
     #ax.tick_params(axis='x', labelsize=25)
     ax.xaxis.set_major_locator(ticker.FixedLocator([x[-2]]))
-    ax.set_xticklabels([feature_labels[-2]], fontsize=18, rotation=60)
-    plt.text(19.5, -.15, feature_labels[-1], fontsize=18, rotation=60)
+    ax.set_xticklabels([feature_labels[-2]], fontsize=18, rotation=90)
+    plt.text(19.5, -.15, feature_labels[-1], fontsize=18, rotation=90)
 
     plt.subplots_adjust(wspace=0)
 
@@ -121,6 +121,6 @@ def create_parallel_coordinates(filepath='../data/csv/year_features.csv', filena
     for i, handle in enumerate(hl_dict):
         handle.set_color(all_colours[i])
 
-    plt.savefig(f'../data/img/plots/parallel_coordinates/{filename}')
+    # plt.savefig(f'../data/img/plots/parallel_coordinates/{filename}')
 
     plt.show()

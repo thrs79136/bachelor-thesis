@@ -4,7 +4,7 @@ class SongFeature:
         self.feature_id = feature_id
         self.display_name = feature_display_name
         self.latex_id = latex_id
-        self.latex_name = f'F_{{L,{latex_id}}}'
+        self.latex_name = f'X_{{{latex_id},L}}'
         self.feature_fn = feature_fn
         self.parameters = parameters
         self.is_numerical = is_numerical

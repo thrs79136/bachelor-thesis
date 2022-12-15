@@ -28,7 +28,7 @@ def create_mds_plot(colored_feature):
 
     scaled_df = preprocessing.scale(df)
 
-    mds = MDS(random_state=66)
+    mds = MDS(random_state=42)
     mds_df = mds.fit_transform(scaled_df)
 
     # mds = MDS(n_components=2)

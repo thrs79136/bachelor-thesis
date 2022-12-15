@@ -7,19 +7,21 @@ import numpy as np
 figure_number = 0
 
 
-def create_boxplot(data_values, labels, title, suptitle, filename, dir='', ylabel=''):
+def create_boxplot(data_values, labels, title, suptitle, filename, dir='', ylabel='', figsize=(6.4,48)):
     global figure_number
 
     figure_number += 1
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=figsize)
+    fig.subplots_adjust(bottom=0.25, left=0.2)
+
     ax.grid(False)
     plt.title(title, fontsize=12, y=1.15)
-    plt.suptitle(suptitle, fontsize=9, y=0.9)
+    plt.suptitle(suptitle, fontsize=9, y=0.88)
 
     ax.boxplot(data_values)
-    plt.xticks(np.arange(len(labels)) + 1, labels, fontsize=8)
-    plt.ylabel(ylabel)
+    plt.xticks(np.arange(len(labels)) + 1, labels, fontsize=9, rotation=90)
+    plt.ylabel(ylabel, fontsize=11)
 
     plt.gcf().subplots_adjust(top=0.8)
 
@@ -29,5 +31,5 @@ def create_boxplot(data_values, labels, title, suptitle, filename, dir='', ylabe
     fig.savefig(path)
 
     plt.show()
-
+    x = 42
 

@@ -26,9 +26,9 @@ def analyze_all_features(redraw_plots=True):
     dataframe = pd.read_csv(feature_file_path)
     result_dict = {}
     result_dict['genre'] = compare_features_among_genres(dataframe, 0.005, redraw_plots)
-    result_dict['year'] = analyze_features(dataframe, 'year', True, 0.2, 0.05, redraw_plots)
-    result_dict['chart_pos'] = analyze_features(dataframe, 'chart_pos', False, 0.08, 0.1, redraw_plots)
-    result_dict['spotify_popularity'] = analyze_features(dataframe, 'spotify_popularity', False, 0.1, 0.01, redraw_plots)
+    # result_dict['year'] = analyze_features(dataframe, 'year', True, 0.2, 0.05, redraw_plots)
+    # result_dict['chart_pos'] = analyze_features(dataframe, 'chart_pos', False, 0.08, 0.1, redraw_plots)
+    # result_dict['spotify_popularity'] = analyze_features(dataframe, 'spotify_popularity', False, 0.1, 0.01, redraw_plots)
     return result_dict
 
 
@@ -55,13 +55,13 @@ def analyze_features(dataframe, feature_to_analyze_id, use_pearson, minimum_corr
 
             groups = dataframe.groupby(feature.feature_id)[feature_to_analyze_id].apply(list)
 
-            title = f'{feature_name1} nach ${feature.latex_name}$ {feature.display_name}'
+            title = f'{feature_name1} nach ${feature.latex_name}$ {feature.feature_id}'
 
             stat, pvalue, med, tbl = stats.median_test(*groups)
             median_test_result_str = f'Mood\'s median test; χ2={stat:.3f}; p={pvalue:.3f}'
 
             if redraw_plots:
-                create_boxplot(groups, labels, title, median_test_result_str, f'{feature_to_analyze_id}_{feature.latex_id}.jpg', f'correlation/{feature_to_analyze_id}', ylabel=feature_name1)
+                create_boxplot(groups, labels, title, median_test_result_str, f'{feature_to_analyze_id}_{feature.latex_id}.jpg', f'correlation/{feature_to_analyze_id}', ylabel=feature_name1, figsize=(4.48, 3.36))
 
     test_results = []
 
@@ -245,8 +245,8 @@ def analyze_ordinal_features_for_genres(df, ordinal_features, redraw_plots):
 
         if redraw_plots:
             median_test_result_str = f'Mood\'s median test; χ2={stat:.3f}; p={pvalue:.3f}'
-            create_boxplot(box_plot_values, labels, f'${feature.latex_name}$ {feature.display_name} nach Genre', median_test_result_str, f'genre_{feature.latex_id}.jpg',
-                           f'correlation/genre', ylabel=feature.display_name)
+            create_boxplot(box_plot_values, labels, f'${feature.latex_name}$ {feature.feature_id} nach Genre', median_test_result_str, f'genre_{feature.latex_id}.jpg',
+                           f'correlation/genre', ylabel=f'${feature.latex_name}$', figsize=(4.48, 3.36))
 
     return test_results
 

@@ -9,6 +9,7 @@ from matplotlib.patches import Ellipse
 import seaborn as sns
 
 from src.helper.img.pca import eigsorted
+from src.helper.statistics.feature_analyzer import get_genre_group_string
 from src.helper.statistics_helper import most_common_genres
 
 mcgill_features_path = '../data/csv/song_features.csv'
@@ -238,7 +239,7 @@ def create_scatterplot_with_ellipses(data_frame, x_pos, y_pos, colored_feature, 
 
     fig, ax = plt.subplots()
 
-    plt.title(title)
+    # plt.title(title)
 
     # color_list = ['red' if spotify_popularity > 50 else 'blue' for spotify_popularity in data_frame.spotify_popularity]
     # color_indices = [int(pop/100 * 256 - 1) for pop in data_frame.chart_pos]
@@ -254,17 +255,6 @@ def create_scatterplot_with_ellipses(data_frame, x_pos, y_pos, colored_feature, 
     color_map = color_maps[colored_feature]
     # c = [color_palette[x] for x in data_frame.decade.map(color_map)]
     color_palette = color_palettes[colored_feature]
-
-    f = 0.5
-
-    # def darken(c):
-    #     return c * f
-    #
-    # # make it darker
-    # for i, c in enumerate(color_palette):
-    #     color_palette[i] = (darken(c[0]), darken(c[1]), darken(c[2]))
-
-
     color_list = data_frame[group_by_feature].map(color_map)
 
 
@@ -310,7 +300,7 @@ def create_scatterplot_with_ellipses(data_frame, x_pos, y_pos, colored_feature, 
 
         ax.add_artist(ellipse)
 
-    label_string = lambda label: f'{label}er' if colored_feature == 'year' or colored_feature == 'year1' else label
+    label_string = lambda label: f'{label}er' if colored_feature == 'year' or colored_feature == 'year' else get_genre_group_string(label)
 
     # Lables
     lp = lambda category, color: plt.plot([], color=color_palette[color], ms=7, mec="none",
@@ -321,7 +311,6 @@ def create_scatterplot_with_ellipses(data_frame, x_pos, y_pos, colored_feature, 
 
     Path(directory).mkdir(parents=True, exist_ok=True)
     plt.savefig(directory + f'/scatter_plot_{colored_feature}.jpg')
-
 
     plt.show()
 

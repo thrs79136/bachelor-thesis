@@ -11,7 +11,7 @@ from src.models.mcgill_songdata import Bar
 from src.models.mgill_chord import McGillChord
 from src.models.song import Song
 from src.shared import shared
-from src.shared.shared import feature_file_path
+from src.shared.shared import feature_file_path, median_file_path
 
 global year_feature_file_path
 year_feature_file_path = '../data/csv/year_features.csv'
@@ -182,7 +182,7 @@ def save_feature_csv(songs: List[Song], feature_names, file=feature_file_path):
 
 def save_median_feature_csv(songs: List[Song], feature_names):
 
-    with open(year_feature_file_path, "w", newline='') as csvfile:
+    with open(median_file_path, "w", newline='') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',', escapechar='\\', quoting=csv.QUOTE_NONE)
 
         features = [shared.song_features_dict[feature_name] for feature_name in feature_names if shared.song_features_dict[feature_name].is_numerical]
@@ -195,9 +195,11 @@ def save_median_feature_csv(songs: List[Song], feature_names):
         for year, year_songs in grouped_songs.items():
             year_medians = []
             for feature in features:
-                if not feature.is_numerical:
-                    continue
+                if feature.latex_id == '32':
+                    x = 42
 
+                if not feature.is_numerical or feature.feature_id == 'spotify_popularity' or feature.is_sentiment_feature:
+                    continue
                 feature_expr = []
                 for song in year_songs:
                     parameters = [song] + feature.parameters
