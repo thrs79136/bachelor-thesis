@@ -10,6 +10,8 @@ class SongFeature:
         self.is_numerical = is_numerical
         self.is_boolean = is_boolean
         self.is_nominal = is_nominal
+        if self.is_nominal:
+            self.is_numerical = False
         if is_boolean:
             self.is_nominal = True
         self.nominal_labels = nominal_labels

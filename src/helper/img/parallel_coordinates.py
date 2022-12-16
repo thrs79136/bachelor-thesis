@@ -59,7 +59,7 @@ def create_parallel_coordinates(filepath='../data/csv/year_features.csv', filena
     # colours = ['green', 'red', 'orange', 'purple', 'blue', 'yellow']
     colours = {df['decade'].cat.categories[i]: all_colours[i] for i, _ in enumerate(df['decade'].cat.categories)}
 
-    fig, axes = plt.subplots(1, len(x) - 1, sharey=False, figsize=(13, 6))
+    fig, axes = plt.subplots(1, len(x) - 1, sharey=False, figsize=(13, 8))
 
     min_max_range = {}
     for col in ordered_feature_ids:
@@ -90,7 +90,7 @@ def create_parallel_coordinates(filepath='../data/csv/year_features.csv', filena
     for dim, ax in enumerate(axes):
         ax.xaxis.set_major_locator(ticker.FixedLocator([dim]))
         set_ticks_for_axis(dim, ax, ticks=6)
-        ax.set_xticklabels([feature_labels[dim]], fontsize=18, rotation=90)
+        ax.set_xticklabels([feature_labels[dim]], fontsize=16, rotation=90)
 
     # Move the final axis' ticks to the right-hand side
     ax = plt.twinx(axes[-1])
@@ -100,14 +100,14 @@ def create_parallel_coordinates(filepath='../data/csv/year_features.csv', filena
     #ax.set_xticks([x[-2], x[-1]])
     #ax.tick_params(axis='x', labelsize=25)
     ax.xaxis.set_major_locator(ticker.FixedLocator([x[-2]]))
-    ax.set_xticklabels([feature_labels[-2]], fontsize=18, rotation=90)
-    plt.text(19.5, -.15, feature_labels[-1], fontsize=18, rotation=90)
+    ax.set_xticklabels([feature_labels[-2]], fontsize=16, rotation=90)
+    plt.text(18.8, -.58, feature_labels[-1], fontsize=16, rotation=90)
 
     plt.subplots_adjust(wspace=0)
 
     # test = df['decade'].cat.categories
 
-    plt.gcf().subplots_adjust(bottom=0.25, left=0.05, top=0.85)
+    plt.gcf().subplots_adjust(bottom=0.38, left=0.05, top=0.85)
 
 
     ax_index = 10
@@ -121,6 +121,6 @@ def create_parallel_coordinates(filepath='../data/csv/year_features.csv', filena
     for i, handle in enumerate(hl_dict):
         handle.set_color(all_colours[i])
 
-    # plt.savefig(f'../data/img/plots/parallel_coordinates/{filename}')
+    plt.savefig(f'../data/img/plots/parallel_coordinates/{filename}')
 
     plt.show()

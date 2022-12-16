@@ -68,9 +68,14 @@ def create_barplot(bar_values, labels, ylabel, filename, title, subtitle='', yli
     # plt.show()
 
 
-def create_stacked_barplot(bar_values, labels, legend, title, suptitle, filename, directory=''):
+def create_stacked_barplot(bar_values, labels, legend, title, suptitle, filename, directory='', figsize=(6.4, 4.8)):
 
-    fig = plt.figure()
+    lengend_on_bottom = len(legend[0]) >= 10 and len(legend) <= 2
+
+
+    fig = plt.figure(figsize=figsize)
+    if lengend_on_bottom:
+        fig.subplots_adjust(top=0.85, bottom=0.2)
     ax = plt.subplot(111)
 
     # bar_values.reverse()
@@ -91,17 +96,18 @@ def create_stacked_barplot(bar_values, labels, legend, title, suptitle, filename
         parameter = sum(bar_values[low:]) if j != len(bar_values)-1 else None
 
         plt.bar(labels, bar_values[j], bottom=sum(bar_values[low:]) if j != len(bar_values)-1 else None, label=legend[j], color=color_palette[j])
+        plt.xticks(rotation=20)
 
     plt.ylabel("Anteil der Lieder")
 
     box = ax.get_position()
-    if len(legend[0]) >= 10 and len(legend) <= 2:
+    if lengend_on_bottom:
         # bottom
         ax.set_position([box.x0, box.y0 + box.height * 0.2, box.width, box.height * 0.8])
         # Put a legend to the right of the current axis
-        ax.legend(legend, loc='lower left', bbox_to_anchor=(0, -0.3))
+        ax.legend(legend, loc='lower left', bbox_to_anchor=(0, -0.6))
         handles, labels = ax.get_legend_handles_labels()
-        ax.legend(handles[::-1], labels[::-1], loc='lower left', bbox_to_anchor=(0, -0.3))
+        ax.legend(handles[::-1], labels[::-1], loc='lower left', bbox_to_anchor=(0, -0.6))
     else:
         # right
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
@@ -109,8 +115,8 @@ def create_stacked_barplot(bar_values, labels, legend, title, suptitle, filename
         handles, labels = ax.get_legend_handles_labels()
         ax.legend(handles[::-1], labels[::-1], loc='center left', bbox_to_anchor=(1, 0.65))
 
-    plt.suptitle(suptitle)
-    plt.title(title)
+    plt.title(title, fontsize=12, y=1.15)
+    plt.suptitle(suptitle, fontsize=9, y=0.88)
 
     plt.show()
 

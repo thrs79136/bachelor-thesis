@@ -17,6 +17,8 @@ import matplotlib.pyplot as plt
 
 from src.helper.img.lineplot import lineplot_multiple_lines
 from src.shared import shared
+from src.shared.shared import non_y_axis_features
+
 
 def knn_regression_all():
 
@@ -62,6 +64,9 @@ def knn_regression(column, title, filename, use_mean_instead_of_rmse=False):
 def knn_regression_dataframe(data, column, feature_list, title, filename, use_mean_instead_of_rmse=False):
     Y = data[column]
 
+    feature_list = shared.song_features_dict.values()
+    feature_list = [f.feature_id for f in feature_list if f.feature_id not in non_y_axis_features and not f.is_nominal and not f.is_sentiment_feature]
+
     data = data[feature_list]
 
     X = data.to_numpy()
@@ -97,9 +102,9 @@ def knn_regression_dataframe(data, column, feature_list, title, filename, use_me
 
     # title = f'Vorhersage von {shared.song_features_dict[column].display_name} über KNN-Regression'
     lineplot_multiple_lines(neighbors, [rmse_values, [random_assignment_rmse] * len(neighbors)],
-                            ['Testdaten', 'RMSE bei zufälliger Zuordnung'], 'k', 'RMSE', f'{column}.jpg', title,
+                            ['Testdaten', 'RMSE bei zufälliger Zuordnung'], 'k', 'RMSE', f'{column}.jpg', '',
                             dot_coordinates=[[(neighbors[idx],val)]], dot_legend=[f'Minimaler RMSE (k={neighbors[idx]}, RMSE={val:.3f})'],
-                            directory='knn/regression')
+                            directory='knn/regression', figsize=(4.8, 3.599))
 
     return
     fig, ax = plt.subplots()

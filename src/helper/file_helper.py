@@ -198,15 +198,17 @@ def save_median_feature_csv(songs: List[Song], feature_names):
                 if feature.latex_id == '32':
                     x = 42
 
-                if not feature.is_numerical or feature.feature_id == 'spotify_popularity' or feature.is_sentiment_feature:
-                    continue
-                feature_expr = []
-                for song in year_songs:
-                    parameters = [song] + feature.parameters
-                    feature_expr.append(feature.feature_fn(*parameters))
-                median = np.median(feature_expr)
-                year_medians.append(median)
-
+                try:
+                    if not feature.is_numerical or feature.is_sentiment_feature:
+                        continue
+                    feature_expr = []
+                    for song in year_songs:
+                        parameters = [song] + feature.parameters
+                        feature_expr.append(feature.feature_fn(*parameters))
+                    median = np.median(feature_expr)
+                    year_medians.append(median)
+                except Exception:
+                    x = 42
             csvwriter.writerow(year_medians)
 
 

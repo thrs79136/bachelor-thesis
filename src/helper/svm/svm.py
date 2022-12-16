@@ -13,7 +13,7 @@ from src.shared.shared import non_y_axis_features
 
 def svm_all():
     svm_genre_mcgill()
-    # svm_decade_mcgill()
+    svm_decade_mcgill()
 
 
 def svm_decade_mcgill():
@@ -44,6 +44,9 @@ def my_svm(dataframe_path, classifier_column, feature_list, title, filename):
 def svm_dataframe(dataframe, classifier_column, feature_list, title, filename):
     y = dataframe[classifier_column]
 
+    feature_list = shared.song_features_dict.values()
+    feature_list = [f.feature_id for f in feature_list if f.feature_id not in non_y_axis_features and not f.is_nominal and not f.is_sentiment_feature]
+
     data = dataframe[feature_list]
 
     X = data.to_numpy()
@@ -64,7 +67,7 @@ def svm_dataframe(dataframe, classifier_column, feature_list, title, filename):
 
     accuracies = [accuracy_lin, accuracy_poly, accuracy_rbf, accuracy_sig]
 
-    create_barplot(accuracies, ['Linear\nKernel', 'Polynomial\nKernel', 'Radial Basis\nKernel', 'Sigmoid\nKernel'], 'Genauigkeit',
-                   filename, title, directory='svm', ylim=1)
+    create_barplot(accuracies, ['Linearer\nKernel', 'Polynomieller\nKernel', 'Radialer-Basis-\nKernel', 'Sigmoid-\nKernel'], 'Genauigkeit',
+                   filename, '', directory='svm', ylim=1, figsize=(4.8, 3.599))
 
 

@@ -19,6 +19,7 @@ import itertools
 
 from src.helper.img.lineplot import lineplot_multiple_lines
 from src.shared import shared
+from src.shared.shared import non_y_axis_features
 
 
 def knn_classification_all():
@@ -45,6 +46,9 @@ def knn_genre_ds1():
 
 
 def knn_classification_dataframe(dataframe, feature_list, classification_column, filename):
+
+    feature_list = shared.song_features_dict.values()
+    feature_list = [f.feature_id for f in feature_list if f.feature_id not in non_y_axis_features and not f.is_nominal and not f.is_sentiment_feature]
 
     X = dataframe[feature_list].to_numpy()
     scaler = preprocessing.StandardScaler().fit(X)

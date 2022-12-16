@@ -115,9 +115,13 @@ feature_list_all = [
 ]
 
 # features for song_features.csv with strong correlation
-feature_list_years = ['duration', 'acousticness', 'synthesizer', 'chord_distances2', 'neither_chords', 'major_percentage', 'energy', 'danceability', 'chorus_repetitions', 'different_sections_count', 'non_triad_chords_percentage', 'get_added_seventh_use', 'power_chords', 'different_chords', 'chord_distances', 'tonic_percentage', 'minor_percentage', 'different_progressions', 'v_to_i', 'circle_of_fifths_dist', 'tonic_percentage', 'average_chord_count_per_bar', 'i_to_v', 'loudness', 'circle_of_fifths_dist_largest_dist', 'different_notes']
-feature_list_chart_pos = ['i_to_v', 'v_to_i', 'chorus_repetitions', 'tonic_percentage', 'danceability', 'loudness', 'minor_percentage', 'circle_of_fifths_dist_largest_dist', 'dominant_percentage']
-feature_list_spotify_popularity = ['acousticness', 'duration', 'chorus_repetitions', 'circle_of_fifths_dist_largest_dist', 'major_percentage', 'neither_chords', 'different_progressions', 'energy', 'circle_of_fifths_dist', 'non_triad_chords_percentage', 'get_added_seventh_use', 'different_notes', 'v_to_i', 'danceability', 'minor_percentage', 'loudness', 'i_to_v', 'chord_distances2', 'power_chords', 'tonic_percentage', 'chord_distances', 'tonic_percentage', 'section_repetitions']
+#feature_list_years = ['duration', 'acousticness', 'synthesizer', 'chord_distances2', 'neither_chords', 'major_percentage', 'energy', 'danceability', 'chorus_repetitions', 'different_sections_count', 'non_triad_chords_percentage', 'get_added_seventh_use', 'power_chords', 'different_chords', 'chord_distances', 'tonic_percentage', 'minor_percentage', 'different_progressions', 'v_to_i', 'circle_of_fifths_dist', 'tonic_percentage', 'average_chord_count_per_bar', 'i_to_v', 'loudness', 'circle_of_fifths_dist_largest_dist', 'different_notes']
+feature_list_years = ['acousticness', 'danceability', 'duration_ms', 'energy', 'major_chords', 'neither_chords', 'non_triad_chords', 'bass_distances', 'different_sections', 'chorus_repetitions']
+#feature_list_chart_pos = ['i_to_v', 'v_to_i', 'chorus_repetitions', 'tonic_percentage', 'danceability', 'loudness', 'minor_percentage', 'circle_of_fifths_dist_largest_dist', 'dominant_percentage']
+feature_list_chart_pos = ['danceability', 'loudness', 'minor_chords', 'major_chords', 'tonic_chords', 'circle_of_fifths_max', 'section_repetitions', 'chorus_repetitions']
+# feature_list_spotify_popularity = ['acousticness', 'duration', 'chorus_repetitions', 'circle_of_fifths_dist_largest_dist', 'major_percentage', 'neither_chords', 'different_progressions', 'energy', 'circle_of_fifths_dist', 'non_triad_chords_percentage', 'get_added_seventh_use', 'different_notes', 'v_to_i', 'danceability', 'minor_percentage', 'loudness', 'i_to_v', 'chord_distances2', 'power_chords', 'tonic_percentage', 'chord_distances', 'tonic_percentage', 'section_repetitions']
+feature_list_spotify_popularity = ['acousticness', 'danceability', 'duration_ms', 'energy', 'loudness', 'major_chords', 'neither_chords', 'seventh_chords', 'v_to_i', 'circle_of_fifths', 'circle_of_fifths_max', 'different_progressions', 'different_notes', 'chorus_repetitions']
+
 
 feature_list_sentiments = ['love', 'anger', 'joy', 'sadness']
 feature_list_without_mcgill = [
@@ -142,9 +146,12 @@ audio_feature_keys = ['danceability', 'energy', 'key', 'loudness', 'mode', 'spee
 
 # feature_list_year = ['acousticness', 'danceability', 'duration_ms', 'energy', 'major_percentage', 'neither_chords', 'non_triad_chords_percentage', 'chord_distances2', 'different_sections_count', 'chorus_repetitions']
 
+# feature_list_year = ['acousticness', 'danceability', 'duration_ms', 'energy', 'major_chords', 'neither_chords', 'non_triad_chords', 'bass_distances', 'different_sections', 'chorus_repetitions']
 feature_list_year = ['acousticness', 'danceability', 'duration_ms', 'energy', 'major_chords', 'neither_chords', 'non_triad_chords', 'bass_distances', 'different_sections', 'chorus_repetitions']
-feature_list_chart_pos = ['danceability', 'loudness', 'minor_percentage', 'major_percentage', 'tonic_percentage', 'circle_of_fifths_dist_largest_dist', 'section_repetitions', 'chorus_repetitions']
-feature_list_spotify_popularity = ['acousticness', 'danceability', 'duration_ms', 'energy', 'loudness', 'major_percentage', 'neither_chords', 'get_added_seventh_use', 'v_to_i', 'circle_of_fifths_dist', 'circle_of_fifths_dist_largest_dist', 'different_progressions', 'different_notes', 'chorus_repetitions']
+# feature_list_chart_pos = ['danceability', 'loudness', 'minor_percentage', 'major_percentage', 'tonic_percentage', 'circle_of_fifths_dist_largest_dist', 'section_repetitions', 'chorus_repetitions']
+feature_list_chart_pos = ['danceability', 'loudness', 'minor_chords', 'major_chords', 'tonic_chords', 'circle_of_fifths_max', 'section_repetitions', 'chorus_repetitions']
+# feature_list_spotify_popularity = ['acousticness', 'danceability', 'duration_ms', 'energy', 'loudness', 'major_percentage', 'neither_chords', 'get_added_seventh_use', 'v_to_i', 'circle_of_fifths_dist', 'circle_of_fifths_dist_largest_dist', 'different_progressions', 'different_notes', 'chorus_repetitions']
+feature_list_spotify_popularity = ['acousticness', 'danceability', 'duration_ms', 'energy', 'loudness', 'major_chords', 'neither_chords', 'seventh_chords', 'v_to_i', 'circle_of_fifths', 'circle_of_fifths_max', 'different_progressions', 'different_notes', 'chorus_repetitions']
 feature_list_genre = ['acousticness', 'danceability', 'duration_ms', 'energy', 'loudness', 'minor_chords', 'major_chords', 'seventh_chords', 'standard_triads', 'v_to_i', 'root_distances', 'bass_distances', 'different_chords', 'different_sections']
 
 

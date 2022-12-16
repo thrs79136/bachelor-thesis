@@ -23,7 +23,7 @@ import seaborn as sns
 non_y_axis_features = ['decade', 'year', 'artist', 'chart_pos', 'genre', 'spotify_popularity', 'spotify_id', 'genre_groups']
 
 def analyze_all_features(redraw_plots=True):
-    dataframe = pd.read_csv(feature_file_path)
+    dataframe = shared.mcgill_df
     result_dict = {}
     result_dict['genre'] = compare_features_among_genres(dataframe, 0.005, redraw_plots)
     # result_dict['year'] = analyze_features(dataframe, 'year', True, 0.2, 0.05, redraw_plots)
@@ -81,7 +81,7 @@ def analyze_features(dataframe, feature_to_analyze_id, use_pearson, minimum_corr
             test_results.append(test_result)
             if redraw_plots:
                 draw_feature_scatterplot(x_values, y_values, feature_name1, f'${feature.latex_name}$',
-                                         f'{feature_name1} vs. ${feature.latex_name}$ {feature_name2}', f'{feature_to_analyze_id}_{feature.latex_id}.jpg', test_result,
+                                         f'{feature_name1} vs. ${feature.latex_name}$ {feature.feature_id}', f'{feature_to_analyze_id}_{feature.latex_id}.jpg', test_result,
                                          f'correlation/{feature_to_analyze_id}', use_pearson)
 
     filtered_test_results =  [test_result for test_result in test_results if abs(test_result.correlation) >= minimum_correlation and test_result.pvalue <= maximum_p_value]
@@ -151,13 +151,13 @@ def compare_features_among_genres(df, maximum_p_value, redraw_plots):
     ordinal_features = [feature for feature in ordinal_features if feature.feature_id not in non_y_axis_features and feature.is_numerical]
     nominal_features = [feature for feature in nominal_features if feature.feature_id not in non_y_axis_features]
 
-    test_results = analyze_ordinal_features_for_genres(df, ordinal_features, redraw_plots)
+    # test_results = analyze_ordinal_features_for_genres(df, ordinal_features, redraw_plots)
     analyze_nominal_features_for_genres(df, nominal_features, redraw_plots)
 
     # filter test results
-    filtered_test_results = [result for result in test_results if result.pvalue <= maximum_p_value]
+    # filtered_test_results = [result for result in test_results if result.pvalue <= maximum_p_value]
 
-    return filtered_test_results
+    # return filtered_test_results
 
 
 def analyze_nominal_features_for_genres(df, nominal_features, redraw_plots):
@@ -221,7 +221,7 @@ def analyze_nominal_features_for_genres(df, nominal_features, redraw_plots):
             # suptitle = ''
 
             create_stacked_barplot(bar_values, labels, legend,
-                                   f'${feature.latex_name}$ {feature.display_name} nach Musikrichtung', suptitle, f'{feature.latex_id}.jpg', 'nominal_correlation')
+                                   f'${feature.latex_name}$ {feature.display_name} nach Musikrichtung', suptitle, f'{feature.latex_id}.jpg', 'nominal_correlation', figsize=(4.48, 3.36))
 
 
 def analyze_ordinal_features_for_genres(df, ordinal_features, redraw_plots):
@@ -249,147 +249,6 @@ def analyze_ordinal_features_for_genres(df, ordinal_features, redraw_plots):
                            f'correlation/genre', ylabel=f'${feature.latex_name}$', figsize=(4.48, 3.36))
 
     return test_results
-
-
-
-# creates box plots
-def compare_features_among_genres_old(df):
-    genres = []
-
-    for value in df['genre']:
-        added_genre = None
-        for i, genre in enumerate(most_common_genres):
-            if genre in value:
-                added_genre = i
-                break
-        genres.append(added_genre)
-
-    df['single_genre'] = genres
-    single_genre_df = df[df['single_genre'].notnull()]
-
-    non_instrumenal_songs_df = df[df['sadness'].notnull()]
-
-    genre_dict = {}
-    genre_dict_sentiments = {}
-
-    for genre in most_common_genres:
-        genre_songs = df[df['genre'].str.contains(genre)]
-        genre_songs_non_instrumental = non_instrumenal_songs_df[non_instrumenal_songs_df['genre'].str.contains(genre)]
-        genre_dict[genre] = genre_songs
-        genre_dict_sentiments[genre] = genre_songs_non_instrumental
-
-    feature_to_analyze = shared.song_features_dict['genre']
-    features: List[SongFeature] = shared.song_features_dict.values()
-    ordinal_features, nominal_features = [], []
-    for feature in features:
-        (ordinal_features, nominal_features)[feature.is_nominal].append(feature)
-
-    for feature in nominal_features:
-        if feature.feature_id not in non_y_axis_features:
-            # bar_values = []
-
-            group_keys = list(genre_dict.values())[0].groupby(feature.feature_id).groups.keys()
-            bar_values = [[] for _ in range(len(group_keys))]
-
-            x = len(genre_dict.items())
-            y = len(group_keys)
-
-            for i, (key, dataframe) in enumerate(genre_dict.items()):
-                # labels.append(key)
-                grouped_features = dataframe.groupby(feature.feature_id)
-                # labels = grouped_features.groups.keys()
-
-                perc_values = []
-                for j, group_key in enumerate(group_keys):
-                    n = len(dataframe)
-                    group = len(grouped_features.get_group(group_key))
-                    perc_value = group/n
-                    bar_values[j].append(perc_value)
-                    x = 42
-#                   perc_values.append(group/n)
-                x = 42
-
-
-
-            # execute test
-            genre_ids = single_genre_df['single_genre'].values
-            feature_values = single_genre_df[feature.feature_id].values
-
-            contigency = pd.crosstab(genre_ids, feature_values)
-
-            stat, p, dof, expected = chi2_contingency(contigency)
-            x = 42
-
-            # bar_values.append
-            labels = [label.capitalize() for label in list(genre_dict.keys())]
-            legend = [feature.nominal_labels[i] for i in group_keys] if feature.nominal_labels is not None else group_keys
-
-            # suptitle = f'$\chi^2$-Test, $\chi^2$({dof}, n={len(feature_values)})={stat:.3f}, p={p:.3f}'
-            suptitle = ''
-
-            create_stacked_barplot(bar_values, labels, legend, f'${feature.latex_name}$ {feature.display_name} nach Musikrichtung', suptitle)
-
-
-    for feature in ordinal_features:
-        if feature.feature_id not in non_y_axis_features:
-            box_plot_values = []
-
-            dict = genre_dict_sentiments if feature.is_sentiment_feature else genre_dict
-
-            for key, value in dict.items():
-                res = value[feature.feature_id].values
-                box_plot_values.append(res)
-            try:
-                stat, pvalue, med, tbl = stats.median_test(*box_plot_values)
-                median_test_result_str = f'Mood\'s median test; χ2={stat:.3f}; p={pvalue:.3f}'
-                #
-                create_boxplot(box_plot_values, [g.capitalize() for g in most_common_genres], f'${feature.latex_name}$ {feature.display_name} nach Genre', median_test_result_str, f'genre_{feature.latex_id}.jpg',
-                               f'correlation/genre', ylabel=feature.display_name)
-            except Exception:
-                print('except')
-                x = 42
-
-
-
-
-    # genres_dict = get_common_genres_dictionary(songs)
-    # box_plot_values = []
-    #
-    # feature_fn = feature.feature_fn
-    # parameters = feature.parameters
-    #
-    # for song_list in genres_dict.values():
-    #     feature_expr = []
-    #     for song in song_list:
-    #         parameter_list = [song] + parameters
-    #         feature_expr.append(feature_fn(*parameter_list))
-    #
-    #     box_plot_values.append(feature_expr)
-    #
-    # title = feature.display_name
-    # filename = f'{feature.feature_id}.jpg'
-    #
-    # oneway_result = stats.f_oneway(*box_plot_values)
-    # test_result_str = f'One-Way ANOVA test; F={oneway_result.statistic:.3f}; p={oneway_result.pvalue:.3f}'
-    #
-    # stat, pvalue, med, tbl = stats.median_test(*box_plot_values)
-    # median_test_result_str = f'Mood\'s median test; χ2={stat:.3f}; p={pvalue:.3f}'
-    #
-    # test_result_str += f'\n{median_test_result_str}'
-    #
-    # labels = [key.capitalize() for key in genres_dict.keys()]
-    #
-    # pairwise_result = {}
-    # if oneway_result.pvalue < 0.05:
-    #     for i, genre in enumerate(most_common_genres):
-    #         for j in range(i + 1, len(most_common_genres)):
-    #             other_genre = most_common_genres[j]
-    #             scores1 = box_plot_values[i]
-    #             scores2 = box_plot_values[i + 1]
-    #             stat, pvalue = stats.mood(scores1, scores2)
-    #             pairwise_result[f'{genre}-{other_genre}'] = pvalue
-    #
-    # create_boxplot(box_plot_values, labels, title, test_result_str, filename, 'genres')
 
 
 

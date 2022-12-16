@@ -49,31 +49,29 @@ def save_feature_csv(songs):
 
 
 
-# songs = get_songs('../data/songs-finished.csv')
-# songs = [song for song in songs if song.spotify_song_data.audio_features_dictionary is not None]
-# init_progressions_dict(songs)
-# init_chords_dict(songs)
-# save_median_feature_csv(songs, shared.song_features_dict.keys())
+
+
+#songs = get_songs('../data/songs-finished.csv')
+#songs = [song for song in songs if song.spotify_song_data.audio_features_dictionary is not None]
 
 # songs_with_duplicates = get_songs('../data/songs.csv')
 
-songs = get_songs_from_binary_file(bin_file)
+#songs = get_songs_from_binary_file(bin_file)
 
 
 # songs = get_dataset_1()
-init(songs)
+#init(songs)
 # save_feature_csv(songs)
-save_median_feature_csv(songs, shared.song_features_dict.keys())
-
-
-# result_dict = analyze_all_features(redraw_plots=True)
+#save_median_feature_csv(songs, shared.song_features_dict.keys())
+#
+result_dict = analyze_all_features(redraw_plots=True)
 # for key, value in result_dict.items():
 #     print(key)
 #     print(', '.join(f"'{feature.feature.feature_id}'" for feature in value))
-#     # print(', '.join(feature.feature.feature_id.replace('_', '\_') for feature in value))
+#     print(', '.join(feature.feature.feature_id.replace('_', '\_') for feature in value))
 
 # exit()
-#print([feature.feature.feature_id for feature in result_dict['genre']])
+# print([feature.feature.feature_id for feature in result_dict['genre']])
 # exit()
 # genres_stacked_area_plot()
 
@@ -84,12 +82,21 @@ save_median_feature_csv(songs, shared.song_features_dict.keys())
 
 #create_pca_plots()
 #create_mds_plots()
-create_parallel_coordinates()
+# ordered_feature_ids = ['acousticness', 'v_to_i', 'root_distances', 'bass_distances', 'major_chords', 'tonic_chords',
+#                        'seventh_chords', 'circle_of_fifths', 'circle_of_fifths_max', 'different_notes',
+#                        'different_chords', 'different_progressions', 'minor_chords', 'duration_ms',
+#                        'different_sections', 'chorus_repetitions', 'danceability', 'energy', 'neither_chords',
+#                        'non_triad_chords']
+#
+# features = [shared.song_features_dict[f] for f in ordered_feature_ids]
+
+# create_correlation_matrix()
+# create_parallel_coordinates()
 
 # create_correlation_matrix_plt()
 # multiple_regression_all()
 # classification
-# knn_classification_all()
+#knn_classification_all()
 
 # # regression
 # knn_regression_all()
