@@ -20,7 +20,10 @@ def lineplot(x, y, xlabel, ylabel, filename: str, title='', suptitle='', directo
     fig, ax = plt.subplots()
     plt.plot(x, y)
 
-    color_palette = sns.color_palette("icefire", n_colors=len(dot_legend))
+    try:
+        color_palette = sns.color_palette("icefire", n_colors=len(dot_legend))
+    except Exception:
+        x = 42
     #color_palette = ['red', 'blue'] * 5
 
     # dots

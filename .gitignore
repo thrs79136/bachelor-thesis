@@ -4,5 +4,7 @@ data/chartpos_1/*
 log
 src/__pycache__
 .idea/*
+.idynp_checkpoints/*
 **/__pycache__/
 scatter_plots_backup/
+Untitled.ipynb

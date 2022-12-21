@@ -24,16 +24,19 @@ non_y_axis_features = ['decade', 'year', 'artist', 'chart_pos', 'genre', 'spotif
 
 def analyze_all_features(redraw_plots=True):
     dataframe = shared.mcgill_df
+    non_instrumenal_songs_df = dataframe[dataframe['sadness'].notnull()]
+    v = len(non_instrumenal_songs_df)
     result_dict = {}
     result_dict['genre'] = compare_features_among_genres(dataframe, 0.005, redraw_plots)
-    # result_dict['year'] = analyze_features(dataframe, 'year', True, 0.2, 0.05, redraw_plots)
-    # result_dict['chart_pos'] = analyze_features(dataframe, 'chart_pos', False, 0.08, 0.1, redraw_plots)
-    # result_dict['spotify_popularity'] = analyze_features(dataframe, 'spotify_popularity', False, 0.1, 0.01, redraw_plots)
+    result_dict['year'] = analyze_features(dataframe, 'year', True, 0.2, 0.05, redraw_plots)
+    result_dict['chart_pos'] = analyze_features(dataframe, 'chart_pos', False, 0.08, 0.1, redraw_plots)
+    result_dict['spotify_popularity'] = analyze_features(dataframe, 'spotify_popularity', False, 0.1, 0.01, redraw_plots)
     return result_dict
 
 
 def analyze_features(dataframe, feature_to_analyze_id, use_pearson, minimum_correlation, maximum_p_value, redraw_plots):
     non_instrumenal_songs_df = dataframe[dataframe['sadness'].notnull()]
+    v = len(non_instrumenal_songs_df)
 
     feature_to_analyze = shared.song_features_dict[feature_to_analyze_id]
     features: List[SongFeature] = shared.song_features_dict.values()
@@ -151,13 +154,13 @@ def compare_features_among_genres(df, maximum_p_value, redraw_plots):
     ordinal_features = [feature for feature in ordinal_features if feature.feature_id not in non_y_axis_features and feature.is_numerical]
     nominal_features = [feature for feature in nominal_features if feature.feature_id not in non_y_axis_features]
 
-    # test_results = analyze_ordinal_features_for_genres(df, ordinal_features, redraw_plots)
+    test_results = analyze_ordinal_features_for_genres(df, ordinal_features, redraw_plots)
     analyze_nominal_features_for_genres(df, nominal_features, redraw_plots)
 
     # filter test results
-    # filtered_test_results = [result for result in test_results if result.pvalue <= maximum_p_value]
+    filtered_test_results = [result for result in test_results if result.pvalue <= maximum_p_value]
 
-    # return filtered_test_results
+    return filtered_test_results
 
 
 def analyze_nominal_features_for_genres(df, nominal_features, redraw_plots):
@@ -214,15 +217,14 @@ def analyze_nominal_features_for_genres(df, nominal_features, redraw_plots):
             stat, p, dof, expected = chi2_contingency(contigency)
 
             # bar_values.append
-            labels = [label.capitalize() for label in genres_genres]
+            labels = [get_genre_group_string(genre) for genre in genres_genres]
             legend = [feature.nominal_labels[i] for i in range(len(feature_group_keys))] if feature.nominal_labels is not None else group_keys
 
             suptitle = f'$\chi^2$-Test, $\chi^2$({dof}, n={len(feature_values)})={stat:.3f}, p={p:.3f}'
             # suptitle = ''
 
             create_stacked_barplot(bar_values, labels, legend,
-                                   f'${feature.latex_name}$ {feature.display_name} nach Musikrichtung', suptitle, f'{feature.latex_id}.jpg', 'nominal_correlation', figsize=(4.48, 3.36))
-
+                                   f'${feature.latex_name}$ {feature.feature_id} nach Musikrichtung', suptitle, f'{feature.latex_id}.jpg', 'nominal_correlation', figsize=(4.48, 3.36))
 
 def analyze_ordinal_features_for_genres(df, ordinal_features, redraw_plots):
     grouped_df = df.groupby('genre_groups')

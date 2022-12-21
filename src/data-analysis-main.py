@@ -75,7 +75,7 @@ result_dict = analyze_all_features(redraw_plots=True)
 # exit()
 # genres_stacked_area_plot()
 
-# draw_feature_line_plots()
+draw_feature_line_plots()
 # get_most_common_genres()
 # analyze_feature_median_deviation()
 
@@ -103,8 +103,3 @@ result_dict = analyze_all_features(redraw_plots=True)
 
 # svm_all()
 exit()
-
-
-# sentiment_analysis_init()
-# for song in songs:
-#     sentiment_analysis_emotions(song)

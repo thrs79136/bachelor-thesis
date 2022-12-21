@@ -106,23 +106,15 @@ song_features_dict = {
                            parameters=['strings'], is_boolean=True, nominal_labels=["Keine Verwendung von Streichinstrumenten", "Verwendung von Streichinstrumenten"]),
 
     # Sentiment Analysis
-    'love': SongFeature('love', 'Sentiment: Liebe',                 'Liebe',  Song.get_sentiment, parameters=['love'], is_sentiment_feature=True),
-    'anger': SongFeature('anger', 'Sentiment: Wut',                 'Wut',    Song.get_sentiment, parameters=['anger'], is_sentiment_feature=True),
-    'sadness': SongFeature('sadness', 'Sentiment: Trauer',          'Trauer', Song.get_sentiment, parameters=['sadness'], is_sentiment_feature=True),
-    'joy': SongFeature('joy', 'Sentiment: Freude',                  'Freude', Song.get_sentiment, parameters=['joy'], is_sentiment_feature=True),
+    'love': SongFeature('love', 'Sentiment: Liebe',                 '39',  Song.get_sentiment, parameters=['love'], is_sentiment_feature=True),
+    'anger': SongFeature('anger', 'Sentiment: Wut',                 '40',    Song.get_sentiment, parameters=['anger'], is_sentiment_feature=True),
+    'sadness': SongFeature('sadness', 'Sentiment: Trauer',          '41', Song.get_sentiment, parameters=['sadness'], is_sentiment_feature=True),
+    'joy': SongFeature('joy', 'Sentiment: Freude',                  '42', Song.get_sentiment, parameters=['joy'], is_sentiment_feature=True),
     # 'fear': SongFeature('fear', 'Sentiment: Angst',                 'Angst',  Song.get_sentiment, parameters=['fear'], is_sentiment_feature=True),
     # 'surprise': SongFeature('surprise', 'Sentiment: Überraschung',  'Überraschung', Song.get_sentiment, parameters=['surprise'], is_sentiment_feature=True),
 
-    'negative': SongFeature('negative', 'Sentiment: Negativ',       'Negativ', Song.get_sentiment_pos_neg, parameters=['NEGATIVE'], is_sentiment_feature=True),
-    'positive': SongFeature('positive', 'Sentiment: Positiv',       'Positiv', Song.get_sentiment_pos_neg, parameters=['POSITIVE'], is_sentiment_feature=True),
-
-    # 'chord_distances': SongFeature('chord_distances', 'Akkordabstände', '', Song.get_chord_distances),
-
-    # 'III_percentage': SongFeature('III_percentage', 'Anteil der III', '', Song.chord_frequency, ['III']),
-    # 'IV_percentage': SongFeature('IV_percentage', 'Anteil der IV', '', Song.chord_frequency2,
-    #                                      ['IV']),
-    # 'VI_percentage': SongFeature('VI_percentage', 'Anteil der VI', '', Song.chord_frequency, ['VI']),
-    # 'VII_percentage': SongFeature('VII_percentage', 'Anteil der VII', '', Song.chord_frequency, ['VII']),
+    'negative': SongFeature('negative', 'Sentiment: Negativ',       '43', Song.get_sentiment_pos_neg, parameters=['NEGATIVE'], is_sentiment_feature=True),
+    'positive': SongFeature('positive', 'Sentiment: Positiv',       '44', Song.get_sentiment_pos_neg, parameters=['POSITIVE'], is_sentiment_feature=True),
 }
 
 non_y_axis_features = ['decade', 'year', 'artist', 'chart_pos', 'genre', 'spotify_popularity', 'spotify_id', 'genre_groups']

@@ -102,6 +102,9 @@ class ParallelCoordinatesWidget(QWidget):
         self.label.setVisible(False)
         self.label2 = QLabel(str(self.maxi), self)
         self.label2.setVisible(False)
+        
+        # self.feature_list = ['acousticness', 'v_to_i', 'root_distances', 'bass_distances', 'major_chords', 'tonic_chords', 'seventh_chords', 'circle_of_fifths', 'circle_of_fifths_max', 'different_notes', 'different_chords', 'different_progressions', 'minor_chords', 'duration_ms', 'different_sections', 'chorus_repetitions', 'danceability', 'energy', 'neither_chords', 'non_triad_chords']
+        self.feature_list = feature_lists['year']
 
         self.df_dict = {
             "Alle Lieder": None,
@@ -124,7 +127,7 @@ class ParallelCoordinatesWidget(QWidget):
         median_df = shared.median_df.copy(True)
 
         self.min_max_range = {}
-        for col in feature_lists['year']:
+        for col in self.feature_list:
             self.min_max_range[col] = [self.data_frame[col].min(), self.data_frame[col].max(), np.ptp(self.data_frame[col])]
             self.data_frame[col] = np.true_divide(self.data_frame[col] - self.data_frame[col].min(), np.ptp(self.data_frame[col]))
             median_df[col] = np.true_divide(median_df[col] - median_df[col].min(), np.ptp(median_df[col]))
@@ -190,7 +193,9 @@ class ParallelCoordinatesWidget(QWidget):
 
 
     def init_figure(self, dataframe):
-        cols = feature_lists['year']
+
+
+        cols = self.feature_list
 
         feature_labels = []
         description_text = ''
@@ -198,8 +203,8 @@ class ParallelCoordinatesWidget(QWidget):
         self.annotation_texts = []
 
         song_features2: List[SongFeature] = [shared.song_features_dict[feature] for feature in
-                                             feature_lists['year']]
-        x = [i for i, _ in enumerate(feature_lists['year'])]
+                                             cols]
+        x = [i for i, _ in enumerate(cols)]
 
         for index, feature in enumerate(song_features2):
             label = f'$F_{{{feature.latex_id}}}$'
@@ -209,7 +214,7 @@ class ParallelCoordinatesWidget(QWidget):
 
         if not self.created_figure:
             self.axes = []
-            n = len(feature_lists['year'])
+            n = len(self.feature_list)
             for i in range(n - 1):
                 ax = self.figure_p.add_subplot(1, n - 1, i + 1)
                 ax.set_facecolor('#f0f0f0')
@@ -254,19 +259,19 @@ class ParallelCoordinatesWidget(QWidget):
     def create_figure(self, dict_key, dataframe):
         self.df_lines_dict[dict_key] = defaultdict(list)
 
-        cols = feature_lists['year']
+        cols = self.feature_list
         song_features2: List[SongFeature] = [shared.song_features_dict[feature] for feature in
-                                             feature_lists['year']]
+                                             self.feature_list]
 
 
 
-        x = [i for i, _ in enumerate(feature_lists['year'])]
+        x = [i for i, _ in enumerate(self.feature_list)]
 
         for i, ax in enumerate(self.axes):
             for idx in dataframe.index:
                 year = dataframe.loc[idx, 'year']
 
-                ax.plot(x, dataframe.loc[idx, feature_lists['year']], color='navy', alpha=0.4)
+                ax.plot(x, dataframe.loc[idx, self.feature_list], color='navy', alpha=0.4)
                 self.df_lines_dict[dict_key][i].append(Line(ax.lines[-1], year))
             ax.set_xlim([x[i], x[i + 1]])
 
@@ -392,7 +397,7 @@ class ParallelCoordinatesWidget(QWidget):
         print(type(self.figure_p))
 
         # a figure instance to plot on
-        # self.figure, axes = plt.subplots(1, len(feature_lists['year'])-1, sharey=False)
+        # self.figure, axes = plt.subplots(1, len(self.feature_list)-1, sharey=False)
 
         # self.figure = plt.figure()
 
@@ -477,7 +482,6 @@ class ParallelCoordinatesWidget(QWidget):
             ax.lines = [line.line for line in self.df_lines_dict[self.selected_dataframe_id][i] if
                         self.mini <= line.year <= self.maxi]
 
-        x = 42
 
     def update_canvas(self):
         self.canvas.draw_idle()

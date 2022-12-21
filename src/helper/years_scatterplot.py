@@ -20,33 +20,6 @@ class TestResult:
         return f'{self.feature_id}: r={self.correlation:.5f}, p={self.pvalue:.5f}'
 
 
-def draw_year_scatter_plots():
-
-    test_results = []
-    init_song_features()
-    song_features.song_features_dict
-
-    df = pd.read_csv('./../data/csv/song_features.csv')
-
-    years = df['year'].tolist()
-
-    for column_name in df:
-        feature: SongFeature = song_features.song_features_dict[column_name]
-        if not feature.is_numerical or column_name == 'year' or column_name == 'decade':
-            continue
-
-        column_values = df[column_name].tolist()
-
-        result = analyze_feature_correlation(years, column_values, 'Jahr', feature.display_name, feature.display_name, f'{feature.feature_id}.jpg', directory='years', draw_plot=False)
-        test_result = TestResult(column_name, result)
-        test_results.append(test_result)
-
-    results_low_pvalue = [res for res in test_results if res.test_result[1] <= 0.01]
-    sorted_results = sorted(results_low_pvalue, key=lambda res: abs(res.test_result[0]), reverse=True)
-    feature_names = [res.feature_id for res in sorted_results]
-    x =42
-
-
 # TODO remove from here
 def test_chart_pos():
     test_results = []

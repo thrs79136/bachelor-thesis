@@ -38,13 +38,11 @@ def merge_datasets():
     song_count = row_count(billboardindex_path) - 1
     write_header(old_songs_path)
 
-    settings.printProgressBar(0, song_count, prefix='Progress:', suffix='Complete', length=50)
     row_num = 1
 
     with open(billboardindex_path, newline='') as csvfile:
         csvreader = csv.DictReader(csvfile, delimiter=';', escapechar='', quoting=csv.QUOTE_NONE)
         for row in csvreader:
-            settings.printProgressBar(row_num, song_count, prefix='Progress:', suffix='Complete', length=50)
             row_num += 1
             song = Song.from_mcgill_csv_row(row)
             if song is not None:

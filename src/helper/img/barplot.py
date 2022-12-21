@@ -76,6 +76,9 @@ def create_stacked_barplot(bar_values, labels, legend, title, suptitle, filename
     fig = plt.figure(figsize=figsize)
     if lengend_on_bottom:
         fig.subplots_adjust(top=0.85, bottom=0.2)
+    else:
+        fig.subplots_adjust(top=0.8, bottom=0.19)
+
     ax = plt.subplot(111)
 
     # bar_values.reverse()
@@ -83,7 +86,12 @@ def create_stacked_barplot(bar_values, labels, legend, title, suptitle, filename
         bar_values[i] = np.array(values)
 
 
-    color_palette = sns.color_palette("icefire", n_colors=len(legend))
+    if len(legend) == 2:
+        color_palette = sns.color_palette("icefire", n_colors=12)[::3]
+    else:
+        color_palette = sns.color_palette("icefire", n_colors=len(legend))
+
+
 
     # plot bars in stack manner
     for i, values in enumerate(bar_values):
@@ -108,15 +116,18 @@ def create_stacked_barplot(bar_values, labels, legend, title, suptitle, filename
         ax.legend(legend, loc='lower left', bbox_to_anchor=(0, -0.6))
         handles, labels = ax.get_legend_handles_labels()
         ax.legend(handles[::-1], labels[::-1], loc='lower left', bbox_to_anchor=(0, -0.6))
+
+        plt.title(title, fontsize=12, y=1.11)
+        plt.suptitle(suptitle, fontsize=9, y=0.91)
     else:
         # right
         ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-        ax.legend(legend, loc='center left', bbox_to_anchor=(1, 0.65))
+        ax.legend(legend, loc='center left', bbox_to_anchor=(1, 0.4))
         handles, labels = ax.get_legend_handles_labels()
-        ax.legend(handles[::-1], labels[::-1], loc='center left', bbox_to_anchor=(1, 0.65))
+        ax.legend(handles[::-1], labels[::-1], loc='center left', bbox_to_anchor=(1, 0.4))
 
-    plt.title(title, fontsize=12, y=1.15)
-    plt.suptitle(suptitle, fontsize=9, y=0.88)
+        plt.title(title, fontsize=12, y=1.11)
+        plt.suptitle(suptitle, fontsize=9, x=0.4, y=0.87)
 
     plt.show()
 
