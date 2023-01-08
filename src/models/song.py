@@ -86,7 +86,6 @@ class Song:
         if load_api_song_data:
             self.add_song_data()
         self.spotify_id = spotify_id
-        self.cadences = None
         self.features = features
         # classified as positive or negative
         self.sentiments = None

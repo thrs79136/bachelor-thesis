@@ -33,7 +33,7 @@ def get_normalized_median(feature: SongFeature):
 def draw_feature_line_plots():
     draw_instrument_line_plots()
     for feature in shared.song_features_dict.values():
-        if feature.feature_id not in shared.non_y_axis_features and not feature.is_nominal:
+        if feature.feature_id not in shared.non_musical_features and not feature.is_nominal:
             draw_feature_line_plot(feature)
 
 
@@ -43,7 +43,7 @@ def draw_feature_line_plot(feature: SongFeature, artist_coordinates=None, dot_le
 
     subdirectory = 'median_years' if artist_coordinates is None else 'artists'
 
-    lineplot(years, feature_values, 'Jahr', feature.display_name, f'{filename_prefix}{feature.latex_id}.jpg', f'${feature.latex_name}$ {feature.display_name} (Median) im Verlauf der Zeit', '', f'line_plots/{subdirectory}/', dot_coordinates=artist_coordinates, dot_legend=dot_legend)
+    lineplot(years, feature_values, 'Jahr', f'${feature.latex_name}$', f'{filename_prefix}{feature.latex_id}.jpg', f'${feature.latex_name}$ {feature.feature_id} (Median) im Verlauf der Zeit', '', f'line_plots/{subdirectory}/', dot_coordinates=artist_coordinates, dot_legend=dot_legend)
     x = 42
 
 
@@ -53,8 +53,8 @@ def draw_instrument_line_plots():
             continue
         mean = get_mean(feature)
         years, feature_values = mean.keys().tolist(), mean.values
-        lineplot(years, feature_values, 'Jahr', feature.display_name, f'{feature.latex_id}.jpg',
-                 f'${feature.latex_name}$ {feature.display_name} im Verlauf der Zeit', '',
+        lineplot(years, feature_values, 'Jahr', f'${feature.latex_name}$', f'{feature.latex_id}.jpg',
+                 f'${feature.latex_name}$ {feature.feature_id} im Verlauf der Zeit', '',
                  f'line_plots/instrument_years/', dot_legend='')
 
 

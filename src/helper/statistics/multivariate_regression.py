@@ -7,7 +7,7 @@ from sklearn import datasets ## imports datasets from scikit-learn
 
 from src.dimension_reduction.common import feature_lists
 from src.shared import shared
-from src.shared.shared import non_y_axis_features
+from src.shared.shared import non_musical_features
 
 
 def multiple_regression_all():
@@ -24,7 +24,7 @@ def multiple_regression(target):
     final_features = []
 
     features = list(shared.song_features_dict.values())
-    features_for_correlation_matrix = [feature.feature_id for feature in features if not feature.is_nominal and feature.feature_id not in non_y_axis_features and not feature.is_sentiment_feature]
+    features_for_correlation_matrix = [feature.feature_id for feature in features if not feature.is_nominal and feature.feature_id not in non_musical_features and not feature.is_sentiment_feature]
     binary_features = [feature.feature_id for feature in features if feature.is_boolean]
     nominal_features = [feature.feature_id for feature in features if feature.is_nominal and not feature.is_boolean and feature.feature_id != 'genre']
 

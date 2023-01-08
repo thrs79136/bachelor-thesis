@@ -8,7 +8,6 @@ from matplotlib import pyplot as plt
 from matplotlib.patches import Ellipse
 import seaborn as sns
 
-from src.helper.img.pca import eigsorted
 from src.helper.statistics.feature_analyzer import get_genre_group_string
 from src.helper.statistics_helper import most_common_genres
 
@@ -152,7 +151,8 @@ feature_list_year = ['acousticness', 'danceability', 'duration_ms', 'energy', 'm
 feature_list_chart_pos = ['danceability', 'loudness', 'minor_chords', 'major_chords', 'tonic_chords', 'circle_of_fifths_max', 'section_repetitions', 'chorus_repetitions']
 # feature_list_spotify_popularity = ['acousticness', 'danceability', 'duration_ms', 'energy', 'loudness', 'major_percentage', 'neither_chords', 'get_added_seventh_use', 'v_to_i', 'circle_of_fifths_dist', 'circle_of_fifths_dist_largest_dist', 'different_progressions', 'different_notes', 'chorus_repetitions']
 feature_list_spotify_popularity = ['acousticness', 'danceability', 'duration_ms', 'energy', 'loudness', 'major_chords', 'neither_chords', 'seventh_chords', 'v_to_i', 'circle_of_fifths', 'circle_of_fifths_max', 'different_progressions', 'different_notes', 'chorus_repetitions']
-feature_list_genre = ['acousticness', 'danceability', 'duration_ms', 'energy', 'loudness', 'minor_chords', 'major_chords', 'seventh_chords', 'standard_triads', 'v_to_i', 'root_distances', 'bass_distances', 'different_chords', 'different_sections']
+feature_list_genre = ['acousticness', 'danceability', 'duration_ms', 'energy', 'loudness',
+'minor_chords', 'major_chords', 'seventh_chords', 'standard_triads','v_to_i', 'bass_distances', 'different_sections', 'anger']
 
 
 feature_list_genre_less = ['acousticness', 'danceability', 'duration_ms', 'energy', 'loudness', 'minor_percentage', 'major_percentage']
@@ -236,6 +236,10 @@ use_genres = False
 #     ].values
 #     return data_dropped
 
+def eigsorted(cov):
+    vals, vecs = np.linalg.eigh(cov)
+    order = vals.argsort()[::-1]
+    return vals[order], vecs[:,order]
 
 def create_scatterplot_with_ellipses(data_frame, x_pos, y_pos, colored_feature, directory, title, xlabel=None, ylabel=None):
     # global use_genres

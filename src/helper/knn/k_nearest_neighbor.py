@@ -1,3 +1,5 @@
+import math
+import pickle
 from cmath import sqrt
 import random
 
@@ -7,7 +9,7 @@ from matplotlib import pyplot as plt
 from sklearn import preprocessing
 from sklearn.metrics import mean_squared_error
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.datasets import load_iris
 
 from src.dimension_reduction.common import spotify_playlists_path, spotify_genres_playlists_path, feature_list_years, \
@@ -19,36 +21,81 @@ import itertools
 
 from src.helper.img.lineplot import lineplot_multiple_lines
 from src.shared import shared
-from src.shared.shared import non_y_axis_features
+from src.shared.shared import non_musical_features
 
 
 def knn_classification_all():
     knn_decade_ds1()
-    # knn_decade_ds2()
     knn_genre_ds1()
 
 
 def knn_decade_ds1():
-    knn_classification_dataframe(shared.mcgill_df, feature_lists['year'], 'decade', 'decade_ds1.jpg')
-
-
-def knn_decade_ds2():
-    pass
-    # genre_groups
-    # knn_classification_dataframe(shared.mcgill_df)
-    # pass
+    knn_classification_dataframe(shared.sentiment_df, feature_lists['year'], 'decade', 'decade_ds1.jpg')
 
 
 def knn_genre_ds1():
-    df = shared.mcgill_df
+    df = shared.sentiment_df
     genres_df = df[~df['genre_groups'].isnull()]
     knn_classification_dataframe(genres_df, feature_lists['genre'], 'genre_groups', 'genre.jpg')
 
 
-def knn_classification_dataframe(dataframe, feature_list, classification_column, filename):
+def knn_classification_dataframe(dataframe, feature_list, classification_column, filename, read_scores_from_pickle=False):
 
     feature_list = shared.song_features_dict.values()
-    feature_list = [f.feature_id for f in feature_list if f.feature_id not in non_y_axis_features and not f.is_nominal and not f.is_sentiment_feature]
+    feature_list = [f.feature_id for f in feature_list if f.feature_id not in non_musical_features and not f.is_nominal]
+
+    X = dataframe[feature_list].to_numpy()
+    scaler = preprocessing.StandardScaler().fit(X)
+    X = scaler.transform(X)
+
+    y = dataframe[classification_column]
+
+    # Split into training and test set
+    # X_train, X_test, y_train, y_test = train_test_split(
+    #     X, y, test_size=0.2, random_state=42)
+
+    # max_k = len(X_train)
+    max_k = len(dataframe) - math.ceil(len(dataframe)/10)
+    neighbors = np.arange(1, max_k)
+    # train_accuracy = np.empty(len(neighbors))
+    test_accuracy = np.empty(len(neighbors))
+
+    # Loop over K values
+    if not read_scores_from_pickle:
+        for i, k in enumerate(neighbors):
+            print(k)
+            knn = KNeighborsClassifier(n_neighbors=k)
+            cv_scores = cross_val_score(knn, X, y, cv=10)
+            test_accuracy[i] = np.mean(cv_scores)
+
+
+    # get best k value
+    pickle_file = f'../data/{classification_column}.pickle'
+    with open(pickle_file, 'wb') as file:
+        pickle.dump(test_accuracy, file)
+    print(f'saved pickle for {classification_column}')
+
+    if read_scores_from_pickle:
+        with open(pickle_file, 'rb') as file2:
+            test_accuracy = pickle.load(file2)
+
+    val, idx = max((val, idx) for (idx, val) in enumerate(test_accuracy))
+
+    random_score = knn_random_value(y)
+    random_score_line = [random_score] * (max_k - 1)
+
+    # TODO random assignment
+    lineplot_multiple_lines(neighbors, [test_accuracy, random_score_line],
+                            ['Testdaten', 'Zufällige Zuordnung'], 'k', 'Genauigkeit p', filename, '',
+                            dot_coordinates=[[(neighbors[idx], val)]],
+                            dot_legend=[f'Höchste Genauigkeit (p={val:.3f}, k={neighbors[idx]})'],
+                            directory='knn/classification', figsize=(4.8, 3.599), ylim=[0.,1.])
+
+
+def knn_classification_dataframe_old(dataframe, feature_list, classification_column, filename):
+
+    feature_list = shared.song_features_dict.values()
+    feature_list = [f.feature_id for f in feature_list if f.feature_id not in non_musical_features and not f.is_nominal and not f.is_sentiment_feature]
 
     X = dataframe[feature_list].to_numpy()
     scaler = preprocessing.StandardScaler().fit(X)
@@ -60,10 +107,12 @@ def knn_classification_dataframe(dataframe, feature_list, classification_column,
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42)
 
+
+
     # TODO increase size
     #  Expected n_neighbors <= n_samples,  but n_samples = 589, n_neighbors = 590
     max_k = len(X_train)
-    # max_k = 10
+    max_k = 10
     neighbors = np.arange(1, max_k)
     train_accuracy = np.empty(len(neighbors))
     test_accuracy = np.empty(len(neighbors))

@@ -10,6 +10,7 @@ from matplotlib import pyplot as plt
 
 from src.helper.img.boxplot import create_boxplot
 from src.helper.img.scatterplot import create_scatter_plot
+from src.models.correlation_test_result import CorrelationTestResult
 from src.models.song import Song
 from src.models.song_feature import SongFeature
 from src.models.spotify_song_data import SpotifySongData
@@ -19,25 +20,11 @@ figure_number = 0
 most_common_genres = ['rock', 'pop', 'soul', 'country', 'blues']
 
 
-class TestResult:
-    def __init__(self, feature, pvalue):
-        self.feature = feature
-        self.pvalue = pvalue
+# class TestResult:
+#     def __init__(self, feature, pvalue):
+#         self.feature = feature
+#         self.pvalue = pvalue
 
-
-class CorrelationTestResult(TestResult):
-    # def __init__(self, feature_id, test_result):
-    #     self.feature_id = feature_id
-    #     self.test_result = test_result
-
-    def __init__(self, feature, correlation, pvalue):
-        super().__init__(feature, pvalue)
-        self.feature = feature
-        self.correlation = correlation
-        self.pvalue = pvalue
-
-    def __str__(self):
-        return f'{self.feature.feature_id.replace("_", " ")} & {round(self.correlation, 5)} & {round(self.pvalue, 5)}'
 
 
 def analyze_feature_correlation(x_values, y_values, x_label, y_label, title, filename, directory=None, use_pearson=True, draw_plot=True):

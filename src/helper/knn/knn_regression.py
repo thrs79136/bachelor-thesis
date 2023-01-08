@@ -1,3 +1,5 @@
+import math
+import pickle
 import random
 from pathlib import Path
 
@@ -17,7 +19,7 @@ import matplotlib.pyplot as plt
 
 from src.helper.img.lineplot import lineplot_multiple_lines
 from src.shared import shared
-from src.shared.shared import non_y_axis_features
+from src.shared.shared import non_musical_features
 
 
 def knn_regression_all():
@@ -57,15 +59,18 @@ def knn_regression_year_ds1_balanced():
 # predict spotify position, chart position and year
 def knn_regression(column, title, filename, use_mean_instead_of_rmse=False):
     feature_list = feature_lists[column]
-    data = shared.mcgill_df
+    data = shared.sentiment_df
+
     knn_regression_dataframe(data, column, feature_list, title, filename, use_mean_instead_of_rmse)
 
 
-def knn_regression_dataframe(data, column, feature_list, title, filename, use_mean_instead_of_rmse=False):
+def knn_regression_dataframe(df, column, feature_list, title, filename, use_mean_instead_of_rmse=False):
+    data = df.sample(frac=1)
+
     Y = data[column]
 
     feature_list = shared.song_features_dict.values()
-    feature_list = [f.feature_id for f in feature_list if f.feature_id not in non_y_axis_features and not f.is_nominal and not f.is_sentiment_feature]
+    feature_list = [f.feature_id for f in feature_list if f.feature_id not in non_musical_features and not f.is_nominal and not f.is_sentiment_feature]
 
     data = data[feature_list]
 
@@ -73,35 +78,54 @@ def knn_regression_dataframe(data, column, feature_list, title, filename, use_me
     scaler = preprocessing.StandardScaler().fit(X)
     X = scaler.transform(X)
 
+    max_k = len(data) - math.ceil(len(data)/10)
+
+    X_subsets = np.array_split(X, 10)
+    Y_subsets = np.array_split(Y, 10)
+
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, Y, test_size=0.2, random_state=42)
+        X, Y, test_size=0.1, random_state=42)
 
-    neighbors = np.arange(1, 589)
+    neighbors = np.arange(1, max_k)
     # test_accuracy = np.empty(len(neighbors))
 
-    rmse_values = []
+    rmse_values_cv = []
 
     for i, k in enumerate(neighbors):
-        knn = KNeighborsRegressor(n_neighbors=k)
-        knn.fit(X_train, y_train)
+        print(k)
+        rmse_values = []
+        for subset_index in range(len(X_subsets)):
 
-        # make prediction on test set
-        pred = knn.predict(X_test)
+            knn = KNeighborsRegressor(n_neighbors=k)
 
-        # differences = [abs(val-pred[i]) for i, val in enumerate(y_test.values.tolist())]
-        # error = np.mean(differences)
-        # mean_values.append(error)
+            X_train = [j for index, k in enumerate(X_subsets) for j in k if index != subset_index]
+            y_train = [j for index, k in enumerate(Y_subsets) for j in k if index != subset_index]
+            X_test = X_subsets[subset_index]
+            y_test = Y_subsets[subset_index]
 
-        error = sqrt(mean_squared_error(y_test, pred))
-        rmse_values.append(error)
+            knn.fit(X_train, y_train)
 
-    val, idx = min((val, idx) for (idx, val) in enumerate(rmse_values))
+            # make prediction on test set
+            pred = knn.predict(X_test)
 
+            error = sqrt(mean_squared_error(y_test, pred))
+            rmse_values.append(error)
+        rmse_values_cv.append(np.mean(rmse_values))
+
+
+
+    pickle_file = f'../data/{column}_reg.pickle'
+    with open(pickle_file, 'wb') as file:
+        pickle.dump(rmse_values_cv, file)
+    # with open(pickle_file, 'rb') as file2:
+    #     rmse_values_cv = pickle.load(file2)
+    print(f'saved pickle for {column}')
+
+    val, idx = min((val, idx) for (idx, val) in enumerate(rmse_values_cv))
     random_assignment_rmse = knn_regression_random_values(Y)
-
     # title = f'Vorhersage von {shared.song_features_dict[column].display_name} über KNN-Regression'
-    lineplot_multiple_lines(neighbors, [rmse_values, [random_assignment_rmse] * len(neighbors)],
+    lineplot_multiple_lines(neighbors, [rmse_values_cv, [random_assignment_rmse] * len(neighbors)],
                             ['Testdaten', 'RMSE bei zufälliger Zuordnung'], 'k', 'RMSE', f'{column}.jpg', '',
                             dot_coordinates=[[(neighbors[idx],val)]], dot_legend=[f'Minimaler RMSE (k={neighbors[idx]}, RMSE={val:.3f})'],
                             directory='knn/regression', figsize=(4.8, 3.599))

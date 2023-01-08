@@ -1,28 +1,26 @@
-major\_chords & -0.438 & energy & -0.548 \\ 
+major\_chords & -0.441 & energy & -0.472 \\ 
  \hline 
-minor\_chords & 0.380 & loudness & -0.481 \\ 
+minor\_chords & 0.379 & loudness & -0.435 \\ 
  \hline 
-root\_distances & -0.377 & acousticness & 0.455 \\ 
+acousticness & -0.362 & standard\_triads & -0.392 \\ 
  \hline 
-bass\_distances & -0.369 & standard\_triads & -0.270 \\ 
+duration\_ms & 0.324 & acousticness & 0.337 \\ 
  \hline 
-duration\_ms & 0.281 & seventh\_chords & 0.219 \\ 
+v\_to\_i & -0.320 & minor\_chords & 0.302 \\ 
  \hline 
-different\_chords & 0.273 & danceability & -0.199 \\ 
+bass\_distances & -0.308 & major\_chords & -0.299 \\ 
  \hline 
-standard\_triads & -0.271 & different\_sections & -0.155 \\ 
+energy & 0.281 & seventh\_chords & 0.287 \\ 
  \hline 
-v\_to\_i & -0.270 & v\_to\_i & 0.149 \\ 
+loudness & 0.208 & bass\_distances & -0.171 \\ 
  \hline 
-acousticness & -0.198 & different\_chords & 0.146 \\ 
+different\_sections & 0.200 & danceability & -0.125 \\ 
  \hline 
-different\_sections & 0.160 & duration\_ms & -0.099 \\ 
+standard\_triads & -0.192 & different\_sections & -0.104 \\ 
  \hline 
-seventh\_chords & 0.105 & minor\_chords & 0.098 \\ 
+danceability & 0.136 & v\_to\_i & 0.027 \\ 
  \hline 
-energy & 0.085 & major\_chords & -0.076 \\ 
+anger & 0.091 & duration\_ms & 0.023 \\ 
  \hline 
-danceability & 0.043 & root\_distances & -0.074 \\ 
- \hline 
-loudness & 0.035 & bass\_distances & -0.054 \\ 
+seventh\_chords & 0.040 & anger & -0.023 \\ 
  \hline 

@@ -2,15 +2,11 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import seaborn as sns
-
-# create dataframe
 from matplotlib import pyplot as plt
-from pandas import DataFrame
 from sklearn import preprocessing
 from sklearn.decomposition import PCA
 
-from src.dimension_reduction.common import feature_list, color_palette, create_scatterplot_with_ellipses, feature_lists
+from src.dimension_reduction.common import create_scatterplot_with_ellipses, feature_lists
 from src.helper.file_helper import write_text_file
 from src.shared import shared
 
@@ -19,14 +15,15 @@ def create_pca_plots():
     create_pca_plot('year')
     create_pca_plot('genre_groups')
 
+
 def create_pca_plot(colored_feature='year'):
     directory = f'../data/img/plots/scatter_plots/dimension_reduction/pca/{colored_feature}'
 
     df = shared.mcgill_df
-    data = df[~df[colored_feature].isnull()]
+    if colored_feature == 'genre_groups':
+        df = shared.sentiment_df
 
-    # print(data.head())
-    # print(data.shape)
+    data = df[~df[colored_feature].isnull()]
 
     feature_list = feature_lists[colored_feature]
 
@@ -55,10 +52,6 @@ def create_pca_plot(colored_feature='year'):
     wt = range(pca_data.shape[0])
     pca_df = pd.DataFrame(pca_data, index=[*wt], columns=df_labels)
 
-    # color_map =
-    # decade_color_map = {1950: 0, 1960: 1, 1970: 2, 1980: 3, 1990: 4}
-    # color_list = data[category].map(decade_color_map)
-
     create_scatterplot_with_ellipses(data, pca_df.PC1.values, pca_df.PC2.values, colored_feature, directory, 'Hauptkomponentenanalyse', 'Hauptkomponente 1 - {0}%'.format(per_var[0]), 'Hauptkomponente 2 - {0}%'.format(per_var[1]))
 
     file_content = ''
@@ -75,9 +68,6 @@ def create_pca_plot(colored_feature='year'):
             table_rows[j] += f'{variable_str} & {loading_scores[variable]:0.3f}'
             if i == 0:
                 table_rows[j] += ' & '
-            # file_content += f'{variable} & {loading_scores[variable]:0.3f} \\\\ \n \\hline \n'
-
-        # file_content += f'PCA{str(i+1)}/n{str(loading_scores[top_10_genes])}/n/n'
 
 
     for row in table_rows:

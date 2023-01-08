@@ -20,7 +20,11 @@ def create_boxplot(data_values, labels, title, suptitle, filename, dir='', ylabe
     plt.suptitle(suptitle, fontsize=9, y=0.88)
 
     ax.boxplot(data_values)
-    plt.xticks(np.arange(len(labels)) + 1, labels, fontsize=9, rotation=90)
+
+    rotation = 90
+    if len(list(labels)[0]) > 10:
+        rotation = 15
+    plt.xticks(np.arange(len(labels)) + 1, labels, fontsize=9, rotation=rotation)
     plt.ylabel(ylabel, fontsize=11)
 
     plt.gcf().subplots_adjust(top=0.8)

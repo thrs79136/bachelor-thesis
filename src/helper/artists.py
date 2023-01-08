@@ -13,7 +13,7 @@ from src.helper.statistics.year_feature_median import get_median, draw_feature_l
 from src.models.song import Song
 from src.models.song_feature import SongFeature
 from src.shared import shared
-from src.shared.shared import non_y_axis_features
+from src.shared.shared import non_musical_features
 
 artists_dict = None
 normalized_artist_dict = None
@@ -126,7 +126,7 @@ def get_deviation_value_all_songs():
     n = len(list(shared.song_features_dict.values()))
 
     for feature in shared.song_features_dict.values():
-        if feature.feature_id not in shared.non_y_axis_features and feature.is_numerical and not feature.is_boolean and not feature.is_sentiment_feature:
+        if feature.feature_id not in shared.non_musical_features and feature.is_numerical and not feature.is_boolean and not feature.is_sentiment_feature:
             norm_median = get_normalized_median(feature)
             for i, song in shared.normalized_mcgill_df.iterrows():
                 year = song['year']
@@ -149,7 +149,7 @@ def get_deviation_value_songs(songs):
     n = len(list(shared.song_features_dict.values()))
 
     for feature in shared.song_features_dict.values():
-        if feature.feature_id not in shared.non_y_axis_features and feature.is_numerical and not feature.is_sentiment_feature:
+        if feature.feature_id not in shared.non_musical_features and feature.is_numerical and not feature.is_sentiment_feature:
             norm_median = get_normalized_median(feature)
             for song in songs:
                 year = song['year']

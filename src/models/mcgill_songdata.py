@@ -4,10 +4,6 @@ import string
 from typing import List, TextIO
 from enum import Enum
 import re
-
-import parker.chords
-from parker.chords import Chord
-
 from src.helper.mcgill_lexer import lexer
 from src.models.mgill_chord import RomNumNotation, McGillChord
 
@@ -187,18 +183,6 @@ class McGillSongData:
                 break
 
 
-
-            # print(f'{tok.value} (type: {tok.type})')
-            # try:
-            #     logger.debug(f'{tok.value} (type: {tok.type})')
-            # except Exception:
-            #     if self.id == '22':
-            #         x =1
-            #     pass
-
-            # if self.id == '22':
-            #     print(f'{tok.value} (type: {tok.type})')
-
             if tok.type == 'SILENCE_END':
                 pass
             elif tok.type == 'SECTION_ID':
@@ -207,7 +191,6 @@ class McGillSongData:
                     self.sections.append(current_section)
                     # add progression before creating new section
                     current_section.add_chord_progression()
-                    # print(current_section.chord_progression)
 
                 current_section = Section(tok.value, section_name)
             elif tok.type == 'BAR_LINE':
@@ -229,12 +212,8 @@ class McGillSongData:
             elif tok.type == 'DOT':
                 current_bar.content.append(current_bar.content[-1])
             elif tok.type == 'TONIC_CHANGE':
-                #current_section.content.append(TonicChange(tok.value.split(' ')[1]))
                 self.tonic_changes.append(tok.value.split(' ')[1])
-                if current_section.tonic_change is not None:
-                    x = 42
                 current_section.tonic_change = tok.value.split(' ')[1]
-                print('tonic change', self.id)
             elif tok.type == 'METRE_CHANGE':
                 value = tok.value
                 current_section.content.append(value)

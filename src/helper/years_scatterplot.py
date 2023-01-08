@@ -6,19 +6,6 @@ from src.shared import shared
 from src.shared.shared import init_song_features
 
 
-class TestResult:
-    # def __init__(self, feature_id, test_result):
-    #     self.feature_id = feature_id
-    #     self.test_result = test_result
-
-    def __init__(self, feature_id, correlation, pvalue):
-        self.feature_id = feature_id
-        self.correlation = correlation
-        self.pvalue = pvalue
-
-    def __str__(self):
-        return f'{self.feature_id}: r={self.correlation:.5f}, p={self.pvalue:.5f}'
-
 
 # TODO remove from here
 def test_chart_pos():

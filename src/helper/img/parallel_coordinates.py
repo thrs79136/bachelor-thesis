@@ -101,7 +101,8 @@ def create_parallel_coordinates(filepath='../data/csv/year_features.csv', filena
     #ax.tick_params(axis='x', labelsize=25)
     ax.xaxis.set_major_locator(ticker.FixedLocator([x[-2]]))
     ax.set_xticklabels([feature_labels[-2]], fontsize=16, rotation=90)
-    plt.text(18.8, -.58, feature_labels[-1], fontsize=16, rotation=90)
+    # adjust last text
+    plt.text(18.8, -.52, feature_labels[-1], fontsize=16, rotation=90)
 
     plt.subplots_adjust(wspace=0)
 

@@ -5,7 +5,6 @@ from typing import List
 
 import numpy as np
 
-from src.helper.cadences import identify_cadences
 from src.helper.statistics_helper import group_by_year
 from src.models.mcgill_songdata import Bar
 from src.models.mgill_chord import McGillChord

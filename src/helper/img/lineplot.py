@@ -52,7 +52,7 @@ def lineplot(x, y, xlabel, ylabel, filename: str, title='', suptitle='', directo
     figure_number += 1
 
 
-def lineplot_multiple_lines(x, y_lists, legend, xlabel, ylabel, filename: str, title, suptitle='', directory='', dot_coordinates=None, dot_legend=None, dot_labels=None, figsize=(6.4,4.8)):
+def lineplot_multiple_lines(x, y_lists, legend, xlabel, ylabel, filename: str, title, suptitle='', directory='', dot_coordinates=None, dot_legend=None, dot_labels=None, figsize=(6.4,4.8), ylim=None):
     global figure_number
 
     if directory != '':
@@ -77,6 +77,8 @@ def lineplot_multiple_lines(x, y_lists, legend, xlabel, ylabel, filename: str, t
 
         plt.legend(loc='upper right')
 
+    if ylim is not None:
+        plt.ylim(ylim)
     plt.subplots_adjust(bottom=0.15)
     plt.title(title, fontsize=13, y=1.05)
     plt.suptitle(suptitle, fontsize=10, y=0.92)

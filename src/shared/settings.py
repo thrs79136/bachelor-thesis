@@ -1,10 +1,7 @@
 import string
 import logging
 import logging.handlers
-from logging import Logger
 import os
-
-
 
 global songs_file
 songs_file = '../data/songs-finished.csv'

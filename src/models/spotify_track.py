@@ -51,19 +51,13 @@ class SpotifyTrack:
 
     @classmethod
     def from_api_response_genre(cls, response, genre):
-        try:
-            track = response['track']
+        track = response['track']
 
-            track_id = track['id']
-            artists = ' & '.join([artist['name'] for artist in track['artists']])
-            name = track['name']
-            popularity = track['popularity']
-            audio_features = get_audio_features(track_id)
-            if audio_features == [None]:
-                return None
-            return cls(track_id, artists, name, popularity, audio_features[0], None, genre)
-        except Exception:
-            pass
-
-
-
+        track_id = track['id']
+        artists = ' & '.join([artist['name'] for artist in track['artists']])
+        name = track['name']
+        popularity = track['popularity']
+        audio_features = get_audio_features(track_id)
+        if audio_features == [None]:
+            return None
+        return cls(track_id, artists, name, popularity, audio_features[0], None, genre)

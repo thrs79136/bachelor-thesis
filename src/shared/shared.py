@@ -6,19 +6,18 @@ from src.models.song import Song
 from src.models.song_feature import SongFeature
 from sklearn import preprocessing
 
-mcgill_F1 = 11
 
-# ₀₁₂₃₄₅₆₇₈₉
 
 def init_song_features():
     global song_features_dict
     # pandas dataframes
     global mcgill_df
+    global sentiment_df
     global normalized_mcgill_df
     global spotify_year_df
 
     global feature_file_path
-    global non_y_axis_features
+    global non_musical_features
 
 song_features_dict = {
     'decade': SongFeature('decade', 'Jahrzehnt', '', Song.get_decade, is_nominal=True),
@@ -52,10 +51,6 @@ song_features_dict = {
 
     'seventh_chords': SongFeature('seventh_chords', 'Anteil von Septakkorden', '15',
                                          Song.get_added_seventh_use),
-    # too many 0 values
-    # 'get_added_sixth_use': SongFeature('get_added_sixth_use', 'Anteil von Sextakkorden', '', Song.get_added_sixth_use),
-    # 'power_chords': SongFeature('power_chords', 'Powerchords', '', Song.get_power_chord_use),
-
 
     'non_triad_chords': SongFeature('non_triad_chords',
                                                'Anteil Akkorde ohne Dreiklang', '16',
@@ -68,12 +63,8 @@ song_features_dict = {
                                          ['II']),
     'dominant_chords': SongFeature('dominant_chords', 'Anteil der Dominante', '20', Song.chord_frequency,
                                        ['V']),
-    # 'i_to_v': SongFeature('i_to_v', 'Häufigkeit des Übergangs I->V', '', Song.chord_transition_test,
-    #                       parameters=[('I', 'V')]),
     'v_to_i': SongFeature('v_to_i', 'Häufigkeit des Übergangs V->I', '21', Song.chord_transition_test,
                           parameters=[('V', 'I')]),
-
-
 
     'circle_of_fifths': SongFeature('circle_of_fifths', 'Abstände im Quintenzirkel', '22', Song.analyze_different_keys2),
     'circle_of_fifths_max': SongFeature('circle_of_fifths_max', 'Abstände im Quintenzirkel (Größte Distanz)', '23', Song.analyze_different_keys_largest_distance),
@@ -93,38 +84,36 @@ song_features_dict = {
                                        '31', Song.get_section_repetitions_count),
     'chorus_repetitions': SongFeature('chorus_repetitions', 'Anzahl Wiederholungen des Rephrains', '32', Song.get_chorus_repetitions),
 
-    'guitar': SongFeature('guitar', 'Vorkommen von Gitarre', '33', Song.get_instrument_usage, parameters=['guitar'], is_boolean=True, nominal_labels=["Keine Verwendung von Gitarre", "Verwendung von Gitarre"]),
-    'synthesizer': SongFeature('synthesizer', 'Vorkommen von Synthesizer', '34', Song.get_instrument_usage, parameters=['synthesizer'], is_boolean=True, nominal_labels=["Keine Verwendung von keinen Synthesizer", "Verwendung von Synthesizer"]),
+    'guitar': SongFeature('guitar', 'Vorkommen von Gitarre', '33', Song.get_instrument_usage, parameters=['guitar'], is_boolean=True, nominal_labels=["Ohne Gitarre", "Mit Gitarre"]),
+    'synthesizer': SongFeature('synthesizer', 'Vorkommen von Synthesizer', '34', Song.get_instrument_usage, parameters=['synthesizer'], is_boolean=True, nominal_labels=["Ohne Synthesizer", "Mit Synthesizer"]),
     'piano': SongFeature('piano', 'Vorkommen von Klavier', '35', Song.get_instrument_usage,
-                         parameters=['piano'], is_boolean=True, nominal_labels=["Keine Verwendung von Klavier", "Verwendung von Klavier"]),
+                         parameters=['piano'], is_boolean=True, nominal_labels=["Ohne Klavier", "Mit Klavier"]),
     'saxophone': SongFeature('saxophone', 'Vorkommen von Saxophon', '36', Song.get_instrument_usage,
-                             parameters=['saxophone'], is_boolean=True, nominal_labels=["Keine Verwendung von Saxophon", "Verwendung von Saxophon"]),
+                             parameters=['saxophone'], is_boolean=True, nominal_labels=["Ohne Saxophon", "Mit Saxophon"]),
     'trumpet': SongFeature('trumpet', 'Vorkommen von Trompete', '37', Song.get_instrument_usage,
                            parameters=['trumpet'], is_boolean=True,
-                           nominal_labels=["Keine Verwendung von Trompete", "Verwendung von Trompete"]),
+                           nominal_labels=["Ohne Trompete", "Mit Trompete"]),
     'strings': SongFeature('strings', 'Vorkommen von Streichinstrumenten', '38', Song.get_instrument_usage,
-                           parameters=['strings'], is_boolean=True, nominal_labels=["Keine Verwendung von Streichinstrumenten", "Verwendung von Streichinstrumenten"]),
+                           parameters=['strings'], is_boolean=True, nominal_labels=["Ohne Streichinstrumente", "Mit Streichinstrumenten"]),
 
     # Sentiment Analysis
     'love': SongFeature('love', 'Sentiment: Liebe',                 '39',  Song.get_sentiment, parameters=['love'], is_sentiment_feature=True),
     'anger': SongFeature('anger', 'Sentiment: Wut',                 '40',    Song.get_sentiment, parameters=['anger'], is_sentiment_feature=True),
     'sadness': SongFeature('sadness', 'Sentiment: Trauer',          '41', Song.get_sentiment, parameters=['sadness'], is_sentiment_feature=True),
     'joy': SongFeature('joy', 'Sentiment: Freude',                  '42', Song.get_sentiment, parameters=['joy'], is_sentiment_feature=True),
-    # 'fear': SongFeature('fear', 'Sentiment: Angst',                 'Angst',  Song.get_sentiment, parameters=['fear'], is_sentiment_feature=True),
-    # 'surprise': SongFeature('surprise', 'Sentiment: Überraschung',  'Überraschung', Song.get_sentiment, parameters=['surprise'], is_sentiment_feature=True),
 
     'negative': SongFeature('negative', 'Sentiment: Negativ',       '43', Song.get_sentiment_pos_neg, parameters=['NEGATIVE'], is_sentiment_feature=True),
     'positive': SongFeature('positive', 'Sentiment: Positiv',       '44', Song.get_sentiment_pos_neg, parameters=['POSITIVE'], is_sentiment_feature=True),
 }
 
-non_y_axis_features = ['decade', 'year', 'artist', 'chart_pos', 'genre', 'spotify_popularity', 'spotify_id', 'genre_groups']
+non_musical_features = ['decade', 'year', 'artist', 'chart_pos', 'genre', 'spotify_popularity', 'spotify_id', 'genre_groups']
 
 
 def normalize(df):
     df_z_scaled = df.copy()
 
     # apply normalization technique to Column 1
-    columns = [feature.feature_id for feature in song_features_dict.values() if feature.feature_id not in non_y_axis_features and feature.is_numerical]
+    columns = [feature.feature_id for feature in song_features_dict.values() if feature.feature_id not in non_musical_features and feature.is_numerical]
     for column in columns:
         df_z_scaled[column] = (df_z_scaled[column] - df_z_scaled[column].mean()) / df_z_scaled[column].std()
 
@@ -133,12 +122,8 @@ def normalize(df):
 
 feature_file_path = '../data/csv/song_features.csv'
 median_file_path = '../data/csv/year_features.csv'
-dataset2_path = '../data/csv/years/spotify.csv'
 
 mcgill_df = pd.read_csv(feature_file_path)
+sentiment_df = mcgill_df[~mcgill_df['joy'].isnull()]
 normalized_mcgill_df = normalize(mcgill_df)
-
 median_df = pd.read_csv(median_file_path)
-
-spotify_year_df = pd.read_csv(dataset2_path)
-x = 42

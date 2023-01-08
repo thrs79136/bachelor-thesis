@@ -11,25 +11,24 @@ from src.helper.genres import genres_genres
 from src.helper.img.barplot import create_stacked_barplot
 from src.helper.img.boxplot import create_boxplot
 from src.helper.img.scatterplot import create_scatter_plot
-from src.helper.statistics_helper import analyze_feature_correlation, TestResult
+from src.helper.statistics_helper import analyze_feature_correlation
 from src.models.song import Song, most_common_genres
 from src.models.song_feature import SongFeature
+from src.models.test_result import TestResult
 from src.shared import shared
 import pandas as pd
 from scipy import stats
 import seaborn as sns
 
 # TODO do these separately
-non_y_axis_features = ['decade', 'year', 'artist', 'chart_pos', 'genre', 'spotify_popularity', 'spotify_id', 'genre_groups']
+non_musical_features = ['decade', 'year', 'artist', 'chart_pos', 'genre', 'spotify_popularity', 'spotify_id', 'genre_groups']
 
 def analyze_all_features(redraw_plots=True):
     dataframe = shared.mcgill_df
-    non_instrumenal_songs_df = dataframe[dataframe['sadness'].notnull()]
-    v = len(non_instrumenal_songs_df)
     result_dict = {}
-    result_dict['genre'] = compare_features_among_genres(dataframe, 0.005, redraw_plots)
+    result_dict['genre'] = compare_features_among_genres(dataframe, 0.001, redraw_plots)
     result_dict['year'] = analyze_features(dataframe, 'year', True, 0.2, 0.05, redraw_plots)
-    result_dict['chart_pos'] = analyze_features(dataframe, 'chart_pos', False, 0.08, 0.1, redraw_plots)
+    result_dict['chart_pos'] = analyze_features(dataframe, 'chart_pos', False, 0.075, 0.1, redraw_plots)
     result_dict['spotify_popularity'] = analyze_features(dataframe, 'spotify_popularity', False, 0.1, 0.01, redraw_plots)
     return result_dict
 
@@ -48,8 +47,13 @@ def analyze_features(dataframe, feature_to_analyze_id, use_pearson, minimum_corr
     feature_to_analyze_values = dataframe[feature_to_analyze.feature_id].values
     feature_name1 = feature_to_analyze.display_name
 
+    nominal_test_results = []
+
     # draw barplots for nominal data
     for feature in nominal_features:
+        if feature.feature_id in non_musical_features:
+            continue
+
         if feature.feature_id != 'decade' and feature.feature_id != 'genre':
             grouped_features = dataframe.groupby(feature.feature_id)
             labels = grouped_features.groups.keys()
@@ -61,6 +65,7 @@ def analyze_features(dataframe, feature_to_analyze_id, use_pearson, minimum_corr
             title = f'{feature_name1} nach ${feature.latex_name}$ {feature.feature_id}'
 
             stat, pvalue, med, tbl = stats.median_test(*groups)
+            nominal_test_results.append(TestResult(feature, pvalue))
             median_test_result_str = f'Mood\'s median test; χ2={stat:.3f}; p={pvalue:.3f}'
 
             if redraw_plots:
@@ -69,7 +74,7 @@ def analyze_features(dataframe, feature_to_analyze_id, use_pearson, minimum_corr
     test_results = []
 
     for feature in ordinal_features:
-        if feature.feature_id not in non_y_axis_features and \
+        if feature.feature_id not in non_musical_features and \
                 feature.is_numerical is True and \
                 feature.is_boolean is False:
             # section_repetitions
@@ -87,14 +92,16 @@ def analyze_features(dataframe, feature_to_analyze_id, use_pearson, minimum_corr
                                          f'{feature_name1} vs. ${feature.latex_name}$ {feature.feature_id}', f'{feature_to_analyze_id}_{feature.latex_id}.jpg', test_result,
                                          f'correlation/{feature_to_analyze_id}', use_pearson)
 
-    filtered_test_results =  [test_result for test_result in test_results if abs(test_result.correlation) >= minimum_correlation and test_result.pvalue <= maximum_p_value]
+    filtered_test_results = [test_result for test_result in test_results if abs(test_result.correlation) >= minimum_correlation and test_result.pvalue <= maximum_p_value]
+    filtered_nominal_test_results = [test_result for test_result in nominal_test_results if test_result.pvalue <= maximum_p_value]
+
     print(feature_to_analyze_id)
     latex_names = '; '.join([f'${result.feature.latex_name}$' for result in filtered_test_results])
     # print(latex_names)
     feature_ids = ','.join([f'${result.feature.feature_id}$' for result in filtered_test_results])
     print(f'[{feature_ids}]')
 
-    return filtered_test_results
+    return filtered_test_results + filtered_nominal_test_results
 
 
 def create_correlation_matrix(features):
@@ -151,11 +158,12 @@ def compare_features_among_genres(df, maximum_p_value, redraw_plots):
     for feature in features:
         (ordinal_features, nominal_features)[feature.is_nominal].append(feature)
 
-    ordinal_features = [feature for feature in ordinal_features if feature.feature_id not in non_y_axis_features and feature.is_numerical]
-    nominal_features = [feature for feature in nominal_features if feature.feature_id not in non_y_axis_features]
+    ordinal_features = [feature for feature in ordinal_features if feature.feature_id not in non_musical_features and feature.is_numerical]
+    nominal_features = [feature for feature in nominal_features if feature.feature_id not in non_musical_features]
 
-    test_results = analyze_ordinal_features_for_genres(df, ordinal_features, redraw_plots)
-    analyze_nominal_features_for_genres(df, nominal_features, redraw_plots)
+    test_results = []
+    # test_results += analyze_ordinal_features_for_genres(df, ordinal_features, redraw_plots)
+    test_results += analyze_nominal_features_for_genres(df, nominal_features, redraw_plots)
 
     # filter test results
     filtered_test_results = [result for result in test_results if result.pvalue <= maximum_p_value]
@@ -165,9 +173,11 @@ def compare_features_among_genres(df, maximum_p_value, redraw_plots):
 
 def analyze_nominal_features_for_genres(df, nominal_features, redraw_plots):
     grouped_df = df.groupby('genre_groups')
+    test_results = []
 
     for feature in nominal_features:
         # bar_values = []
+
 
         group_keys = genres_genres
         grouped_features = df.groupby(feature.feature_id)
@@ -193,28 +203,16 @@ def analyze_nominal_features_for_genres(df, nominal_features, redraw_plots):
                     # zero group members
                     bar_values[j].append(0)
 
-        # for i, (key, dataframe) in enumerate(genre_dict.items()):
-        #     # labels.append(key)
-        #     grouped_features = dataframe.groupby(feature.feature_id)
-        #     # labels = grouped_features.groups.keys()
-        #
-        #     perc_values = []
-        #     for j, group_key in enumerate(group_keys):
-        #         n = len(dataframe)
-        #         group = len(grouped_features.get_group(group_key))
-        #         perc_value = group / n
-        #         bar_values[j].append(perc_value)
-        #     #                   perc_values.append(group/n)
-        #     x = 42
-
         # execute test
         genre_ids = df['genre_groups'].values
         feature_values = df[feature.feature_id].values
 
         contigency = pd.crosstab(genre_ids, feature_values)
 
+        stat, p, dof, expected = chi2_contingency(contigency)
+        test_results.append(TestResult(feature, p))
+
         if redraw_plots:
-            stat, p, dof, expected = chi2_contingency(contigency)
 
             # bar_values.append
             labels = [get_genre_group_string(genre) for genre in genres_genres]
@@ -224,15 +222,23 @@ def analyze_nominal_features_for_genres(df, nominal_features, redraw_plots):
             # suptitle = ''
 
             create_stacked_barplot(bar_values, labels, legend,
-                                   f'${feature.latex_name}$ {feature.feature_id} nach Musikrichtung', suptitle, f'{feature.latex_id}.jpg', 'nominal_correlation', figsize=(4.48, 3.36))
+                                   f'${feature.latex_name}$ {feature.feature_id} nach Musikrichtung', suptitle, f'genre_{feature.latex_id}.jpg', f'correlation/genre', figsize=(4.48, 3.36))
+
+    return test_results
 
 def analyze_ordinal_features_for_genres(df, ordinal_features, redraw_plots):
-    grouped_df = df.groupby('genre_groups')
+
+    grouped_df_all = df.groupby('genre_groups')
+    setiment_df = df[~df['joy'].isnull()]
+    grouped_df_sentiments = setiment_df.groupby('genre_groups')
+
     test_results = []
 
     for feature in ordinal_features:
         box_plot_values = []
         labels = []
+
+        grouped_df = grouped_df_sentiments if feature.is_sentiment_feature else grouped_df_all
 
         for genre, genre_df in grouped_df:
             labels.append(genre.capitalize())
@@ -246,6 +252,7 @@ def analyze_ordinal_features_for_genres(df, ordinal_features, redraw_plots):
         test_results.append(test_result)
 
         if redraw_plots:
+            labels = [get_genre_group_string(g) for g in labels]
             median_test_result_str = f'Mood\'s median test; χ2={stat:.3f}; p={pvalue:.3f}'
             create_boxplot(box_plot_values, labels, f'${feature.latex_name}$ {feature.feature_id} nach Genre', median_test_result_str, f'genre_{feature.latex_id}.jpg',
                            f'correlation/genre', ylabel=f'${feature.latex_name}$', figsize=(4.48, 3.36))

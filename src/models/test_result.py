@@ -1,10 +1,9 @@
 class TestResult:
 
-    def __init__(self, feature_id, correlation, pvalue):
-        self.feature_id = feature_id
-        self.correlation = correlation
+    def __init__(self, feature, pvalue):
+        self.feature = feature
+        # self.correlation = correlation
         self.pvalue = pvalue
 
     def __str__(self):
-        return f'{self.feature_id.replace("_", " ")} & {round(self.correlation, 5)} & {round(self.pvalue, 5)}'
-
+        return f'{self.feature.feature_id.replace("_", " ")} & {round(self.pvalue, 5)}'
