@@ -3,14 +3,10 @@ from typing import TextIO
 import ply.lex as lex
 from parker.chords import *
 
-from src.models.mgill_chord import McGillChord
+# from src.models.mcgill_songdata.mgill_chord import McGillChord
+from src.models.mcgill_songdata.mgill_chord import McGillChord
 
 logger = logging.getLogger(__name__)
-
-mcgill_to_parker_chord = {
-    'maj': 'M',
-    'min': 'm'
-}
 
 tokens = (
     'SECTION_NAME',

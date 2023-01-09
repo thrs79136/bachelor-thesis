@@ -76,7 +76,7 @@ class LoadingWidget(QWidget):
         self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.label.setAlignment(Qt.AlignCenter)
 
-        self.movie = QMovie("C:/Users/thrss/Desktop/spinner2.gif")
+        self.movie = QMovie("./GUI/spinner2.gif")
         self.label.setMovie(self.movie)
         self.movie.start()
 
@@ -84,8 +84,6 @@ class LoadingWidget(QWidget):
         self.layout.addWidget(self.label, 0, 0)
 
         self.setLayout(self.layout)
-
-
 
 
 class ParallelCoordinatesWidget(QWidget):
@@ -169,22 +167,7 @@ class ParallelCoordinatesWidget(QWidget):
                 self.figure_p = figure
             print(f'create figure {key}')
 
-            x =42
-
-        # self.annotations = []
-        #
-        # for i, ax in enumerate(self.figure.axes):
-        #     annot = ax.annotate("test", xy=(0, 0), xytext=(5, 5), textcoords="offset points")
-        #     annot.set_visible(False)
-        #     self.annotations.append(annot)
-
-
-
-        # self.draw()
-
         self.count = 0
-
-        # self.parent().show_gui()
 
 
     def show_labels(self):

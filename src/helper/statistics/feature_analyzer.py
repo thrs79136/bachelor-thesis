@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 from scipy.stats import chi2_contingency
 
 from src.helper.file_helper import feature_file_path
-from src.helper.genres import genres_genres
+from src.helper.genres import all_genre_groups
 from src.helper.img.barplot import create_stacked_barplot
 from src.helper.img.boxplot import create_boxplot
 from src.helper.img.scatterplot import create_scatter_plot
@@ -179,7 +179,7 @@ def analyze_nominal_features_for_genres(df, nominal_features, redraw_plots):
         # bar_values = []
 
 
-        group_keys = genres_genres
+        group_keys = all_genre_groups
         grouped_features = df.groupby(feature.feature_id)
         feature_group_keys = grouped_features.groups.keys()
         bar_values = [[] for _ in range(len(feature_group_keys))]
@@ -215,7 +215,7 @@ def analyze_nominal_features_for_genres(df, nominal_features, redraw_plots):
         if redraw_plots:
 
             # bar_values.append
-            labels = [get_genre_group_string(genre) for genre in genres_genres]
+            labels = [get_genre_group_string(genre) for genre in all_genre_groups]
             legend = [feature.nominal_labels[i] for i in range(len(feature_group_keys))] if feature.nominal_labels is not None else group_keys
 
             suptitle = f'$\chi^2$-Test, $\chi^2$({dof}, n={len(feature_values)})={stat:.3f}, p={p:.3f}'

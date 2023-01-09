@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-genres_genres = ['rock', 'pop-rock', 'pop', 'soul', 'country', 'funk-soul']
+all_genre_groups = ['rock', 'pop-rock', 'pop', 'soul', 'country', 'funk-soul']
 genres_accepted_genres = ['rock', 'pop', 'country', 'funk', 'soul']
 
 
@@ -10,11 +10,10 @@ def create_genres_dict(songs):
 
     for song in songs:
         song_genres = '-'.join(sorted([genre for genre in song.genres if genre in genres_accepted_genres]))
-        if song_genres in genres_genres:
+        if song_genres in all_genre_groups:
             genre_dict[song_genres].append(song)
             classified_songs_count += 1
 
-    print('classified songs count:' + str(classified_songs_count))
     return genre_dict
 
 def transform_genre_to_string(song):
@@ -24,5 +23,5 @@ def transform_genre_string(genre):
     return '-'.join(sorted([g for g in genre.split('.') if g in genres_accepted_genres]))
 
 def create_genres_df(df):
-    df = df.drop(df[~df.genre.map(transform_genre_string).isin(genres_genres)].index)
+    df = df.drop(df[~df.genre.map(transform_genre_string).isin(all_genre_groups)].index)
     return df

@@ -1,12 +1,8 @@
 import pandas as pd
 
-from src.helper.absolute_surprise import get_song_surprise, get_different_progressions_feature
-from src.helper.absolute_surprise_chords import get_song_chord_surprise
+from src.helper.absolute_surprise import get_different_progressions_feature
 from src.models.song import Song
 from src.models.song_feature import SongFeature
-from sklearn import preprocessing
-
-
 
 def init_song_features():
     global song_features_dict
@@ -63,10 +59,10 @@ song_features_dict = {
                                          ['II']),
     'dominant_chords': SongFeature('dominant_chords', 'Anteil der Dominante', '20', Song.chord_frequency,
                                        ['V']),
-    'v_to_i': SongFeature('v_to_i', 'Häufigkeit des Übergangs V->I', '21', Song.chord_transition_test,
+    'v_to_i': SongFeature('v_to_i', 'Häufigkeit des Übergangs V->I', '21', Song.chord_transitions,
                           parameters=[('V', 'I')]),
 
-    'circle_of_fifths': SongFeature('circle_of_fifths', 'Abstände im Quintenzirkel', '22', Song.analyze_different_keys2),
+    'circle_of_fifths': SongFeature('circle_of_fifths', 'Abstände im Quintenzirkel', '22', Song.analyze_different_keys),
     'circle_of_fifths_max': SongFeature('circle_of_fifths_max', 'Abstände im Quintenzirkel (Größte Distanz)', '23', Song.analyze_different_keys_largest_distance),
 
     'root_distances': SongFeature('root_distances', 'Akkordabstände', '24', Song.get_chord_distances),
@@ -112,12 +108,10 @@ non_musical_features = ['decade', 'year', 'artist', 'chart_pos', 'genre', 'spoti
 def normalize(df):
     df_z_scaled = df.copy()
 
-    # apply normalization technique to Column 1
     columns = [feature.feature_id for feature in song_features_dict.values() if feature.feature_id not in non_musical_features and feature.is_numerical]
     for column in columns:
         df_z_scaled[column] = (df_z_scaled[column] - df_z_scaled[column].mean()) / df_z_scaled[column].std()
 
-    # view normalized data
     return df_z_scaled
 
 feature_file_path = '../data/csv/song_features.csv'

@@ -15,7 +15,7 @@ from sklearn.datasets import load_iris
 from src.dimension_reduction.common import spotify_playlists_path, spotify_genres_playlists_path, feature_list_years, \
     feature_lists
 from src.helper.file_helper import feature_file_path
-from src.helper.genres import create_genres_df, genres_genres, transform_genre_string
+from src.helper.genres import create_genres_df, all_genre_groups, transform_genre_string
 
 import itertools
 
@@ -204,7 +204,7 @@ def knn_genre_mcgill():
         #song.genre = transform_genre_string(song.genre)
         genres_df.iloc[i-1, genres_df.columns.get_loc('genre')] = transform_genre_string(genres_df.iloc[i-1, genres_df.columns.get_loc('genre')])
 
-    k_nearest_neighbor_genre(genres_df, genres_genres, 'mcgillgenres.png', 'KNN mit Klassifizierung nach Musikrichtung (Datensatz 1)', ['decade', 'artist', 'genre'])
+    k_nearest_neighbor_genre(genres_df, all_genre_groups, 'mcgillgenres.png', 'KNN mit Klassifizierung nach Musikrichtung (Datensatz 1)', ['decade', 'artist', 'genre'])
 
 
 def knn_genre_spotify():

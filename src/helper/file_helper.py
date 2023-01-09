@@ -6,28 +6,22 @@ from typing import List
 import numpy as np
 
 from src.helper.statistics_helper import group_by_year
-from src.models.mcgill_songdata import Bar
-from src.models.mgill_chord import McGillChord
+from src.models.mcgill_songdata.bar import Bar
+from src.models.mcgill_songdata.mgill_chord import McGillChord
 from src.models.song import Song
 from src.shared import shared
 from src.shared.shared import feature_file_path, median_file_path
 
-global year_feature_file_path
 year_feature_file_path = '../data/csv/year_features.csv'
 
-global spotify_playlist_path
-spotify_playlist_path = '../data/csv/years'
 
 song_csv_header = ['mcgill_billboard_id', 'artist', 'song_name', 'chart_year', 'peak_chart_position', 'genres',
                    'spotify_song_data',
                    'spotify_id']
 
 def write_text_file(path: str, content: str):
-    try:
-        file = open(path, "w", encoding = 'utf-8')
-        file.write(content)
-    except Exception:
-        x = 42
+    file = open(path, "w", encoding = 'utf-8')
+    file.write(content)
 
 
 def write_header(path: str):
@@ -141,12 +135,6 @@ def modify_billboard_index(oldpath: str, newpath: str):
     writing_file.write(new_file_content)
     writing_file.close()
 
-
-def save_dataframe(df, filename):
-    path = f'{spotify_playlist_path}/{filename}'
-    df.to_csv(path)
-
-
 def save_all_features_to_csv(songs: List[Song]):
     features = shared.song_features_dict.values()
 
@@ -194,20 +182,16 @@ def save_median_feature_csv(songs: List[Song], feature_names):
         for year, year_songs in grouped_songs.items():
             year_medians = []
             for feature in features:
-                if feature.latex_id == '32':
-                    x = 42
 
-                try:
-                    if not feature.is_numerical or feature.is_sentiment_feature:
-                        continue
-                    feature_expr = []
-                    for song in year_songs:
-                        parameters = [song] + feature.parameters
-                        feature_expr.append(feature.feature_fn(*parameters))
-                    median = np.median(feature_expr)
-                    year_medians.append(median)
-                except Exception:
-                    x = 42
+                if not feature.is_numerical or feature.is_sentiment_feature:
+                    continue
+                feature_expr = []
+                for song in year_songs:
+                    parameters = [song] + feature.parameters
+                    feature_expr.append(feature.feature_fn(*parameters))
+                median = np.median(feature_expr)
+                year_medians.append(median)
+
             csvwriter.writerow(year_medians)
 
 

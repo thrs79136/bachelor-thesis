@@ -35,5 +35,4 @@ def create_boxplot(data_values, labels, title, suptitle, filename, dir='', ylabe
     fig.savefig(path)
 
     plt.show()
-    x = 42
 

@@ -3,7 +3,6 @@ import os
 import spotipy
 import logging
 
-from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
 
 from src.models.spotify_song_data import SpotifySongData
@@ -17,7 +16,6 @@ def init_spotify():
     os.environ["SPOTIPY_CLIENT_ID"] = "f07521880b844d5395aa7dde0588a6bf"
     os.environ["SPOTIPY_CLIENT_SECRET"] = "ade1c1e5bb314845a334a7b890f1968a"
     spotify_client = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
-    print(spotify_client)
 
 
 playlist_ids = {
@@ -40,7 +38,6 @@ playlist_ids_genres = {
 }
 
 def get_playlist_genre(genre):
-    print(f'get playlist for genre {genre}')
     results = spotify_client.playlist_tracks(playlist_ids_genres[genre])
     tracks = results['items']
     while results['next'] and len(tracks) < 50:
@@ -63,10 +60,6 @@ def get_track_analysis(song):
 
 def get_spotify_song_id(song_name: str, artist: str) -> string:
     global spotify_client
-
-    print(f'{artist} - {song_name}')
-    if song_name == 'Pressure':
-        x = 2
 
     try:
         searchResult = spotify_client.search(q=f'artist:{artist} track:{song_name}', type='track')
@@ -112,6 +105,5 @@ def get_spotify_genres(song_id: string):
     result = spotify_client.artist(artist_id)
     genres = result['genres']
     if len(genres) == 0:
-        print(artists[0]['name'])
         return []
     return genres

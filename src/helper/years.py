@@ -5,11 +5,11 @@ import numpy as np
 import pandas as pd
 from scipy.stats import stats
 
-from src.helper.absolute_surprise import get_song_surprise
-from src.helper.genres import genres_genres, genres_accepted_genres
+from src.helper.genres import all_genre_groups, genres_accepted_genres
 from src.helper.img.lineplot import lineplot, lineplot_multiple_lines, stacked_area_plot
-from src.helper.statistics_helper import most_common_genres, get_genres_dictionary
-from src.models.song import Song
+from src.helper.statistics.year_feature_median import draw_feature_line_plot
+from src.helper.statistics_helper import get_genres_dictionary
+from src.models.song import Song, most_common_genres
 from src.models.song_feature import SongFeature
 
 years_dict = None
@@ -45,7 +45,6 @@ def draw_sentiment_lineplot2(songs: List[Song]):
         for song in song_list:
             sentiment = song.sentiments[0]['label']
             sentiment_count[sentiment] += 1
-            x = 42
 
         # convert to percentages
         for sentiment_name, sentiment_val in sentiment_count.items():
@@ -267,7 +266,7 @@ def draw_genre_feature_line_plots(songs: List[Song]):
         draw_feature_line_plot(genre_dict[genre], get_song_surprise, '"Überraschende" Akkordfolgen',
                                f'absolute_surprise_{genre}.png', '"Überraschende" Akkordfolgen',
                                dir='genres_development')
-        draw_feature_line_plot(genre_dict[genre], Song.analyze_different_keys2,
+        draw_feature_line_plot(genre_dict[genre], Song.analyze_different_keys,
                                'Verwendung tonartsfremder Akkorde', f'different_keys_{genre}.png',
                                'Verwendung tonartsfremder Akkorde', dir='genres_development')
         draw_feature_line_plot(genre_dict[genre], Song.get_tension_use, 'Verwendung von Tensions',
@@ -367,13 +366,13 @@ def get_year_genre_perc_dict(songs):
         genre_song_count = defaultdict(int)
         year_song_count = 0
 
-        for genre in genres_genres:
+        for genre in all_genre_groups:
             genre_dict[genre].append(0)
 
         try:
             for song in song_list:
                 song_genres = '-'.join(sorted([genre for genre in song.genres if genre in genres_accepted_genres]))
-                if song_genres in genres_genres:
+                if song_genres in all_genre_groups:
                     print(song_genres)
                     genre_dict[song_genres][-1] += 1
                     genre_song_count[song_genres] += 1
@@ -381,7 +380,7 @@ def get_year_genre_perc_dict(songs):
         except Exception:
             print(song.genres[0])
 
-        for genre in genres_genres:
+        for genre in all_genre_groups:
             genre_dict[genre][-1] = genre_dict[genre][-1] / year_song_count
 
     return years, genre_dict

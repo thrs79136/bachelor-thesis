@@ -2,7 +2,7 @@ from collections import defaultdict
 
 from pandas import Series
 
-from src.helper.genres import genres_genres
+from src.helper.genres import all_genre_groups
 from src.helper.img.lineplot import stacked_area_plot
 from src.helper.statistics.feature_analyzer import get_genre_group_string
 from src.shared import shared
@@ -28,15 +28,15 @@ def genres_stacked_area_plot():
     df = df[~df['genre_groups'].isnull()]
 
     years = []
-    stacked_area_values = [[] for _ in genres_genres]
+    stacked_area_values = [[] for _ in all_genre_groups]
 
     groups = df.groupby('year')['genre_groups']
 
     for year, genres in groups:
         genre_list = list(genres)
         years.append(year)
-        for i, genre in enumerate(genres_genres):
+        for i, genre in enumerate(all_genre_groups):
             perc = genre_list.count(genre)/len(genre_list)
             stacked_area_values[i].append(perc)
 
-    stacked_area_plot(years, stacked_area_values, [get_genre_group_string(g) for g in genres_genres], 'Jahr', 'Anteil von Musikrichtungen', 'genre_percentages.jpg', '')
+    stacked_area_plot(years, stacked_area_values, [get_genre_group_string(g) for g in all_genre_groups], 'Jahr', 'Anteil von Musikrichtungen', 'genre_percentages.jpg', '')

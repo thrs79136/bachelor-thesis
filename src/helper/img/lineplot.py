@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import numpy as np
 import seaborn as sns
 
 figure_number = 0
@@ -20,10 +19,7 @@ def lineplot(x, y, xlabel, ylabel, filename: str, title='', suptitle='', directo
     fig, ax = plt.subplots()
     plt.plot(x, y)
 
-    try:
-        color_palette = sns.color_palette("icefire", n_colors=len(dot_legend))
-    except Exception:
-        x = 42
+    color_palette = sns.color_palette("icefire", n_colors=len(dot_legend))
     #color_palette = ['red', 'blue'] * 5
 
     # dots

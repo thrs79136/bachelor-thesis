@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from src.models.mgill_chord import note_to_interval, MajOrMin, McGillChord
+from src.models.mcgill_songdata.mgill_chord import note_to_interval, MajOrMin, McGillChord
 
 key_dict = {0: 'C',
             1: 'Des',
@@ -57,9 +57,6 @@ circle_of_fifths = {
 
 def get_scale_distance(scale_key_1, scale_key_2):
 
-    # idx_1 = list(circle_of_fifths.keys()).index(scale_key_1)
-    # idx_2 = list(circle_of_fifths.keys()).index(scale_key_2)
-
     i = (scale_key_1 - scale_key_2) % 12
     j = (scale_key_2 - scale_key_1) % 1
     if i < j:
@@ -101,28 +98,13 @@ def get_corresponding_scale_distance_for_chord(chord: McGillChord, tonic, maj_or
     chord_scale_key = note_to_interval[root]
     if chord.chord_type == MajOrMin.Minor:
         chord_scale_key = get_minor_scale_id(tonic)
-    elif chord.chord_type == MajOrMin.Major:
-        x = 42
 
-    # if chord.chord_type == MajOrMin.Neither:
-    #     cloned_chord = chord.clone()
-    #
-    #     notes_without_tensions = []
-    #     for i,v in enumerate(chord.mcgill_intervals):
-    #         x = 42
-    #     indices = [i for i, v in enumerate(chord.mcgill_intervals) if v <= 11]
-    #
-    #
-    #     test_res = get_corresponding_scale_distance_for_chord(cloned_chord, tonic, maj_or_min, previous_scale_key)
-    #     x = 42
     res = get_scale_distance(scale_key, chord_scale_key)
     return abs(res)/6, chord_scale_key, res
 
 
 pentatonic_maj_intervals = [0, 2, 4, 7, 9]
 pentatonic_min_intervals = [0, 3, 5, 7, 10]
-
-
 
 def is_part_of_pentatonic_scale(chord: McGillChord, tonic):
     global pentatonic_min_intervals
@@ -154,6 +136,3 @@ def part_of_scale(chord: McGillChord, tonic):
             count += 1
 
     return count
-
-
-

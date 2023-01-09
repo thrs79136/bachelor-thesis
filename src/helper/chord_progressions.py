@@ -1,7 +1,7 @@
-from src.models.mcgill_songdata import Section
-from src.models.mgill_chord import MajOrMin, RomNumNotations, RomNumNotation
 from typing import List
 
+from src.models.mcgill_songdata.mgill_chord import MajOrMin, RomNumNotation, RomNumNotations
+from src.models.mcgill_songdata.section import Section
 from src.models.song import Song
 
 
@@ -142,5 +142,4 @@ def identify_chord_progressions(songs: List[Song]):
                     count_dict[k] += 1
                     print(f'{song}, {section.name}, {k}')
 
-    a = count_dict
 

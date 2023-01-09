@@ -6,7 +6,7 @@ from sklearn.neighbors import KNeighborsClassifier
 
 from src.dimension_reduction.common import spotify_genres_playlists_path, spotify_playlists_path
 from src.helper.file_helper import feature_file_path
-from src.helper.genres import create_genres_df, genres_genres, transform_genre_string
+from src.helper.genres import create_genres_df, all_genre_groups, transform_genre_string
 
 
 def knn_n_minus_one_mcgill_decade():
